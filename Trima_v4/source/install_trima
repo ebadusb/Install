@@ -1,0 +1,439 @@
+#!/bin/ksh
+#---------------------------------------------------------------------------
+# Copyright (c) 1997,2001, by Gambro BCT, Inc.  All rights reserved
+# downgrade_50_to_40 - QNX ksh script to downgrade a version 5 Trima
+#                       installation to V4 (build 1.264)
+#
+#---------------------------------------------------------------------------
+#ifdef __USAGE
+#%C - downgrade an existing Trima 5.0 hard drive to 4.02 (build 1.264).
+#
+#
+#Usage:
+#%C
+#
+#endif
+
+# Move to /d/update...
+cd /d/update
+
+me=${0##*/}
+startdir=$PWD
+target=$PWD"/newroot"
+
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "******                                                 ******"
+echo "******           STARTING DOWNGRADE OF                 ******"
+echo "******               TRIMA SOFTWARE                    ******"
+echo "******                                                 ******"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+echo "*************************************************************"
+
+#
+# Print out the working information.
+#
+echo "Current directory = ${startdir}"
+echo "Target directory = ${target}"
+
+#
+# Ensure that the script is only run in the /d/update directory.
+#
+if [ $startdir != "/d/update" ] ; then
+   echo "$me: MUST BE RUN IN /d/update"
+   exit 1
+fi
+
+#
+# Define a install_fail function to handle errors during the
+# install process.
+#
+install_fail ()
+{
+   if [ -z "$V5_PLUS_BOOT" ]
+   then
+     #
+     # Installing on version 4 or earlier - tell the field engineer
+     # that an error has been detected and wait forever
+     #
+     echo "Install failed"
+     while [ 1 ]
+     do
+       sleep 1
+     done
+   else
+     #
+     # Installing on version 5 or later - let sysinit.2 handle the
+     # error.
+     #
+     exit 1
+   fi
+}
+
+#
+# Delete any old target directory.
+#
+echo "Removing the target directory ${target}"
+rm -rf ${target}
+
+#
+# Unpax the install.pax file to get all info for install.
+#
+echo "Restoring install.pax archive to ${startdir}"
+pax -r -v -f install.pax
+if [ $? -ne 0 ] ; then
+  echo "$me: pax error on install.pax archive."
+  install_fail 1
+fi
+
+#
+# Check to see if other installation downgrade utilities exist
+#
+echo "Checking for necessary files"
+for FILE in install_sysinit \
+            conv_config_50_to_40 \
+            install_boot_image \
+            install_crc_verification \
+            qnx_oem.pax \
+            trima.pax
+do
+   if [ ! -f ./$FILE ] ; then
+      echo "$me: $FILE not found.  Aborting procedure"
+      echo
+      install_fail 1
+   fi
+done
+
+#
+# Sanity check the machine files to make sure this is really
+# a version 5 machine - otherwise we are in trouble and should
+# abort.
+#
+if [ -f /d/machine/config.dat ] ; then
+   grep key_custom_ratio /d/machine/config.dat >/dev/null 2>/dev/null 
+   if [ $? -ne 0 ] ; then
+      echo "This procedure should only be run to downgrade from version 5 to"
+      echo "version 4.  The file /d/machine/config.dat is not a valid version"
+      echo "5 file."
+      echo 
+      install_fail 1
+   fi 
+fi
+
+if [ -f /d/machine/globvars ] ; then
+   grep EVEREST /d/machine/config.dat >/dev/null 2>/dev/null 
+   if [ $? = 0 ] ; then
+      echo "This procedure should only be run to downgrade from version 5 to"
+      echo "version 4.  The file /d/machine/globvars is not a valid version"
+      echo "5 file."
+      echo 
+      install_fail 1
+   fi 
+fi
+
+#
+# Check for necessary disk space (MINSPACE is in kBytes)
+#
+MINSPACE=150000
+df /d | ./awk "\$5 < $MINSPACE { exit 1 }"
+if [ $? -ne 0 ]; then
+   echo "Insufficient disk space for install - attempting to free some space ..."
+   if [ ! -f /trima/config/cfg_bin/logpreserver ]; then
+      echo "Can't find /trima/config/cfg_bin/logpreserver.  Aborting procedure"
+      echo
+      install_fail 1
+   fi
+   
+   /trima/config/cfg_bin/logpreserver > /d/run_data/logpreserver.out 2>&1
+
+   df /d | ./awk "\$5 < $MINSPACE { exit 1 }"
+   if [ $? -ne 0 ]; then
+      echo "Unable to free sufficient space for install.  Aborting procedure"
+      echo
+      install_fail 1
+   fi
+fi
+
+#
+# Restore qnx_oem.pax archive
+#
+echo "Restoring QNX OEM archive to ${target}"
+pax -r -v -s ",^/,${target}/," -f qnx_oem.pax
+if [ $? -ne 0 ] ; then
+  echo "$me: pax error on qnx_oem.pax archive."
+  install_fail 1
+fi
+
+#
+# Restore trima.pax archive
+#
+echo "Restoring Trima object code archive to ${target}"
+pax -r -v -s ",^/,${target}/," -f trima.pax
+if [ $? -ne 0 ] ; then
+  echo "$me: pax error on trima.pax archive."
+  install_fail 1
+fi
+
+#
+# Copy passwd, boot images, machine configuration files to correct places
+#
+echo "Copying special files..."
+cp -p -v ${target}/trima/config/build/hard.2.image ${target}/.boot
+cp -p -v ${target}/trima/config/build/hard.2.image ${target}/.altboot
+
+#
+# Generate CRC's
+#
+echo "Generating CRC's..."
+${target}/trima/softcrc/machcrc \
+     -filelist ${target}/trima/softcrc/filelists/safety.files \
+     -update /tmp/safety.crc \
+     -chroot ${target}
+cp -p /tmp/safety.crc ${target}/trima
+chmod a-w ${target}/trima/safety.crc
+
+echo "Trima 4.0 downgrade"
+# Remove obsolete /d/machine/cfg_main.dat, if it exists
+#
+echo "Attempting to remove obsolete /d/machine/cfg_main.dat"
+rm -f /d/machine/cfg_main.dat
+
+#
+# Handle converting /d/machine/config.dat
+#
+echo "Attempting to find /d/machine/config.dat"
+if [ ! -f /d/machine/config.dat ] ; then
+   echo "No /d/machine/config.dat: copying from templates..."
+   cp -p -v ${target}/trima/templates/config.dat /d/machine
+else
+   echo "Converting /d/machine/config.dat to Trima version 4.0..."
+   chmod a+x /d/update/conv_config_50_to_40
+   /d/update/conv_config_50_to_40 >/d/update/config_50_to_40.log 2>&1
+fi
+
+#
+# Handle converting /d/machine/cal.dat
+#
+echo "Attempting to find /d/machine/cal.dat"
+if [ ! -f /d/machine/cal.dat ] ; then
+   echo "No /d/machine/cal.dat: copying from templates..."
+   cp -p -v ${target}/trima/templates/cal.dat /d/machine
+else
+   echo "Converting /d/machine/cal.dat..."
+   cp -f ${target}/trima/templates/cal.dat cal.dat.40.tmp
+   for i in "aps_raw_pos" "aps_raw_ref" "aps_raw_neg" "cps_gain" "cps_offset" "init_red_drive" "init_green_drive"
+   do
+      KEY=$(grep ^$i= /d/machine/cal.dat | ./awk -F = '{print $1}')
+      RETAINVAL=$(grep ^$i= /d/machine/cal.dat)
+      echo "KEY=$KEY,RETAINVAL:$RETAINVAL" 
+      cat cal.dat.40.tmp | /bin/sed s/$KEY'.*$'/$RETAINVAL/ >cal.dat.40.tmp1
+      mv -f cal.dat.40.tmp1 cal.dat.40.tmp
+   done
+   cp -f -v /d/machine/cal.dat /d/machine/cal.dat.50
+   cp -f -v cal.dat.40.tmp /d/machine/cal.dat
+   chmod a-w /d/machine/cal.dat
+fi
+
+#
+# Handle converting /d/machine/globvars
+#
+echo "Attempting to find /d/machine/globvars"
+if [ ! -f /d/machine/globvars ] ; then
+   echo "No /d/machine/globvars updating to 4.0 version..."
+   echo "Machine needs to be customized..."
+   echo cp -p -v ${target}/trima/templates/globvars /d/machine
+else
+   echo "Converting /d/machine/globvars to Trima Version 4.0..."
+   cp -f -v /d/machine/globvars /d/machine/globvars.50
+
+   echo "# Global variables that are not machine specific" >> /d/machine/globvars
+   echo "HOME=//2" >> /d/machine/globvars
+   echo "CNODE=2" >> /d/machine/globvars
+   echo "SNODE=1" >> /d/machine/globvars
+   echo "CQUE=c" >> /d/machine/globvars
+   echo "SQUE=s" >> /d/machine/globvars
+   echo "EVERESTMAP=/trima/tcpip/everest_logger.msgs" >> /d/machine/globvars
+   echo "export HOME EVERESTMAP" >> /d/machine/globvars
+   echo "export CNODE CQUE SNODE SQUE" >> /d/machine/globvars
+fi
+echo "End of Trima 4.0 downgrade of machine-specific files...."
+
+#
+# Ensure that the CRC of the config file is correct.
+#
+echo "Updating the CRC of the config file."
+${target}/trima/softcrc/machcrc \
+     -filelist ${target}/trima/softcrc/filelists/config.files \
+     -update /d/machine/crc/config.crc
+
+#
+# Run CRC of entire hard disk, using the machcrc program that was just
+# installed on the target disk.
+#
+echo "Beginning CRC check of target hard disk"
+${target}/trima/softcrc/machcrc \
+      -filelist ${target}/trima/softcrc/filelists/trima.files \
+      -chroot ${target} \
+      -filelist ${target}/trima/softcrc/filelists/focgui.files \
+      -chroot ${target} \
+      -filelist ${target}/trima/softcrc/filelists/qnx.files \
+      -chroot ${target} \
+      -verify ${target}/trima/disk.crc
+if [ $? -ne 0 ] ; then
+   echo "$me: target disk CRC did not match expected value."
+   echo "The installation was not complete."
+   install_fail 1
+fi
+
+#
+# Create directory structure for Trima install
+#
+echo "Ensure directories in 'd' partition exist..."
+mkdir -p /d/machine/crc
+mkdir -p /d/run_data
+mkdir -p /d/log
+mkdir -p /d/everest
+mkdir -p /d/s_dumper
+mkdir -p /d/c_dumper
+mkdir -p /d/savedata
+mkdir -p /d/service
+mkdir -p /d/archive
+mkdir -p /d/update
+mkdir -p /d/tmp
+mkdir -p ${target}/etc/config/absf
+
+#
+# Create symbolic links to certain files/directories
+#
+echo "Creating symlinks..."
+for LinkPair in \
+  "${target}/run_data -> /d/run_data" \
+  "${target}/log -> /d/log" \
+  "${target}/everest -> /d/everest" \
+  "${target}/c_dumper -> /d/c_dumper" \
+  "${target}/s_dumper -> /d/s_dumper" \
+  "${target}/tmp -> /d/tmp" \
+  "${target}/focus -> /trima" \
+  "${target}/etc/hosts -> /d/tmp/hosts" \
+  "${target}/etc/config/netmap -> /d/tmp/netmap" \
+  "${target}/etc/config/absf/absf.2 -> /d/machine/absf.2" \
+  "${target}/etc/config/altsysinit -> /trima/config/altsysinit" \
+  "${target}/etc/config/netboot -> /trima/config/netboot" \
+  "${target}/etc/profile -> /trima/config/profile" \
+  "${target}/etc/config/sysinit.1 -> /trima/config/sysinit.1" \
+  "${target}/etc/config/sysinit.2 -> /trima/config/sysinit.2" \
+  "${target}/qnx4/photon/palette/focussed.pal -> /trima/gui/focussed.pal" \
+  "${target}/etc/config/trap/crt.2 -> /trima/config/photon/crt.2" \
+  "${target}/etc/config/trap/input.2 -> /trima/config/photon/input.2" \
+  "${target}/etc/inetd.conf -> /trima/config/tcpip/inetd.conf" \
+  "${target}/etc/networks -> /trima/config/networks" \
+  "${target}/etc/services -> /trima/config/services" \
+  "${target}/etc/protocols -> /trima/config/protocols"
+do
+  PtrName=${LinkPair%%' '*} ; PtrDest=${LinkPair##*' '}
+  if ln -fs "$PtrDest" "$PtrName" ; then
+     :
+  else
+     echo "Error making link: $LinkPair" ; install_fail 1
+  fi
+done
+
+echo "Setting permissions on machine directory ..."
+chmod 777 /d
+cd /d/machine
+chown root:root absf.2 cal.dat config.dat globvars meter.dat meter.bak
+chown -R root:root crc
+chmod a-w absf.2
+cd /
+chmod -R a-w /d/machine
+chmod -R a-w /d/everest
+chmod 777 /d/s_dumper
+chmod 777 /d/c_dumper
+echo "Setting permissions on service directory ..."
+chmod a+rw /d/service
+echo "Setting permissions on archive directory ..."
+chmod a+rw /d/archive
+echo "Setting permissions on update directory ..."
+chmod a+rw /d/update
+
+#
+# Move the 5.0 versions of cal.dat, config.dat and globvars to the archive
+#
+if test -f /d/machine/cal.dat.50
+then
+        mv -vf /d/machine/cal.dat.50 /d/archive
+fi
+if test -f /d/update/config_50_to_40.log
+then
+        mv -vf /d/update/config_50_to_40.log /d/archive
+fi
+if test -f /d/machine/config.dat.50
+then
+        mv -vf /d/machine/config.dat.50 /d/archive
+fi
+if test -f /d/machine/globvars.50
+then
+        mv -vf /d/machine/globvars.50 /d/archive
+fi
+
+#
+# Remove obsolete /d/machine/licenses directory, if it exists
+#
+echo "Attempting to remove obsolete /d/machine/licenses directory"
+if test -d /d/machine/licenses
+then
+        rm -rf /d/machine/licenses
+fi
+
+echo "Attempting to remove version 5 tools"
+if test -d /d/tools
+then
+        rm -rf /d/tools
+fi
+ 
+#
+# Ensure that the CRC of the machine directory is correct.
+#
+echo "Updating the CRC of the machine directory."
+${target}/trima/softcrc/machcrc \
+     -filelist ${target}/trima/softcrc/filelists/machine.files \
+     -update /tmp/machine.crc 
+cp -p /tmp/machine.crc /d/machine/crc/machine.crc
+chmod a-w /d/machine/crc/machine.crc
+
+#
+# Copy the install .boot to /.boot
+#
+cp ${startdir}/install_boot_image /.boot
+
+#
+# Done with procedure.
+#
+cat << END_OF_MESSAGE
+
+The machine will now reboot and finish the install of the software.
+While the machine is in the reboot mode you will not be able to
+get any service mode services, so please do not attempt to enter
+service mode. Thank you...
+
+Machine is shuting down...
+
+END_OF_MESSAGE
+
+sleep 5
+set +vx
+unset me startdir workdir cflag Dflag lflag nflag
+unset opterr device target lpath FILE
+
+shutdown -f
+sleep 10
+
+exit 0
