@@ -56,6 +56,62 @@ if [ $startdir != "/d/update" ] ; then
 fi
 
 #
+# Check to see if other installation upgrade utilities exist
+#
+echo "Checking for necessary files"
+for FILE in updatetrima \
+            savefiles \
+            mvfiletoabspos \
+            vxbootpartition \
+	    ampro_cbios_update \
+	    ampro_sbios_update
+do
+   if [ ! -f ./$FILE ] ; then
+      echo "$me: $FILE not found.  Aborting procedure"
+      echo
+      echo "Install failed"
+      exit 1
+   fi
+done
+
+echo "Checking BIOS revisions"
+biosUpdate=0
+./ampro_cbios_update -t
+if [ $? -ne 0 ] ; then
+   echo
+   echo "System requires a BIOS update for the control processor board.  If"
+   echo "the BIOS programming tool is already installed, follow the instrutions"
+   echo "below to perform the update.  Otherwise, power-off the machine,"
+   echo "install the BIOS programming tool, and re-run this procedure."
+   echo
+   biosUpdate=1
+   ./ampro_cbios_update
+fi
+
+on -n1 ./ampro_sbios_update -t
+if [ $? -ne 0 ] ; then
+   echo
+   echo "System requires a BIOS update for the safety processor board.  If"
+   echo "the BIOS programming tool is already installed, follow the instrutions"
+   echo "below to perform the update.  Otherwise, power-off the machine,"
+   echo "install the BIOS programming tool, and re-run this procedure."
+   echo
+   biosUpdate=1
+   on -n1 ./ampro_sbios_update
+fi
+
+if [ ${biosUpdate} -ne 0 ] ; then
+   echo "The machine must be rebooted following the BIOS update.  Power-off the"
+   echo "machine and remove the BIOS programming tool.  Then re-run this procedure."
+   echo
+   while [ 1 ] do
+     sleep 10
+   done
+else
+   echo "BIOS check complete.  No update necessary."
+fi
+
+#
 # Delete any old target directory.
 #
 echo "Removing the target directory ${target}"
@@ -71,24 +127,6 @@ if [ $? -ne 0 ] ; then
    echo "Install failed"
    exit 1
 fi
-
-
-#
-# Check to see if other installation upgrade utilities exist
-#
-echo "Checking for necessary files"
-for FILE in updatetrima \
-            savefiles \
-            mvfiletoabspos \
-            vxbootparition
-do
-   if [ ! -f ./$FILE ] ; then
-      echo "$me: $FILE not found.  Aborting procedure"
-      echo
-      echo "Install failed"
-      exit 1
-   fi
-done
 
 #
 # Save the necessary install files for use after the reboot 

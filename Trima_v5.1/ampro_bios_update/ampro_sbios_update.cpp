@@ -1,6 +1,8 @@
 //
 // $Header: K:/BCT_Development/Install/Trima_v5.1/ampro_bios_update/rcs/ampro_sbios_update.cpp 1.1 2003/11/19 18:15:07Z jl11312 Exp jl11312 $
 // $Log: ampro_sbios_update.cpp $
+// Revision 1.1  2003/11/19 18:15:07Z  jl11312
+// Initial revision
 // Revision 1.1  2003/11/05 18:02:03Z  jl11312
 // Initial revision
 //
@@ -71,7 +73,7 @@ int check12VoltSwitch(volatile unsigned char __far * const flashPtr)
 	return ( id1 == id3 && id1 != id2 );
 }
 
-void main(void)
+void main(int argc, char * argv[])
 {
 	char * romImage = NULL;
 
@@ -79,6 +81,16 @@ void main(void)
 	// Initialize ROM mapping so we can read/write flash
 	//
 	mapBiosImage();
+
+	if ( argc > 1 && strcmp(argv[1], "-t") == 0 )
+	{
+		exit(check_update_necessary());
+	}
+	else if ( argc != 1 )
+	{
+		fprintf(stderr, "Usage: %s [-t]\n", argv[0]);
+		exit(1);
+	}
 
 	//
 	// Get a copy of the existing ROM BIOS

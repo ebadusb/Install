@@ -1,6 +1,8 @@
 //
 // $Header: K:/BCT_Development/Install/Trima_v5.1/ampro_bios_update/rcs/ampro_support.cpp 1.1 2003/11/19 18:15:08Z jl11312 Exp jl11312 $
 // $Log: ampro_support.cpp $
+// Revision 1.1  2003/11/19 18:15:08Z  jl11312
+// Initial revision
 // Revision 1.2  2003/11/05 18:01:10Z  jl11312
 // - updated to support safety BIOS update
 // Revision 1.1  2003/10/08 16:40:57Z  jl11312
@@ -145,4 +147,55 @@ void disable12Volt(void)
 }
 
 #endif /* ifdef SAFETY */
+
+int check_update_necessary(void)
+{
+	int   needUpdate = 1;	/* assume update is necessary */
+
+	int	romSegment = (int)qnx_segment_overlay(BaseBiosAddress, BaseBiosSize);
+	if ( romSegment == -1 )
+	{
+		fprintf(stderr, "\nFailed to map BIOS memory area\n");
+		exit(1);
+	}
+
+	unsigned char __far * romPtr = (unsigned char __far *)MK_FP(romSegment, 0);
+	if ( _fmemcmp(romPtr, biosUpdateImage, BaseBiosSize) == 0 )
+	{
+		/* this is an Ampro board with the new BIOS already installed */
+		needUpdate = 0;
+	}
+
+	if ( needUpdate )
+	{
+		const char * idString = "AMPRO COMPUTER";
+
+		unsigned char * romImage = new unsigned char[BaseBiosSize];
+		_fmemcpy(romImage, romPtr, BaseBiosSize);
+
+		int	idx;
+		for ( idx=0; idx<BaseBiosSize; idx++ )
+		{
+			if ( romImage[idx] >= 'a' && romImage[idx] <= 'z' )
+			{
+				romImage[idx] -= 'a'-'A';
+			}
+			else if ( romImage[idx] <= 0x20 || romImage[idx] >= 0x80 )
+			{
+				romImage[idx] = ' ';
+			}
+		}
+
+		romImage[BaseBiosSize-1] = '\0';
+		if ( strstr((char *)romImage, idString) == NULL )
+		{
+			/* This is not an Ampro board, so new BIOS is not applicable */
+			needUpdate = 0;
+		}
+
+		delete romImage;
+	}
+
+	return needUpdate;
+}
 
