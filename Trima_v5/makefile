@@ -24,8 +24,14 @@ depend: force
 
 force: ;
 
+create_dependencies.mk: force
+        touch source/dependencies.mk
+
+dependencies.mk: force
+        cd source; $(MAKE) $@
+
 # import COBE common project stuff
-imports:
+imports: create_dependencies.mk
         installdirs.sh
         @echo importing from $(COMDIR)
 # get libraries
