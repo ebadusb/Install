@@ -306,6 +306,14 @@ else
    then
       echo "Found obsolete hw.dat, updating to new version"
       cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+   else
+      CURRENT_HWDAT_VERSION=`grep "file_version=" /d/machine/hw.dat`
+      TEMPLATE_HWDAT_VERSION=`grep "file_version=" ${target}/trima/templates/hw.dat`
+      if [ "$CURRENT_HWDAT_VERSION" != "$TEMPLATE_HWDAT_VERSION" ]
+      then
+         echo "Template version of hw.dat differs from current version"
+	 cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+      fi
    fi
 fi
 
