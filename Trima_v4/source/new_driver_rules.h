@@ -2,9 +2,11 @@
  * Copyright (c) 2001 by Gambro BCT, Inc.  All rights reserved.
  *
  * $Header: K:/BCT_Development/Install/Trima_v4/source/rcs/new_driver_rules.h 1.1 2001/08/21 20:05:56 ms10234 Exp jl11312 $
- *    - defines the rules for converting config.dat from version 4 to version 5
+ *    - defines the rules for converting config.dat from version 5 to version 4
  *
  * $Log: new_driver_rules.h $
+ * Revision 1.1  2001/08/21 20:05:56  ms10234
+ * Initial revision
  * Revision 1.1  2001/08/16 13:49:40  jl11312
  * Initial revision
  * Revision 1.3  2001/06/29 15:51:43  jl11312
@@ -46,9 +48,9 @@ conv_entry("[PROCEDURE_CONFIG]",       "key_weight_setting_kg",         "*NA*", 
 conv_entry("[PROCEDURE_CONFIG]",       "key_less_than_vol",             "[PROCEDURE_CONFIG]",      "key_less_than_vol",          INTEGER,    500.0,         -9999,      OLD_VALUE);
 conv_entry("[PROCEDURE_CONFIG]",       "key_greater_than_vol",          "[PROCEDURE_CONFIG]",      "key_greater_than_vol",       INTEGER,    600.0,         -9999,      OLD_VALUE);
 conv_entry("[PROCEDURE_CONFIG]",       "key_post_plat",                 "[PROCEDURE_CONFIG]",      "key_post_plat",              INTEGER,    100000.0,      -9999,      HIGH_LIMIT);
-conv_entry("[PROCEDURE_CONFIG]",       "key_post_plat",                 "[PROCEDURE_CONFIG]",      "key_post_plat",              INTEGER,    50000.0,       -9999,      LIMIT_DEFAULT_OLD);
+conv_entry("[PROCEDURE_CONFIG]",       "key_post_plat",                 "[PROCEDURE_CONFIG]",      "key_post_plat",              INTEGER,    80000.0,       -9999,      LIMIT_DEFAULT_OLD);
 conv_entry("[PROCEDURE_CONFIG]",       "key_max_draw_flow",             "[PROCEDURE_CONFIG]",      "key_max_draw_flow",          INTEGER,    2.0,           -9999,      OLD_VALUE);
-conv_entry("[PROCEDURE_CONFIG]",       "key_min_replacement_volume",    "[PROCEDURE_CONFIG]",      "key_min_replacement_volume", INTEGER,    300.0,         -9999,      OLD_VALUE);
+conv_entry("[PROCEDURE_CONFIG]",       "key_min_replacement_volume",    "[PROCEDURE_CONFIG]",      "key_min_replacement_volume", INTEGER,    0.0,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("[PREDICTION_CONFIG]",      "key_rbc_ratio",                 "[PREDICTION_CONFIG]",     "key_rbc_ratio",              INTEGER,    0.0,           -9999,      OLD_VALUE);
 conv_entry("[PREDICTION_CONFIG]",      "key_rbc_replace_fluid",         "[PREDICTION_CONFIG]",     "key_rbc_replace_fluid",      INTEGER,    0.0,           -9999,      OLD_VALUE);
@@ -60,23 +62,23 @@ conv_entry("[PRODUCT_TEMPLATES]",      "key_sm_vol",                    "[PRODUC
 conv_entry("[PRODUCT_TEMPLATES]",      "key_med_vol",                   "[PRODUCT_TEMPLATES]",     "key_med_vol",                INTEGER,    400.0,         -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_TEMPLATES]",      "key_lg_vol",                    "[PRODUCT_TEMPLATES]",     "key_lg_vol",                 INTEGER,    600.0,         -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_crit_1",                "[PRODUCT_TEMPLATES]",     "key_rbc_crit_1",             INTEGER,    80.0,          -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_1",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_1",             INTEGER,    100.0,         -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_1",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_1",             INTEGER,    200.0,         -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_crit_2",                "[PRODUCT_TEMPLATES]",     "key_rbc_crit_2",             INTEGER,    80.0,          -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_2",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_2",             INTEGER,    200.0,         -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_2",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_2",             INTEGER,    300.0,         -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_crit_3",                "[PRODUCT_TEMPLATES]",     "key_rbc_crit_3",             INTEGER,    80.0,          -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_3",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_3",             INTEGER,    300.0,         -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_1",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_1",            FLOAT1,     1.5,           -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_1",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_1",           FLOAT3,     107.143,       -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_2",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_2",            FLOAT1,     3.5,           -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_2",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_2",           FLOAT3,     250.0,         -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_3",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_3",            FLOAT1,     5.0,           -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_3",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_3",           FLOAT3,     357.143,       -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_4",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_4",            FLOAT1,     7.0,           -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_4",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_4",           FLOAT3,     500.0,         -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_5",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_5",            FLOAT1,     9.0,           -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_5",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_5",           FLOAT3,     642.857,       -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_6",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_6",            FLOAT1,     10.5,          -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_6",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_6",           FLOAT3,     750.0,         -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_rbc_dose_3",                "[PRODUCT_TEMPLATES]",     "key_rbc_dose_3",             INTEGER,    400.0,         -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_1",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_1",            FLOAT1,     2.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_1",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_1",           FLOAT3,     142.857,       -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_2",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_2",            FLOAT1,     3.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_2",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_2",           FLOAT3,     214.286,       -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_3",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_3",            FLOAT1,     4.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_3",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_3",           FLOAT3,     285.714,       -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_4",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_4",            FLOAT1,     5.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_4",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_4",           FLOAT3,     357.143,       -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_5",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_5",            FLOAT1,     6.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_5",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_5",           FLOAT3,     428.571,       -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_yield_6",               "[PRODUCT_TEMPLATES]",     "key_plt_yield_6",            FLOAT1,     7.0,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_TEMPLATES]",      "key_plt_volume_6",              "[PRODUCT_TEMPLATES]",     "key_plt_volume_6",           FLOAT3,     500.0,         -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("#",                        "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("#   The product definitions shown are indices into the product templates:","*NA*","*NA*","*NA*", NA_TYPE,  -9999,  -9999,  COMMENT_LINE);
@@ -87,9 +89,9 @@ conv_entry("#      key_blood_type_ : 0=all; 1=O+/O-/A+/A-; 2=O+/O-; 3=O-; 4=O-/A
 conv_entry("#      key_time_       : minutes, range 10-150","*NA*","*NA*","*NA*", NA_TYPE,  -9999,  -9999,  COMMENT_LINE);
 conv_entry("#",                        "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_a",                "[PRODUCT_DEFINITIONS]",   "key_platelet_a",             INTEGER,    2,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_a",                "[PRODUCT_DEFINITIONS]",   "key_platelet_a",             INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_a",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_a",               INTEGER,    1,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_a",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_a",                  INTEGER,    1,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_a",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_a",                  INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -98,11 +100,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    6,            11,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    7,            12,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_a",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_a",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_a",                    "[PRODUCT_DEFINITIONS]",   "key_time_a",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_a",                    "[PRODUCT_DEFINITIONS]",   "key_time_a",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_b",                "[PRODUCT_DEFINITIONS]",   "key_platelet_b",             INTEGER,    4,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_b",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_b",               INTEGER,    2,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_b",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_b",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_b",                "[PRODUCT_DEFINITIONS]",   "key_platelet_b",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_b",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_b",               INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_b",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_b",                  INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -111,11 +113,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_b",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_b",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_b",                    "[PRODUCT_DEFINITIONS]",   "key_time_b",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_b",                    "[PRODUCT_DEFINITIONS]",   "key_time_b",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_c",                "[PRODUCT_DEFINITIONS]",   "key_platelet_c",             INTEGER,    2,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_c",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_c",               INTEGER,    5,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_c",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_c",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_c",                "[PRODUCT_DEFINITIONS]",   "key_platelet_c",             INTEGER,    5,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_c",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_c",               INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_c",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_c",                  INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -124,7 +126,7 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_c",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_c",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_c",                    "[PRODUCT_DEFINITIONS]",   "key_time_c",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_c",                    "[PRODUCT_DEFINITIONS]",   "key_time_c",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_d",                "[PRODUCT_DEFINITIONS]",   "key_platelet_d",             INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_d",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_d",               INTEGER,    1,             -9999,      OLD_VALUE);
@@ -137,7 +139,7 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_d",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_d",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_d",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_d",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_d",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_d",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_d",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_d",                    "[PRODUCT_DEFINITIONS]",   "key_time_d",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_d",                    "[PRODUCT_DEFINITIONS]",   "key_time_d",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_e",                "[PRODUCT_DEFINITIONS]",   "key_platelet_e",             INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_e",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_e",               INTEGER,    0,             -9999,      OLD_VALUE);
@@ -150,11 +152,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_e",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_e",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_e",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_e",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_e",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_e",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_e",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_e",                    "[PRODUCT_DEFINITIONS]",   "key_time_e",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_e",                    "[PRODUCT_DEFINITIONS]",   "key_time_e",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_f",                "[PRODUCT_DEFINITIONS]",   "key_platelet_f",             INTEGER,    2,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_f",                "[PRODUCT_DEFINITIONS]",   "key_platelet_f",             INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_f",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_f",               INTEGER,    1,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_f",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_f",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_f",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_f",                  INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -163,11 +165,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_f",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_f",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_f",                    "[PRODUCT_DEFINITIONS]",   "key_time_f",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_f",                    "[PRODUCT_DEFINITIONS]",   "key_time_f",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_g",                "[PRODUCT_DEFINITIONS]",   "key_platelet_g",             INTEGER,    2,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_g",                "[PRODUCT_DEFINITIONS]",   "key_platelet_g",             INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_g",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_g",               INTEGER,    0,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_g",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_g",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_g",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_g",                  INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -176,11 +178,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_g",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_g",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_g",                    "[PRODUCT_DEFINITIONS]",   "key_time_g",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_g",                    "[PRODUCT_DEFINITIONS]",   "key_time_g",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_h",                "[PRODUCT_DEFINITIONS]",   "key_platelet_h",             INTEGER,    3,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_h",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_h",               INTEGER,    1,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_h",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_h",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_h",                "[PRODUCT_DEFINITIONS]",   "key_platelet_h",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_h",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_h",               INTEGER,    2,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_h",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_h",                  INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -189,11 +191,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_h",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_h",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_h",                    "[PRODUCT_DEFINITIONS]",   "key_time_h",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_h",                    "[PRODUCT_DEFINITIONS]",   "key_time_h",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_i",                "[PRODUCT_DEFINITIONS]",   "key_platelet_i",             INTEGER,    3,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_i",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_i",               INTEGER,    0,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_i",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_i",                  INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_i",                "[PRODUCT_DEFINITIONS]",   "key_platelet_i",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_i",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_i",               INTEGER,    1,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_i",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_i",                  INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -202,11 +204,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_i",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_i",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_i",                    "[PRODUCT_DEFINITIONS]",   "key_time_i",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_i",                    "[PRODUCT_DEFINITIONS]",   "key_time_i",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_j",                "[PRODUCT_DEFINITIONS]",   "key_platelet_j",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_j",                "[PRODUCT_DEFINITIONS]",   "key_platelet_j",             INTEGER,    5,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_j",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_j",               INTEGER,    1,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_j",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_j",                  INTEGER,    1,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_j",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_j",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -215,11 +217,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_j",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_j",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_j",                    "[PRODUCT_DEFINITIONS]",   "key_time_j",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_j",                    "[PRODUCT_DEFINITIONS]",   "key_time_j",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_k",                "[PRODUCT_DEFINITIONS]",   "key_platelet_k",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_k",                "[PRODUCT_DEFINITIONS]",   "key_platelet_k",             INTEGER,    5,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_k",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_k",               INTEGER,    0,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_k",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_k",                  INTEGER,    1,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_k",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_k",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -228,9 +230,9 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_k",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_k",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_k",                    "[PRODUCT_DEFINITIONS]",   "key_time_k",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_k",                    "[PRODUCT_DEFINITIONS]",   "key_time_k",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_l",                "[PRODUCT_DEFINITIONS]",   "key_platelet_l",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_l",                "[PRODUCT_DEFINITIONS]",   "key_platelet_l",             INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_l",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_l",               INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_l",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_l",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_l",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_l",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
@@ -241,11 +243,11 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_l",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_l",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_l",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_l",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_l",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_l",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_l",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_l",                    "[PRODUCT_DEFINITIONS]",   "key_time_l",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_l",                    "[PRODUCT_DEFINITIONS]",   "key_time_l",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_m",                "[PRODUCT_DEFINITIONS]",   "key_platelet_m",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_m",                "[PRODUCT_DEFINITIONS]",   "key_platelet_m",             INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_m",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_m",               INTEGER,    0,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_m",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_m",                  INTEGER,    2,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_m",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_m",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    1,             3,          ENUM_TRANS_OLD);
@@ -254,10 +256,10 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_m",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_m",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_m",                    "[PRODUCT_DEFINITIONS]",   "key_time_m",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_m",                    "[PRODUCT_DEFINITIONS]",   "key_time_m",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_n",                "[PRODUCT_DEFINITIONS]",   "key_platelet_n",             INTEGER,    2,             -9999,      OLD_VALUE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_n",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_n",               INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_n",                "[PRODUCT_DEFINITIONS]",   "key_platelet_n",             INTEGER,    0,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_n",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_n",               INTEGER,    3,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_n",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_n",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_n",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_n",           INTEGER,    3,             2,          ENUM_TRANS_OLD);
@@ -267,9 +269,9 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_n",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_n",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_n",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_n",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_n",                    "[PRODUCT_DEFINITIONS]",   "key_time_n",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_n",                    "[PRODUCT_DEFINITIONS]",   "key_time_n",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_o",                "[PRODUCT_DEFINITIONS]",   "key_platelet_o",             INTEGER,    3,             -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_platelet_o",                "[PRODUCT_DEFINITIONS]",   "key_platelet_o",             INTEGER,    1,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_plasma_o",                  "[PRODUCT_DEFINITIONS]",   "key_plasma_o",               INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_rbc_o",                     "[PRODUCT_DEFINITIONS]",   "key_rbc_o",                  INTEGER,    0,             -9999,      OLD_VALUE);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_o",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_o",           INTEGER,    2,             1,          ENUM_TRANS_OLD);
@@ -280,7 +282,7 @@ conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_o",              "[PRODUC
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_o",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_o",           INTEGER,    6,             11,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_o",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_o",           INTEGER,    7,             12,         ENUM_TRANS_OLD);
 conv_entry("[PRODUCT_DEFINITIONS]",    "key_blood_type_o",              "[PRODUCT_DEFINITIONS]",   "key_blood_type_o",           INTEGER,    0,             -9999,      ENUM_DEFAULT_OLD);
-conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_o",                    "[PRODUCT_DEFINITIONS]",   "key_time_o",                 INTEGER,    150,           -9999,      OLD_VALUE);
+conv_entry("[PRODUCT_DEFINITIONS]",    "key_time_o",                    "[PRODUCT_DEFINITIONS]",   "key_time_o",                 INTEGER,    140,           -9999,      OLD_VALUE);
 conv_entry("",                         "*NA*",                          "*NA*",                    "*NA*",                       NA_TYPE,    -9999,         -9999,      COMMENT_LINE);
 conv_entry("[BASIC_MACHINE_CONFIG]",   "key_set_time",                  "[BASIC_MACHINE_CONFIG]",  "key_set_time",               INTEGER,    12.0,          -9999,      OLD_VALUE);
 conv_entry("[BASIC_MACHINE_CONFIG]",   "key_set_date",                  "[BASIC_MACHINE_CONFIG]",  "key_set_date",               INTEGER,    10.0,          -9999,      OLD_VALUE);
