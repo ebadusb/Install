@@ -7,6 +7,8 @@
 # PURPOSE: builds trima product within a sandbox
 # CHANGELOG:
 # $Log: create_downgrade $
+# Revision 1.1  2001/08/21 21:17:02  ms10234
+# Initial revision
 
 #
 #
@@ -38,9 +40,9 @@ releases_dir="$PWD"
 current_build_dir="/downgrade"
 destination_dir="$releases_dir$current_build_dir"
 
-current_trima_dir=`cat latest_trima_build_dir.mk`
+current_trima_dir=`gettrimabuilddir.sh`
 echo "using trima files from $current_trima_dir"
-current_diskbuild_dir=`cat latest_disk_build_dir.mk`
+current_diskbuild_dir=`getdiskbuilddir.sh`
 echo "using disk build files from $current_diskbuild_dir"
 current_install_dir=`getibuilddir.sh`
 echo "using install tools from $current_install_dir"
