@@ -11,10 +11,10 @@ COMDIR=`getcomdir.sh`
 
 include installrules.mk
 
-all: source
+all: install
 
-source: force
-        cd source; $(MAKE)
+install: force 
+        cd source; $(MAKE) all
         
 clean: force
         cd source; $(MAKE) $@
@@ -22,7 +22,7 @@ clean: force
 depend: force
         cd source; $(MAKE) $@
 
-force: ;
+force:;
 
 create_dependencies.mk: force
         touch source/dependencies.mk
