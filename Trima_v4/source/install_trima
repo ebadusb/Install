@@ -207,6 +207,49 @@ echo "Attempting to remove obsolete /d/machine/cfg_main.dat"
 rm -f /d/machine/cfg_main.dat
 
 #
+# Handle /d/machine/hw4.dat file.  If /d/machine/hw4.dat already exists
+# we assume it is correct for the machine and leave it unchanged.  If there
+# is no template hw4.dat in the install image, then the file is not needed
+# (this will be the case for downgrading to version 4.02 or earlier).
+# Otherwise, we copy the template hw4.dat file to /d/machine.  If /d/machine/hw.dat
+# is available, we grab the settings which it shares with hw4.dat.
+#
+if [ -f ${target}/trima/templates/hw4.dat ]; then
+   echo "Attempting to find /d/machine/hw4.dat"
+   if [ ! -f /d/machine/hw4.dat ] ; then
+      if [ -f /d/machine/hw.dat ] ; then
+         echo "Converting existing /d/machine/hw.dat to /d/machine/hw4.dat"
+         cp -f ${target}/trima/templates/hw4.dat hw4.dat.tmp
+         for i in "serial_driver" "crt_driver"
+         do
+            grep "^$i=" /d/machine/hw.dat > /dev/null 2>&1
+            if [ $? -eq 0 ] ; then 
+               KEY=$(grep ^$i= /d/machine/hw.dat | ./awk -F = '{print $1}')
+               RETAINVAL=$(grep ^$i= /d/machine/hw.dat)
+               echo "KEY=$KEY,RETAINVAL:$RETAINVAL" 
+               cat hw4.dat.tmp | /bin/sed s@^$KEY'.*$'@"$RETAINVAL"@ >hw4.dat.tmp1
+               mv -f hw4.dat.tmp1 hw4.dat.tmp
+            fi
+         done
+
+         grep "^control_hardware_initialization=auto" /d/machine/hw.dat >/dev/null 2>&1
+         if [ $? -eq 0 ] ; then
+            cat hw4.dat.tmp | /bin/sed s/^control_hardware_initialization'.*$'/"control_hardware_initialization=auto"/ > hw4.dat.tmp1
+            mv -f hw4.dat.tmp1 hw4.dat.tmp
+         fi
+       
+         cp -f -v hw4.dat.tmp /d/machine/hw4.dat
+         chmod a-w /d/machine/hw4.dat
+      else
+         echo "No /d/machine/hw4.dat or /d/machine/hw.dat: updating from templates..."
+         cp -p -v ${target}/trima/templates/hw4.dat /d/machine
+      fi 
+   else
+      echo "Found /d/machine/hw4.dat: not updating..."
+   fi
+fi
+
+#
 # Handle converting /d/machine/config.dat
 #
 echo "Attempting to find /d/machine/config.dat"
@@ -424,7 +467,7 @@ While the machine is in the reboot mode you will not be able to
 get any service mode services, so please do not attempt to enter
 service mode. Thank you...
 
-Machine is shuting down...
+Machine is shutting down...
 
 END_OF_MESSAGE
 
