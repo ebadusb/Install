@@ -11,9 +11,9 @@ COMDIR=`getcomdir.sh`
 
 include installrules.mk
 
-all: install
+all: _source
 
-install: force 
+_source: force 
         cd source; $(MAKE) all
         
 clean: force
