@@ -7,6 +7,8 @@
 # PURPOSE: builds trima product within a sandbox
 # CHANGELOG:
 # $Log: create_install $
+# Revision 1.1  2001/08/17 15:34:11  ms10234
+# Initial revision
 
 #
 #
@@ -140,8 +142,8 @@ fi
 
 
 # setup .mk files for trima builds - in the releases directory
-cd $from
-pwd >../latest_install_build_dir.mk
+cd $from/install
+pwd >../../latest_install_build_dir.mk
 
 echo create_install finished successfully at $(date)
 exit 0
