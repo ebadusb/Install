@@ -443,6 +443,40 @@ then
 fi
  
 #
+# Check to see if the 4.0 /d/machine/trap_override.dat exists, if it doesn't
+# then update the machine to the new trap_override configuration if necessary.
+#
+if [ -f ${target}/trima/templates/trap_override.dat ] ; then
+   echo "Attempting to find /d/machine/trap_override.dat"
+   if [ ! -f /d/machine/trap_override.dat ] ; then
+      echo "No /d/machine/trap_override.dat updating from templates..."
+      cp -p -v ${target}/trima/templates/trap_override.dat /d/machine
+   else
+      echo "Found 4.0 /d/machine/trap_override.dat not updating..."
+   fi
+fi
+
+#
+# Check to see if the 4.0 /trima/config/trap_default.dat exists, if it doesn't
+# then update the machine to the new trap_default configuration if necessary.
+#
+if [ -f ${target}/trima/config/trap_default.dat ] ; then
+   echo "Attempting to find /trima/config/trap_default.dat"
+   if [ ! -f /trima/config/trap_default.dat ] ; then
+      echo "No /trima/config/trap_default.dat updating from templates..."
+      cp -p -v ${target}/trima/config/trap_default.dat /trima/config
+   else
+      #
+      # If it already exists, we need to copy it back to the install target
+      # area, since the entire /trima tree is overwritten from here during the
+      # second stage of the install process.
+      #
+      echo "Found 4.0 /trima/config/trap_default.dat not updating..."
+      cp -p -v /trima/config/trap_default.dat ${target}/trima/config
+   fi
+fi
+
+#
 # Ensure that the CRC of the machine directory is correct.
 #
 echo "Updating the CRC of the machine directory."
