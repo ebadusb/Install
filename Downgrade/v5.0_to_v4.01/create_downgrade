@@ -1,0 +1,174 @@
+#! /bin/sh
+
+# Copyright 1999 Gambro BCT
+#
+# FILENAME: create_trima
+# $Header: //bctquad3/HOME/BCT_Development/Trima/rcs/create_trima 1.21 2001/08/20 22:06:22 ms10234 Exp $
+# PURPOSE: builds trima product within a sandbox
+# CHANGELOG:
+# $Log: create_trima $
+
+#
+#
+#
+#
+#######################################################################################
+#                                                                                     #
+#   use ifdef option                                                                  #
+#                                                                                     #
+#######################################################################################
+#
+#ifdef __USAGE
+#
+#usage:
+#%C
+#
+#endif
+
+
+#
+#   capture current executable name for display
+#
+
+current_executable=${0##*/}
+
+echo $current_executable beginning at $(date)
+releases_dir="$PWD"
+
+current_build_dir="/downgrade"
+destination_dir="$releases_dir$current_build_dir"
+
+current_trima_dir=`cat latest_trima_build_dir.mk`
+echo "using trima files from $current_trima_dir"
+current_diskbuild_dir=`cat latest_disk_build_dir.mk`
+echo "using disk build files from $current_diskbuild_dir"
+current_install_dir=`getibuilddir.sh`
+echo "using install tools from $current_install_dir"
+
+
+
+
+#######################################################################################
+#                                                                                     #
+#   now that the options are set create trima as determined by location               #
+#   create the appropriate directory structures to manage the build                   #
+#                                                                                     #
+#######################################################################################
+
+#
+#   if user starts the build in the released for testing location (i.e. /releases ) set
+#   the 'build for test' bit
+#
+
+from="$PWD"
+
+
+
+#######################################################################################
+#                                                                                     #
+#   create then set the appropriate directory permissions in the current build        #
+#   directory.  the current build directory is relative to the current loacation.     #
+#   (i.e. there will always need to be a repository for pax and associated files)     #
+#                                                                                     #
+#######################################################################################
+
+#
+#   assign the local current build directory
+#
+
+to="$from$current_build_dir"
+
+#
+#   create the current build directory
+#
+
+
+
+echo " "
+echo " "
+echo "one moment please, creating current build directory..."
+
+echo " "
+echo "creating $to directory..."
+/bin/mkdir $to
+
+
+#
+#   check for directory creation
+#
+
+if [ "`/bin/ls -ld $to | cut -c 1`" != "d" ]
+then
+   echo " "
+   echo "error: failed to create $to directory - $current_executable terminated."
+   exit 1
+fi
+
+
+#
+#   Remove any old files in the install directory...
+#
+
+echo " "
+echo "cleaning $to ..."
+/bin/rm -R -f -d $to/*
+
+
+#
+#   place install files into the appropriate directories.
+#
+
+echo " "
+echo "copying trima pax file"
+echo " "
+
+/bin/cp -f -v  $current_trima_dir/trima.pax $to
+if [ $? != 0 ]
+then
+   echo " "
+   echo "error: failed cp on $current_trima_dir/trima.pax $to - $current_executable terminated"
+   exit 1
+fi
+
+echo " "
+echo "copying install_trima..."
+/bin/cp -f -v  $current_install_dir/install_trima $to
+
+if [ $? != 0 ]
+then
+   echo " "
+   echo "error: failed cp on $current_install_dir/install_trima $to - $current_executable terminated"
+   exit 1
+fi
+
+#
+#   cp the qnx oem pax file over to the ftp directory
+#
+echo "copying qnx_oem.pax..."
+/bin/cp -f -v  $current_diskbuild_dir/qnx_oem.pax $to
+
+
+if [ $? != 0 ]
+then
+   echo " "
+   echo "error: failed cp on $current_diskbuild_dir/qnx_oem.pax $to - $current_executable terminated"
+   exit 1
+fi
+
+#
+#   cp the install pax file over to the ftp directory
+#
+echo "copying install.pax..."
+/bin/cp -f -v  $current_install_dir/install.pax  $to
+
+
+if [ $? != 0 ]
+then
+   echo " "
+   echo "error: failed cp on $current_install_dir/install.pax $to - $current_executable terminated"
+   exit 1
+fi
+
+echo $current_executable finished successfully at $(date)
+exit 0
+
