@@ -273,8 +273,33 @@ cp -p -v ${target}/trima/templates/rbc.dat /d/machine
 #
 echo "Attempting to find /d/machine/hw.dat"
 if [ ! -f /d/machine/hw.dat ] ; then
-   echo "No /d/machine/hw.dat, updating to 5.0 version..."
-   cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+   if [ -f /d/machine/hw4.dat ] ; then
+      echo "Converting existing /d/machine/hw4.dat to /d/machine/hw.dat"
+      cp -f ${target}/trima/templates/hw.dat hw.dat.tmp
+      for i in "serial_driver" "crt_driver"
+      do
+         grep "^$i=" /d/machine/hw4.dat > /dev/null 2>&1
+         if [ $? -eq 0 ] ; then 
+            KEY=$(grep ^$i= /d/machine/hw4.dat | ./awk -F = '{print $1}')
+            RETAINVAL=$(grep ^$i= /d/machine/hw4.dat)
+            echo "KEY=$KEY,RETAINVAL:$RETAINVAL" 
+            cat hw.dat.tmp | /bin/sed s@^$KEY'.*$'@"$RETAINVAL"@ >hw.dat.tmp1
+            mv -f hw.dat.tmp1 hw.dat.tmp
+         fi
+      done
+
+      grep "^control_hardware_initialization=auto" /d/machine/hw4.dat >/dev/null 2>&1
+      if [ $? -eq 0 ] ; then
+         cat hw.dat.tmp | /bin/sed s/^control_hardware_initialization'.*$'/"control_hardware_initialization=auto"/ > hw.dat.tmp1
+         mv -f hw.dat.tmp1 hw.dat.tmp
+      fi
+       
+      cp -f -v hw.dat.tmp /d/machine/hw.dat
+      chmod a-w /d/machine/hw.dat
+   else
+      echo "No /d/machine/hw.dat, copying from templates..."
+      cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+   fi
 else
    grep "file_version=" /d/machine/hw.dat >/dev/null 2>&1
    if [ $? -ne 0 ]
@@ -446,6 +471,40 @@ echo "Attempting to remove obsolete /d/machine/licenses directory"
 if test -d /d/machine/licenses
 then
         rm -rf /d/machine/licenses
+fi
+
+#
+# Check to see if /d/machine/trap_override.dat exists, if it doesn't then
+# update the machine to the new trap_override configuration if necessary.
+#
+if [ -f ${target}/trima/templates/trap_override.dat ] ; then
+   echo "Attempting to find /d/machine/trap_override.dat"
+   if [ ! -f /d/machine/trap_override.dat ] ; then
+      echo "No /d/machine/trap_override.dat updating from templates..."
+      cp -p -v ${target}/trima/templates/trap_override.dat /d/machine
+   else
+      echo "Found /d/machine/trap_override.dat not updating..."
+   fi
+fi
+
+#
+# Check to see if /trima/config/trap_default.dat exists, if it doesn't then
+# update the machine to the new trap_default configuration if necessary.
+#
+if [ -f ${target}/trima/config/trap_default.dat ] ; then
+   echo "Attempting to find /trima/config/trap_default.dat"
+   if [ ! -f /trima/config/trap_default.dat ] ; then
+      echo "No /trima/config/trap_default.dat updating from templates..."
+      cp -p -v ${target}/trima/config/trap_default.dat /trima/config
+   else
+      #
+      # If it already exists, we need to copy it back to the install target
+      # area, since the entire /trima tree is overwritten from here during the
+      # second stage of the install process.
+      #
+      echo "Found /trima/config/trap_default.dat not updating..."
+      cp -p -v /trima/config/trap_default.dat ${target}/trima/config
+   fi
 fi
 
 #
