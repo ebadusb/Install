@@ -1,0 +1,39 @@
+PGMIBIOS.COM a Flash BIOS update utility for the LB/486-i
+
+USE:
+
+PGMIBIOS VIDEO=[fn] EXBIOS=[fn] ROMBIOS=[fn] or UPDATE=[fn]
+
+WHERE:
+
+VIDEO=[fn], fn is file name of the 48k Video BIOS file.
+EXBIOS=[fn], fn is file name of 16k Extended BIOS file.
+ROMBIOS=[fn], fn is file name of the 64k ROM BIOS file.
+UPDATE==[fn], fn is the file name of the 128k LB/486i BIOS file.
+
+RULES:
+
+Commands with filenames will be specified as indicated,
+leading or trailing spaces bracketing the "=" are not
+allowed.
+
+Only one modifiable file name is required. The other
+BIOS areas will be preserved.
+
+All files are assumed to be in binary format. HEX, ASCI
+binary, or other formats are not converted.
+
+The VGA/Flat Panel BIOS if present must be operating 
+from shadow ram.
+
+EMM386, HIMEM, or other extended memory managers have
+not been loaded.
+
+MEMORY MAP:
+
+        Flash Memory       AT Memory 
+VIDEO	0:0000 - 0:BFFF    C000:0000 - C000:BFFF (48k)
+EXBIOS	0:C000 - 0:FFFF    C000:C000 - C000:FFFF (16k)
+ROMBIOS	1:0000 - 1:FFFF    F000:0000 - F000:FFFF (64k)
+
+                     --- End ---
