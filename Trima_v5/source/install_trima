@@ -263,13 +263,26 @@ else
 fi
 
 #
-#
 #   Update aux data files
 #
 echo "Updating rbc.dat from templates..."
 cp -p -v ${target}/trima/templates/rbc.dat /d/machine
-echo "Updating hw.dat from templates..."
-cp -p -v ${target}/trima/templates/hw.dat /d/machine
+
+#
+# Check for existing hw.dat.  Update if necessary
+#
+echo "Attempting to find /d/machine/hw.dat"
+if [ ! -f /d/machine/hw.dat ] ; then
+   echo "No /d/machine/hw.dat, updating to 5.0 version..."
+   cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+else
+   grep "file_version=" /d/machine/hw.dat >/dev/null 2>&1
+   if [ $? -ne 0 ]
+   then
+      echo "Found obsolete hw.dat, updating to new version"
+      cp -p -v ${target}/trima/templates/hw.dat /d/machine/hw.dat
+   fi
+fi
 
 #
 # Check to see if the 5.0 /d/machine/globvars exists, if it doesn't
@@ -478,7 +491,7 @@ While the machine is in the reboot mode you will not be able to
 get any service mode services, so please do not attempt to enter
 service mode. Thank you...
 
-Machine is shuting down...
+Machine is shutting down...
 
 END_OF_MESSAGE
 
