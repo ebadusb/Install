@@ -1,0 +1,69 @@
+# $Header: H:/BCT_Development/Install/Downgrade/v5.2_to_v5.1/rcs/makefile.vx 1.1 2007/01/23 17:39:34Z jheiusb Exp jheiusb $
+#
+# Makefile - makefile for the update utility
+#
+# $Log: makefile.vx $
+# Revision 1.8  2004/01/30 23:04:34Z  ms10234
+# 6050 5811 - upgrade from v5 to v5.1
+# Revision 1.7  2003/06/26 22:42:57Z  jl11312
+# - added crc function to updateTrima
+# Revision 1.6  2003/05/13 15:48:13Z  jl11312
+# - added handling of CRC files during installation
+# Revision 1.5  2003/03/07 22:51:25Z  td07711
+# add include path for filenames.h
+# Revision 1.4  2002/11/19 15:22:07Z  ms10234
+# remove targzextract.cpp from makefile
+# Revision 1.3  2002/11/13 22:05:13Z  ms10234
+# added targzextract.cpp
+# Revision 1.2  2002/11/08 00:03:53Z  ms10234
+# Added needed libraries to resolve references
+# Revision 1.1  2002/11/06 23:27:54Z  ms10234
+# Initial revision
+#
+
+ifeq ($(BUILD_TYPE),CLEAN)
+.PHONY: all
+all: clean
+else
+.PHONY: all
+all: check_opt_change local_build
+endif
+
+#
+# MAINDIR should be set to the relative path from this makefile directory
+# to the base trima project directory.  MAINDIR must use \ (DOS/Windows
+# style) directory separators if they are needed.
+#
+MAINDIR = ..
+
+#
+# Define include directories needed for apps built in this directory
+#
+ADDN_INCDIR = -I$(COMDIR)/include -I$(MAINDIR)/trima_common -I$(COMDIR)/os
+
+#
+# Define location for Trima libraries
+#
+LIBDIR = 
+
+include $(MAINDIR)/makefile.vxc
+
+#
+# Definitions required for building update.out
+#
+APP_NAME := update
+update_dir  = bin
+update_map  = update.map
+update_cxx_files = updatetrima.cpp
+update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
+include $(COMDIR)/makefile.process_app
+
+#
+# This is the primary target for this makefile.  makefile.process_app
+# handles build APP_LIST with all of the defined applications.
+#
+.PHONY: local_build
+local_build: $(APP_LIST)
+
+include $(COMDIR)/makefile.build_apps
+
