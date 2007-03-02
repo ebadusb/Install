@@ -3,7 +3,7 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: H:/BCT_Development/Install/Downgrade/v5.2_to_v5.1/rcs/updatetrima.cpp 1.1 2007/01/23 17:39:35Z jheiusb Exp jheiusb $
+ * $Header: //BCTquad3/home/BCT_Development/Trima5.1x/Trima/update/rcs/updatetrima.cpp 1.34 2006/12/08 18:16:41Z jheiusb Exp $
  * $Log: updatetrima.cpp $
  * Revision 1.34  2006/12/08 18:16:41Z  jheiusb
  * 7817 -- removed Plt Volume Type, not used anymore
@@ -89,9 +89,10 @@
 #include <usrLib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <fstream>
 
 #include "zlib.h"
-#include "filenames.h"
+#include <filenames.h>
 #include "filesort.h"
 
 #include "targzextract.c"
@@ -104,6 +105,10 @@
 #ifdef __cplusplus
 extern "C" { 
 #endif
+
+ofstream * out = 0;
+
+
 
 int cp(const char * from, const char * to);
 int xcopy (const char * src, const char *dest);
@@ -137,7 +142,6 @@ int copyFileContiguous(const char * from, const char * to)
 
       fstat(fromFD, &fileStat);
       fprintf( stdout, "copying %s to %s: file length = %ld bytes\n", from, to, fileStat.st_size);
-
       /*
        * Make destination a contiguous file (required for boot image)
        */
@@ -429,67 +433,77 @@ static bool IsVendor( const char * vendor )
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 //
-//  Update the dat files.....
+//  DOWNGRADE the dat files.....
 //
 ///////////////////////////////////////////////////////////////////////////////////
 //              Config.dat
 ///////////////////////////////////////////////////////////////////////////////////
 void updateConfig()
 {
+
+
+
    //
    // Create the dat file reader to retrieve the configuration data.
    //
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
    {
+      *out << "Config file read error : " << datfile.Error() << endl;
       cerr << "Config file read error : " << datfile.Error() << endl;
+
       return;
    }
       
    // check if 5.P by looking for a new parameter.......
    if ( datfile.Find("PROCEDURE_CONFIG", "key_mss_plt_on") )
    {
-      cerr << "v5.2 config.dat file found.  No conversion needed" << endl;
-      return;
+      *out << "v5.2 config.dat file found. downgrading to 5.1 " << endl;
+      cerr << "v5.2 config.dat file found. downgrading to 5.1 " << endl;
+
+
+      datfile.RemoveLine( "PROCEDURE_CONFIG",   "key_plt_mss_split_notif" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG",   "key_override_pas_bag_vol" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG",   "key_blood_diversion" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG",   "key_mss_plt_on" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_mss_rbc_on" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_ptf_rbc_on" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG",   "key_plt_def_bag_vol" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_rbc_def_bag_vol" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_air_removal" );
+
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_1");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_1" ); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_2");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_2" ); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_3" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_3" ); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_4");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_4"); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_5" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_5" ); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_mss_6" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES",   "key_plt_pct_carryover_6" ); 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_1");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_2");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3");
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_3");
+      
+   } else {
+       *out << "v5.1 config.dat file found.  Conversion Not Needed" << endl;
+       cerr << "v5.1 config.dat file found.  Conversion Not Needed" << endl;
+       return;
    }
-   cerr << "v5.1 config.dat file found.  Conversion needed" << endl;
-   //////////////////////////////////////////////////////////////////////////////////
-   //                 5.1-->5.P changes
-   //////////////////////////////////////////////////////////////////////////////////
-   {
 
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif",  "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol", "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_blood_diversion",      "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_plt_on",           "1" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol",      "250" );
-
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_2",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_3",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_4",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_5",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_6",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6", "50" ); 
-
-      //datfile.RemoveLine( "PROCEDURE_CONFIG", "key_greater_than_vol" );
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   //        New values for v5.p ...
-   //        None Yet....
-   ////////////////////////////////////////////////////////////////////////////
-   {
-      // datfile.AddLine( "PROCEDURE_CONFIG", "key_rinseback_protocol", "0" );
-   }
 
    datfile.WriteCfgFile(FILE_CONFIG_DAT);
 
+   *out << "config.dat file converted." << endl;
    cerr << "config.dat file converted." << endl;
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -506,16 +520,19 @@ void updateCal()
    CDatFileReader datfile(PNAME_CALDAT);
    if ( datfile.Error() )
    {
+      *out << "Calibration file read error : " << datfile.Error() << endl;
       cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
       
    if ( !datfile.Find("TOUCHSCREEN","screen_horizontal_size") )
    {
+      *out << " ... pre-v5.1 cal.dat file found.  Unable to Convert!  ending..." << endl;
       cerr << " ... pre-v5.1 cal.dat file found.  Unable to Convert!  ending..." << endl;
       return;
    }
-   cerr << "v5.2 " << FILE_CAL_DAT << " file found.  No conversion needed" << endl;
+   *out << "v5.1 compatable CAL file: " << FILE_CAL_DAT << " .  No conversion needed" << endl;
+   cerr << "v5.1 compatable CAL file: " << FILE_CAL_DAT << " .  No conversion needed" << endl;
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -528,11 +545,17 @@ const char *newVersion  = "";
 ///////////////////////////////////////////////////////////////////////////////////
 void updateRBC()
 {
+
+
+   *out <<  "Downgrading rbc.dat" << endl;
+   cerr <<  "Downgrading rbc.dat" << endl;
+
    // Put the rbc.dat file in the correct location.
    attrib(CONFIG_PATH FILE_RBC_DAT, "-R");
    if ( cp( TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT ) == ERROR )
    {
-      fprintf( stdout, "copy of rbc.dat failed\n" );
+      *out <<  "copy of rbc.dat failed" << endl;
+      cerr <<  "copy of rbc.dat failed" << endl;
       return;
    }
    attrib(CONFIG_PATH FILE_RBC_DAT, "+R");
@@ -555,30 +578,32 @@ void updateHW()
    else
       newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_versalogic.dat");
 
-   if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
-   {
-      fprintf(stdout, "Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+
+      *out << "Downgrading hw.dat to version ..." <<  newVersion << endl;
+      cerr << "Downgrading hw.dat to version ..." <<  newVersion << endl;
+
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
       if ( IsVendor( "Ampro" ) )
       {
          if ( cp( TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT ) == ERROR )
          {
-               fprintf( stdout, "copy of hw_ampro.dat failed\n" );
+               *out << "copy of hw_ampro.dat failed" << endl;
+               cerr << "copy of hw_ampro.dat failed" << endl;
                return;
-         }
+         } 
       }
       else
       {
          if ( cp( TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
-            fprintf( stdout, "copy of hw_versalogic.dat failed\n" );
+             *out << "copy of hw_versalogic.dat failed" << endl;
+             cerr << "copy of hw_versalogic.dat failed" << endl;
             return;
          }
       }
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "+R");
       fflush(stdout);
-   }
 
 }
 ////////////////////////////////////////////////////////////////////////////////////
@@ -589,25 +614,24 @@ void updateHW()
 ///////////////////////////////////////////////////////////////////////////////////
 void updateSW()
 {
-   //
-   // Replace sw.dat if the version number has changed
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SW_DAT);
    newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SW_DAT);
-   if ( newVersion &&
-         ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+      
+   
+   *out << "Downgrading sw.dat to version ..." <<  newVersion << endl;
+   cerr << "Downgrading sw.dat to version ..." <<  newVersion << endl;
+   attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+
+   if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
    {
-      fprintf(stdout, "Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
-      attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
-
-      if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
-      {
-         fprintf( stdout, "copy of %s failed\n", FILE_SW_DAT );
-         return;
-      }
-
-      attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
-      fflush(stdout);
+      *out << "copy  failed of " <<  FILE_SW_DAT << endl;
+      cerr << "copy  failed of " <<  FILE_SW_DAT << endl;
+      return;
    }
+
+   attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
+   fflush(stdout);
+  
 
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -624,20 +648,21 @@ void updateTerror()
    currVersion = findSetting("file_version=", TERROR_CONFIG_FILE);
    newVersion = findSetting("file_version=", TEMPLATES_PATH "/terror_config.dat");
     
-   if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
-   {
-      fprintf(stdout, "Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      *out <<  "Downgrading terror_config.dat to  version " <<  newVersion << endl;
+
+      cerr <<  "Downgrading terror_config.dat to  version " <<  newVersion << endl;
       attrib(TERROR_CONFIG_FILE, "-R");
 
       if ( cp( TEMPLATES_PATH "/terror_config.dat", CONFIG_PATH "/terror_config.dat" ) == ERROR )
       {
-         fprintf( stdout, "copy of terror_config.dat failed\n" );
+         *out << "copy of terror_config.dat failed" << endl;
+
+         cerr << "copy of terror_config.dat failed" << endl;
          return;
       }
 
       attrib(CONFIG_PATH "/terror_config.dat", "+R");
       fflush(stdout);
-   }
 
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -648,25 +673,27 @@ void updateTerror()
 //////////////////////////////////////////////////////////////////////////////////////
 void updateCassette()
 {
-   //
-   // Replace cassette.dat if the version number has changed
-   currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_CASSETTE_DAT);
-   newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_CASSETTE_DAT);
-    
-   if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
-   {
-      fprintf(stdout, "Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+       
+      *out << "Removing " << FILE_CASSETTE_DAT << endl;
+
+      cerr << "Removing " << FILE_CASSETTE_DAT << endl;
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "-R");
+      unlink ( CONFIG_PATH "/" FILE_CASSETTE_DAT);
 
-      if ( cp( TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT ) == ERROR )
-      {
-         fprintf( stdout, "copy of %s failed\n", FILE_CASSETTE_DAT );
-         return;
-      }
 
-      attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
+      attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT ".bk", "-R");
+      unlink ( CONFIG_PATH "/" FILE_CASSETTE_DAT ".bk");
+
+
+      attrib(CONFIG_CRC_PATH "/" FILE_CASSETTE_DAT_CRC ".bk", "-R");
+      unlink ( CONFIG_CRC_PATH "/" FILE_CASSETTE_DAT_CRC ".bk" );
+
+
+      attrib(CONFIG_CRC_PATH "/" FILE_CASSETTE_DAT_CRC, "-R");
+      unlink ( CONFIG_CRC_PATH "/" FILE_CASSETTE_DAT_CRC );
+    
       fflush(stdout);
-   }
+  // }
 }
 //////////////////////////////////////////////////////////////////////////////////////
       
@@ -676,32 +703,27 @@ void updateCassette()
 //////////////////////////////////////////////////////////////////////////////////////
 void updateSetConfig()
 {
-   //
-   // these are the customer selected sets.... dont overwrite if it exists! 
 
-   currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
-   //  newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
+       *out << "Removing " << FILE_SETCONFIG_DAT << endl;
 
-   // if the file isnt there....
-   if (currVersion == NULL)
-   {
-       fprintf(stdout, "Adding %s ...\n", FILE_SETCONFIG_DAT);
-       // attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
+       cerr << "Removing " << FILE_SETCONFIG_DAT << endl;
+       attrib (CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
+       unlink (CONFIG_PATH "/" FILE_SETCONFIG_DAT);
 
-       if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
-       {
-          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
-          return;
-       }
 
-       attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
+       attrib (CONFIG_PATH "/" FILE_SETCONFIG_DAT ".bk", "-R");
+       unlink (CONFIG_PATH "/" FILE_SETCONFIG_DAT ".bk");
+
+
+       attrib (CONFIG_CRC_PATH "/" FILE_SETCONFIG_CRC ".bk", "-R");
+       unlink (CONFIG_CRC_PATH "/" FILE_SETCONFIG_CRC ".bk" );
+
+
+       attrib (CONFIG_CRC_PATH "/" FILE_SETCONFIG_CRC, "-R");
+       unlink (CONFIG_CRC_PATH "/" FILE_SETCONFIG_CRC );
+
        fflush(stdout);
 
-   }   else {
-
-       fprintf(stdout, "%s already exixst ...\n", FILE_SETCONFIG_DAT);
-
-   }
 
     
 }
@@ -719,17 +741,19 @@ void updateGlobVars()
    CDatFileReader datfile(GLOBVARS_FILE,false,true);
    if ( datfile.Error() )
    {
-      cerr << GLOBVARS_FILE << " file read error : " << datfile.Error() << endl;
+      *out  << GLOBVARS_FILE << " file read error : " << datfile.Error() << endl;
       return;
    }
 
    if ( !datfile.Find( "EXTERNALIP" ) )
    {
-      cerr << "pre-v5.1 globvars file found Unable to Convert... ending" << endl;
+      *out  << "pre-v5.1 globvars file found Unable to Convert... ending" << endl;
+      cerr  << "pre-v5.1 globvars file found Unable to Convert... ending" << endl;
       return;
    }
 
-   cerr << "v5.2 globvars file found.  No conversion needed" << endl;
+   *out << "v5.1 compatable globvars file found.  No conversion needed" << endl;
+   cerr << "v5.1 compatable globvars file found.  No conversion needed" << endl;
 }
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -739,6 +763,17 @@ void updateGlobVars()
 //////////////////////////////////////////////////////////////////////////////////////
 void updateTrima()
 {
+
+   // open a logging file for downgrade
+    out = new ofstream( "/machine/log/Downgrade_52_to_51_Log.txt" );
+
+    if(out->fail()){
+        // i was going to log it but thats rediculous
+        fprintf( stdout, "Log file creation failed ...\n" );
+        return ;
+    }
+
+
    //
    // Make sure we don't interrupt anybody else who is running ...
    //
@@ -768,9 +803,12 @@ void updateTrima()
    //
    // Extract the update files
    fprintf( stdout, "Extracting updateTrima ...\n" );
+   *out << "Extracting updateTrima ..." << endl;
+
    if ( tarExtract( UPDATE_PATH "/updateTrima.taz", UPDATE_PATH ) == ERROR )
    {
       fprintf( stdout, "Extraction of update files failed\n" );
+      *out << "Extraction of update files failed" << endl;
       return;
    }
 
@@ -790,10 +828,14 @@ void updateTrima()
       //
       // Save off the old vxWorks image in case of failure ...
       fprintf( stdout, "Saving the old OS image..." );
+      *out << "Saving the old OS image..." << endl;
+
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
       if ( cp( VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old" ) == ERROR )
       {
          fprintf( stdout, "Archive of old OS image failed\n" );
+         *out <<  "Archive of old OS image failed"  << endl;
+
       }
 
    }
@@ -801,10 +843,13 @@ void updateTrima()
    //
    // Store the new files in the proper position
    fprintf( stdout, "Extracting the OS image...\n" );
+   *out <<  "Extracting the OS image..." << endl;
+
    if ( tarExtract( UPDATE_PATH "/vxboot.taz", UPDATE_PATH ) == ERROR )
    {
       fprintf( stdout, "Extraction of OS image failed\n" );
-      return;
+      *out <<  "Extraction of OS image failed" << endl;
+            return;
    }
 
    attrib(VXBOOT_PATH "/bootrom.sys", "-R");
@@ -813,6 +858,7 @@ void updateTrima()
         copyFileContiguous( UPDATE_PATH "/vxWorks"    , VXBOOT_PATH "/vxWorks"     ) == ERROR )
    {
       fprintf( stdout, "Install of OS image failed\n" );
+      *out << "Install of OS image failed"  << endl;
       return;
    }
    if ( remove( UPDATE_PATH "/bootrom.sys" ) == ERROR ||
@@ -820,12 +866,15 @@ void updateTrima()
         remove( UPDATE_PATH "/vxboot.taz"  ) == ERROR )
    {
       fprintf( stdout, "Removal of temporary OS image failed\n" );
+      *out << "Removal of temporary OS image failed"  << endl;
       return;
    }
     
    //
    // Remove existing Trima files
    fprintf( stdout, "Removing old Trima files...\n" );
+   *out << "Removing old Trima files..."  << endl;
+
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
@@ -837,14 +886,18 @@ void updateTrima()
    //
    // Uncompress the update file
    fprintf( stdout, "Extracting the Trima software files...\n" );
+   *out << "Extracting the Trima software files...\n" << endl;
+
    if ( tarExtract( UPDATE_PATH "/trima.taz", TRIMA_PATH ) == ERROR )
    {
       fprintf( stdout, "Extraction of the Trima software failed.\n" );
+      *out << "Extraction of the Trima software failed."  << endl;
       return;
    }
    if ( remove( UPDATE_PATH "/trima.taz" ) == ERROR )
    {
       fprintf( stdout, "Removal of Trima archive image failed\n" );
+      *out <<    "Removal of Trima archive image failed\n" << endl;
       return;
    }
 
@@ -924,31 +977,33 @@ void updateTrima()
    softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH "/machine.crc");
    softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH "/rbcdat.crc");
    softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH "/terrordat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH "/cassette.crc");
-   softcrc("-filelist " FILELISTS_PATH "/setconfig.files  -update " CONFIG_CRC_PATH "/setconfig.crc");
-
+ 
    
    // Verify the installation CRC values
-   if ( softcrc("-filelist " FILELISTS_PATH "/trima.files -verify  "    TRIMA_PATH      "/trima.crc") != 0 ||
+   if ( 
+        softcrc("-filelist " FILELISTS_PATH "/trima.files -verify  "    TRIMA_PATH      "/trima.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/safety.files -verify "    TRIMA_PATH      "/safety.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/caldat.files -verify "    CONFIG_CRC_PATH "/caldat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/config.files -verify "    CONFIG_CRC_PATH "/config.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/hwdat.files -verify "     CONFIG_CRC_PATH "/hwdat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/machine.files -verify "   CONFIG_CRC_PATH "/machine.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/rbcdat.files -verify "    CONFIG_CRC_PATH "/rbcdat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/cassette.files -verify "  CONFIG_CRC_PATH "/cassette.crc") != 0 ||
-		softcrc("-filelist " FILELISTS_PATH "/setconfig.files -verify "  CONFIG_CRC_PATH "/setconfig.crc") != 0)
+        softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0 
+       )
    {
       fprintf(stdout, "CRC check of installed software failed\n");
+      *out <<  "CRC check of installed software failed" << endl;
       return;
    }
 
-   fprintf( stdout, "Trima software update complete.\n" );
+   fprintf( stdout, "Trima software Downgrade complete.\n" );
+   *out <<  "Trima software Downgrade complete." << endl;
 
    // Delete the update script so that it doesn't run again on the subsequent boot if the GTS guy
    // is still holding down the buttons.
-   fprintf(stdout, "removing update script.\n");
+   fprintf(stdout, "removing downgrade script.\n");
+   *out <<    "removing downgrade script. " << endl;
+
    remove( UPDATE_PATH "/updatetrima" );
    remove( UPDATE_PATH "/updatetrima.taz" );
 
