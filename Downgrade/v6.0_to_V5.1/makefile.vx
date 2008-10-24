@@ -1,0 +1,53 @@
+# $Header: //bctQuad3/home/BCT_Development/Trima5.R_PAS/Trima/update/RCS/makefile.vx 1.1 2008/03/12 16:06:16 jheiusb Exp $
+#
+# Makefile - makefile for the update utility
+#
+# $Log: makefile.vx $
+#
+
+ifeq ($(BUILD_TYPE),CLEAN)
+.PHONY: all
+all: clean
+else
+.PHONY: all
+all: check_opt_change local_build
+endif
+
+# ------------------------------------------------------------------------------
+# Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
+# ------------------------------------------------------------------------------
+MAINDIR = \\bctquad3\HOME\BCT_Development\Trima5.R\trima_builds\Trima_build-8.584
+COMDIR = \\bctquad3\HOME\BCT_Development\Trima5.R\Trima\common_builds\common_build_6.260
+
+# ------------------------------------------------------------------------------
+# Define include directories needed for apps built in this directory
+# ------------------------------------------------------------------------------
+ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os
+
+# ------------------------------------------------------------------------------
+# Define location for Trima libraries
+# ------------------------------------------------------------------------------
+LIBDIR = 
+
+include $(MAINDIR)/makefile.vxc
+
+# ------------------------------------------------------------------------------
+# Definitions required for building update.out
+# ------------------------------------------------------------------------------
+APP_NAME := update
+update_dir  = bin
+update_map  = update.map
+update_cxx_files = updatetrima.cpp
+update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
+include $(COMDIR)/makefile.process_app
+
+# ------------------------------------------------------------------------------
+# This is the primary target for this makefile.  makefile.process_app
+# handles build APP_LIST with all of the defined applications.
+# ------------------------------------------------------------------------------
+.PHONY: local_build
+local_build: $(APP_LIST)
+	@rename .\bin\update.out updateTrima
+
+include $(COMDIR)/makefile.build_apps
+
