@@ -3,8 +3,10 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.1 2008/10/23 20:45:57Z jsylusb Exp jsylusb $
+ * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.2 2008/12/05 21:42:57Z jsylusb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.1  2008/10/23 20:45:57Z  jsylusb
+ * Initial revision
  * Revision 1.56  2008/10/01 14:01:27  dslausb
  * String.info files are in a different place.
  * Revision 1.55  2008/10/01 19:49:31Z  dslausb
@@ -659,6 +661,9 @@ bool update51to5r(CDatFileReader& datfile)
 
 	  // DRBC TBV limit
 	  datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "4.5" );
+
+	  // Updatting HCT from 32 to 30
+	  datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",   			"30" );
 
 	  //  PLT product PAS info
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
