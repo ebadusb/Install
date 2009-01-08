@@ -3,8 +3,10 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.2 2008/12/05 21:42:57Z jsylusb Exp jsylusb $
+ * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.3 2009/01/07 19:12:09Z jsylusb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.2  2008/12/05 21:42:57Z  jsylusb
+ * Changed default post HCT setting on Trima version 6.0 to a setting of 30 from original value of 32.
  * Revision 1.1  2008/10/23 20:45:57Z  jsylusb
  * Initial revision
  * Revision 1.56  2008/10/01 14:01:27  dslausb
@@ -140,10 +142,8 @@
 #include "zlib.h"
 #include "filenames.h"
 #include "filesort.h"
-
 #include "targzextract.c"
 #include "crc.c"
-
 #include "datfile.h"
 #include "configdef.h"
 
@@ -691,8 +691,8 @@ bool update51to5r(CDatFileReader& datfile)
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_3", "0" ); 
 
 	  // TRALI exclusions
-      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "0" );
-      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plasma",  "0" );
+      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
+      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plasma",  "2" );
 
 	  // Hgb units instead of Hct
 	  datfile.AddLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob",  "0" );
@@ -1057,8 +1057,30 @@ void updateSetConfig()
 
     
 }
-///////////////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////////////
+// trap_default.dat and trap_override.dat
+//////////////////////////////////////////////////////////////////////////////////////
+void updateTrap()
+{
+	// Since this is a 5.1 to 6.0 upgrade, we must override the trap config files.
+
+	attrib(TRAP_DEFAULTS_FILE, "-R");
+	if (cp(TEMPLATES_PATH "/trap_default.dat", TRAP_DEFAULTS_FILE) == ERROR)
+	{
+		fprintf(stdout, "copy of trap_default.dat\n");
+		return;
+	}
+	attrib(TRAP_DEFAULTS_FILE, "+R");
+
+	attrib(TRAP_OVERRIDE_FILE, "-R");
+	if (cp(TEMPLATES_PATH "/trap_override.dat", TRAP_OVERRIDE_FILE) == ERROR)
+	{
+		fprintf(stdout, "copy of trap_override.dat\n");
+		return;
+	}
+	attrib(TRAP_OVERRIDE_FILE, "+R");	
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //              Global  vars
@@ -1339,8 +1361,13 @@ void updateTrima()
    //              SETCONFIG.dat
    //////////////////////////////////////////////////////////////////////////////////////
    updateSetConfig();
-   ///////////////////////////////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////////////////////////////////
 
+   //////////////////////////////////////////////////////////////////////////////////////
+   // trap_default.dat and trap_override.dat
+   //////////////////////////////////////////////////////////////////////////////////////
+   updateTrap();
+   //////////////////////////////////////////////////////////////////////////////////////
 
    // Set permissions in config directory
    fileSort(CONFIG_PATH, FILE_SORT_BY_DATE_ASCENDING, update_file_set_rdonly);
