@@ -3,8 +3,10 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Downgrade/v6.0_to_V5.1/rcs/updatetrima.cpp 1.1 2008/10/23 20:50:10Z jsylusb Exp jsylusb $
+ * $Header: //bctquad3/home/BCT_Development/Install/Downgrade/v6.0_to_V5.1/rcs/updatetrima.cpp 1.2 2009/01/07 19:19:45Z jsylusb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.1  2008/10/23 20:50:10Z  jsylusb
+ * Initial revision
  * Revision 1.1  2008/03/12 16:06:17  jheiusb
  * Initial revision
  * Revision 1.41  2007/09/18 20:24:46Z  jheiusb
@@ -462,66 +464,116 @@ void updateConfig()
       return;
    }
       
-   // make this one of the newly added config values... or it wont update!
-   if ( datfile.Find("PROCEDURE_CONFIG", "key_male_only_plasma") )
-   {
-      cerr << "v5.R config.dat file found.  No conversion needed" << endl;
-      return;
-   }
-   cerr << "v5.1 config.dat file found.  Conversion needed" << endl;
+   cerr << "v6.0 config.dat file found.  Conversion needed" << endl;
    //////////////////////////////////////////////////////////////////////////////////
-   //                 5.1-->5.P+R changes
+   //                 6.0-->5.1 changes
    //////////////////////////////////////////////////////////////////////////////////
    {
+	  datfile.RemoveLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob" );
 
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif",  "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol", "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_blood_diversion",      "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_plt_on",           "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_rbc_on",           "0" );
-	  datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_show_residual_loss" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_drbc_body_vol" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_blood_diversion" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plasma_rinseback" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_saline_rinseback" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_air_removal" );
+      datfile.RemoveLine( "PREDICTION_CONFIG", "key_male_only_plasma" );
+      datfile.RemoveLine( "PREDICTION_CONFIG", "key_male_only_plt" );
 
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_threshold",       "300" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol",      "250" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_rbc_def_bag_vol",      "100" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_air_removal",            "1" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3" );
 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3" );
 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_2",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_3",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_4",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_5",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_6",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_1", "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_2", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_3", "0" ); 
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_yield_7" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_volume_7" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_yield_8" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_volume_8" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_yield_9" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_volume_9" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_yield_10" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_volume_10" );
 
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1" );
+      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_7" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_8" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_9" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_10" );
 
-      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "0" );
-      datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plasma",  "0" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_1" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_2" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_3" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_4" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_5" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_6" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_7" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_8" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_9" );
+	  datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_10" );
 
-      //datfile.RemoveLine( "PROCEDURE_CONFIG", "key_greater_than_vol" );
-   }
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_p" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_plasma_p" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_rbc_p" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_blood_type_p" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_time_p" );
 
-   ////////////////////////////////////////////////////////////////////////////
-   //        New values for v5.p ...
-   //        None Yet....
-   ////////////////////////////////////////////////////////////////////////////
-   {
-      // datfile.AddLine( "PROCEDURE_CONFIG", "key_rinseback_protocol", "0" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_q" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_plasma_q" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_rbc_q" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_blood_type_q" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_time_q" );
+
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_r" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_plasma_r" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_rbc_r" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_blood_type_r" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_time_r" );
+
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_s" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_plasma_s" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_rbc_s" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_blood_type_s" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_time_s" );
+
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_t" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_plasma_t" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_rbc_t" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_blood_type_t" );
+	  datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_time_t" );
+
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_mss_rbc_on" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_mss_plt_on" );
+	  datfile.RemoveLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_rbc_def_bag_vol" );
+      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol" );
+
+	  char key[15] = "key_platelet_"; key[14] = 0;
+	  int value = 0;
+
+	  value = datfile.GetInt( "LANGUAGE_UNIT_CONFIG", "key_lang" );
+	  if (value < 0 || value > 12) {
+		  datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_lang", "0" );
+		  fprintf( stdout, "Setting language to english.\n" );
+	  }
+
+	  for (key[13] = 'a'; key[13] <= 'o'; ++key[13]) {
+		  value = datfile.GetInt( "PRODUCT_DEFINITIONS", key );
+		  if (value < 0 || value > 6) {
+			  datfile.SetValue( "PRODUCT_DEFINITIONS", key, "0" );
+			  fprintf( stdout, key );
+			  fprintf( stdout, " set to product '0'.\n" );
+		  }
+	  }
    }
 
    datfile.WriteCfgFile(FILE_CONFIG_DAT);
