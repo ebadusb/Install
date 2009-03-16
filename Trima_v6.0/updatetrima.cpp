@@ -3,8 +3,10 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.3 2009/01/07 19:12:09Z jsylusb Exp jsylusb $
+ * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.7 2009/03/25 17:48:27Z dslausb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.3  2009/01/07 19:12:09Z  jsylusb
+ * Updated the script in order to update the trap files. 
  * Revision 1.2  2008/12/05 21:42:57Z  jsylusb
  * Changed default post HCT setting on Trima version 6.0 to a setting of 30 from original value of 32.
  * Revision 1.1  2008/10/23 20:45:57Z  jsylusb
@@ -1028,17 +1030,14 @@ void updateCassette()
 //////////////////////////////////////////////////////////////////////////////////////
 void updateSetConfig()
 {
-   //
    // these are the customer selected sets.... dont overwrite if it exists! 
-
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
 
-   // if the file isnt there....
-   if (currVersion == NULL)
-   {
+   if (currVersion == NULL) {
+	   // if the file isnt there....
        fprintf(stdout, "Adding %s ...\n", FILE_SETCONFIG_DAT);
-       attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
+       // attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
@@ -1048,14 +1047,30 @@ void updateSetConfig()
 
        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
        fflush(stdout);
-
-   }   else {
-
-       fprintf(stdout, "%s already exists ...\n", FILE_SETCONFIG_DAT);
-
    }
+   else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) < 0 ) {
+	   // Override the file
+       fprintf(stdout, "Overriding %s ...\n", FILE_SETCONFIG_DAT);
+	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
-    
+       if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
+       {
+          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
+          return;
+       }
+
+       attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
+       fflush(stdout);
+   }
+   else if (currVersion != NULL && newVersion == NULL) {
+	   // Remove the file
+       fprintf(stdout, "Removing %s ...\n", FILE_SETCONFIG_DAT);
+	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
+	   remove(CONFIG_PATH "/" FILE_SETCONFIG_DAT);
+   }
+   else {
+       fprintf(stdout, "%s already exists ...\n", FILE_SETCONFIG_DAT);
+   }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
