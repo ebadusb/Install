@@ -1,129 +1,18 @@
 /*
- * Copyright (C) 2002 Gambro BCT, Inc.  All rights reserved.
+ * Copyright (C) 2009 CaridianBCT, Inc.  All rights reserved.
  *
  * Install program for the Trima/vxWorks system
+ * (This install script is specifically for updating from 5.1 to 6.0.)
  *
  * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.7 2009/03/25 17:48:27Z dslausb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.4  2009/03/16 15:22:12Z  jsylusb
+ * The configurable list (setconfig.dat) is replaced with the template on a downgrade from 6.0 to 5.2, and is deleted on downgrade from 6.0 to 5.1.
  * Revision 1.3  2009/01/07 19:12:09Z  jsylusb
  * Updated the script in order to update the trap files. 
  * Revision 1.2  2008/12/05 21:42:57Z  jsylusb
  * Changed default post HCT setting on Trima version 6.0 to a setting of 30 from original value of 32.
  * Revision 1.1  2008/10/23 20:45:57Z  jsylusb
- * Initial revision
- * Revision 1.56  2008/10/01 14:01:27  dslausb
- * String.info files are in a different place.
- * Revision 1.55  2008/10/01 19:49:31Z  dslausb
- * Move string files to avoid CRC issues
- * Revision 1.54  2008/09/25 19:49:10Z  dslausb
- * IT 8867 - Add extra PLT vol check in update script
- * Revision 1.53  2008/09/24 18:52:55Z  dslausb
- * Made sure that config.dat update will now allow excess PLT volumes
- * Revision 1.52  2008/07/21 17:43:39Z  ssunusb
- * IT 8741 - Refactored updateConfig to minimize multiple returns
- * Revision 1.51  2008/07/08 18:52:43Z  dslausb
- * IT 8735 - Add four more plt procedures
- * Revision 1.50  2008/07/01 22:11:54Z  ssunusb
- * IT 8741 - Force post count config setting to be 100K if < 100K
- * Revision 1.49  2008/05/21 21:49:05Z  dslausb
- * IT 8473 - Added residual volumes to run summary screen
- * Revision 1.48  2008/05/08 20:17:54Z  dslausb
- * IT 7973 - Add saline rinseback button
- * Revision 1.47  2008/05/07 16:02:40Z  dslausb
- * IT 8076 - Add more available procedures
- * Revision 1.46  2008/04/23 21:04:29Z  dslausb
- * IT 8590 - Crit vs Hemoglobin
- * Revision 1.45  2008/04/18 18:58:06Z  ssunusb
- * IT8482 - Make trima sounds configurable
- * Revision 1.44  2008/04/11 21:32:25Z  dslausb
- * Added some compiler directives to get this to easily compile under Trima 5.1 for OS upgrades.
- * Revision 1.43  2008/04/07 20:07:34Z  dslausb
- * Add config setting in there.
- * Revision 1.42  2008/01/23 17:36:30Z  dslausb
- * IT 8435 - VxWorks 5.5 Checkin
- * Revision 1.41  2007/09/18 20:24:46Z  jheiusb
- * 7992 -- add new config values to update
- * Revision 1.40  2007/06/11 15:34:16Z  dslausb
- * Fixed a type that's been bugging me
- * Revision 1.39  2007/05/24 19:00:22Z  dslausb
- * IT 8040 - Forgot to check in update change.
- * Revision 1.38  2007/05/14 16:11:31Z  jheiusb
- * IT 7974 -- keep in sync with the config.dat changes
- * Revision 1.37  2007/04/09 21:14:34Z  jheiusb
- * add the drbc thrshold value to config.dat
- * Revision 1.36  2007/02/23 17:19:12Z  jheiusb
- * 5687 -- add air removal tag for upgrade
- * Revision 1.35  2006/12/11 20:22:31Z  jheiusb
- * 7817 fix due to config file change
- * Revision 1.34  2006/12/06 20:20:45Z  jheiusb
- * add 5.r config stuff
- * Revision 1.33  2006/10/19 16:22:27Z  jheiusb
- * 7440- upgare for 5.1->5.2
- * Revision 1.32  2006/08/09 21:07:45Z  dslausb
- * IT 7682 - Changed update to check for setconfig.dat file version.
- * Revision 1.31  2006/08/09 16:53:55Z  dslausb
- * IT 7682 - Changed to 2-file cassette entry functionality
- * Revision 1.30  2006/05/01 21:31:46Z  rm70006
- * IT 7051.  Remove update script after installation.
- * Revision 1.29  2006/05/01 19:30:32Z  rm70006
- * IT 7051.  Remove clinical and test build files during upgrade.
- * Revision 1.28  2006/04/20 18:27:13Z  dslausb
- * Fixed some CRC issues and included cassette.dat in the update script.
- * Revision 1.27  2004/02/12 17:32:31Z  ms10234
- * 5812 - change include file name.
- * Revision 1.26  2004/02/05 23:28:47Z  ms10234
- * 5811 - touchscreen calibration error
- * Revision 1.25  2004/01/30 23:04:38Z  ms10234
- * 6050 5811 - upgrade from v5 to v5.1
- * Revision 1.24  2004/01/06 16:53:53Z  rm70006
- * IT 5858.  Add terror config file to update.
- * Revision 1.23  2003/12/29 15:51:54Z  rm70006
- * IT 5858.  Add terror config files to install.
- * Revision 1.22  2003/12/05 16:01:18Z  jl11312
- * - enable file write protections
- * Revision 1.21  2003/12/02 19:53:13Z  jl11312
- * - corrected handling of sw.dat updates
- * Revision 1.20  2003/11/20 18:07:17Z  jl11312
- * - handle updates to sw.dat
- * - clear tools directory on upgrade
- * Revision 1.19  2003/11/13 15:11:02Z  jl11312
- * - update hw.dat if config copy is out of date or missing
- * Revision 1.18  2003/06/26 22:43:01Z  jl11312
- * - added crc function to updateTrima
- * Revision 1.17  2003/06/19 18:55:53Z  ms10234
- * 5809 - run the update program at low priority so as not to affect anyone important
- * Revision 1.16  2003/06/16 22:11:03Z  jl11312
- * - corrected copy file function
- * Revision 1.15  2003/05/13 15:48:21Z  jl11312
- * - added handling of CRC files during installation
- * Revision 1.14  2003/05/12 16:06:26Z  ms10234
- * 5809 - Update status logging.
- * Revision 1.13  2003/04/09 20:12:45Z  ms10234
- * Updates for Trima install
- * Revision 1.12  2003/03/07 22:52:15Z  td07711
- * remove periodic safety crc files, use filenames.h
- * Revision 1.11  2003/02/26 15:16:55Z  ms10234
- * - Added code to remove the safety CRCs after update
- * - Added code to remove the archived files from the update directory if a successful install
- * - Added rbc.dat to /config during install
- * Revision 1.10  2002/12/10 19:56:06Z  ms10234
- * Revision 1.9  2002/12/04 22:57:05Z  ms10234
- * use a bigger read buffer
- * Revision 1.8  2002/11/20 20:20:41Z  ms10234
- * Add section to save old vxWorks image
- * Revision 1.7  2002/11/19 19:12:38Z  ms10234
- * changed name of trima zip file
- * Revision 1.6  2002/11/19 18:03:06Z  ms10234
- * Added support for the vxWorks and bootrom images.
- * Revision 1.5  2002/11/19 15:22:34Z  ms10234
- * Added external declarations
- * Revision 1.4  2002/11/13 22:05:59Z  ms10234
- * Added reference for targzextract functions
- * Revision 1.3  2002/11/08 16:36:25Z  jl11312
- * - changed argument to gzopen
- * Revision 1.2  2002/11/08 00:04:12  ms10234
- * Added status output
- * Revision 1.1  2002/11/06 23:27:54Z  ms10234
  * Initial revision
  *
  */
@@ -144,8 +33,10 @@
 #include "zlib.h"
 #include "filenames.h"
 #include "filesort.h"
+
 #include "targzextract.c"
 #include "crc.c"
+
 #include "datfile.h"
 #include "configdef.h"
 
@@ -203,7 +94,44 @@
 
 	#ifndef STRING_DIRECTORY
 		#define STRING_DIRECTORY CONFIG_PATH "/strings"
-    #endif
+	#endif // #ifndef STRING_DIRECTORY
+
+	#ifndef GRAPHICS_PATH
+		#define GRAPHICS_PATH      CONFIG_PATH "/graphics"
+	#endif // #ifndef GRAPHICS_PATH
+
+	#ifndef FILE_GUI_GRAPHICS
+		#define FILE_GUI_GRAPHICS     "graphics_package.out"
+	#endif // #ifndef FILE_GUI_GRAPHICS
+
+	#ifndef FILE_SERVICE_GRAPHICS
+		#define FILE_SERVICE_GRAPHICS "service_" FILE_GUI_GRAPHICS
+	#endif // #ifndef FILE_SERVICE_GRAPHICS
+
+	#ifndef PNAME_GUI_GRAPHICS
+		#define PNAME_GUI_GRAPHICS      GRAPHICS_PATH "/"  FILE_GUI_GRAPHICS
+	#endif // #ifndef PNAME_GUI_GRAPHICS
+
+	#ifndef PNAME_SERVICE_GRAPHICS
+		#define PNAME_SERVICE_GRAPHICS  GRAPHICS_PATH "/"  FILE_SERVICE_GRAPHICS
+	#endif // #ifndef PNAME_SERVICE_GRAPHICS
+
+	#ifndef FILE_GUI_GRAPHICS_CRC
+		#define FILE_GUI_GRAPHICS_CRC     "graphics.crc"
+	#endif // #ifndef FILE_GUI_GRAPHICS_CRC
+
+	#ifndef PNAME_GUI_GRAPHICS_CRC
+		#define PNAME_GUI_GRAPHICS_CRC      CONFIG_CRC_PATH "/"  FILE_GUI_GRAPHICS_CRC
+	#endif // #ifndef PNAME_GUI_GRAPHICS_CRC
+
+	#ifndef FILENAME_STRING_CRC_FILE
+		#define FILENAME_STRING_CRC_FILE "strings.crc"
+	#endif // #ifndef FILENAME_STRING_CRC_FILE
+
+	#ifndef PNAME_STRINGS_CRC
+		#define PNAME_STRINGS_CRC CONFIG_CRC_PATH "/" FILENAME_STRING_CRC_FILE
+	#endif // #ifndef PNAME_STRINGS_CRC
+		
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -609,7 +537,7 @@ bool checkPasSettings(CDatFileReader& datfile)
 bool update51to5r(CDatFileReader& datfile)
 {
 	// make this one of the newly added config values... or it wont update!
-	if ( datfile.Find("PROCEDURE_CONFIG", "key_show_residual_loss") )
+	if ( datfile.Find("PRODUCT_TEMPLATES", "key_plt_yield_10") )
 	   return false;
 
 	cerr << "v5.1 config.dat file found.  Conversion needed" << endl;
@@ -631,9 +559,6 @@ bool update51to5r(CDatFileReader& datfile)
 
 	   // Saline Rinseback
 	  datfile.AddLine( "PROCEDURE_CONFIG", "key_saline_rinseback",     "0" );
-
-	  // Show Residual Loss
-	  datfile.AddLine( "PROCEDURE_CONFIG", "key_show_residual_loss",   "0" );
 
 	  // Split PAS into separate bag form PLT product
 	  datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif",  "0" );
@@ -684,13 +609,10 @@ bool update51to5r(CDatFileReader& datfile)
 	  // RBC product RAS/PTF info
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1", "0" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_1", "0" );
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2", "0" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_2", "0" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3", "0" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "25" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_ptf_3", "0" ); 
 
 	  // TRALI exclusions
       datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
@@ -1246,6 +1168,7 @@ void updateTrima()
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(STRING_DIRECTORY,FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
+   fileSort(GRAPHICS_PATH,   FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
 
    // IT 7051.  Remove clinical file if exists.
    remove(CLINICAL_BUILD);
@@ -1279,30 +1202,44 @@ void updateTrima()
       return;
    }
    
+   //
+   // Uncompress the update file
+   fprintf( stdout, "Extracting the graphics files...\n" );
+   if ( tarExtract( UPDATE_PATH "/graphics.taz", GRAPHICS_PATH ) == ERROR )
+   {
+      fprintf( stdout, "Extraction of the graphics files failed.\n" );
+      return;
+   }
+   if ( remove( UPDATE_PATH "/graphics.taz" ) == ERROR )
+   {
+      fprintf( stdout, "Removal of graphics archive image failed\n" );
+      return;
+   }
+   
    if ( IsVendor( "Ampro" ) ) {
 
       fprintf( stderr, "Copying Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
       if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR  )
+           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
+			  remove( SAFETY_BOOT_PATH "/bootrom_bootp.sys" ) == ERROR || 
+			  remove( SAFETY_BOOT_PATH "/bootrom_pxe.sys" ) == ERROR )
       {
-      fprintf( stderr, "Install of OS image failed\n" );
-      return;
+			fprintf( stderr, "Install of OS image failed\n" );
+			return;
       }
    }
    else {
 
       fprintf( stderr, "Copying Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
-      if ( cp( SAFETY_BOOT_PATH "/bootrom_versalogic.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR  ) 
+      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ) 
       {
-      fprintf( stderr, "Install of OS image failed\n" );
-      return;
+			fprintf( stderr, "Install of OS image failed\n" );
+			return;
       }
    }
 
    if ( remove( SAFETY_BOOT_PATH "/bootrom_ampro.sys" ) == ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     ) == ERROR ||
-        remove( SAFETY_BOOT_PATH "/bootrom_versalogic.sys" ) == ERROR || 
         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR )
    {
       fprintf( stderr, "Removal of temporary OS image failed\n" );
@@ -1376,7 +1313,8 @@ void updateTrima()
    //              SETCONFIG.dat
    //////////////////////////////////////////////////////////////////////////////////////
    updateSetConfig();
-   //////////////////////////////////////////////////////////////////////////////////////
+   ///////////////////////////////////////////////////////////////////////////////////////
+
 
    //////////////////////////////////////////////////////////////////////////////////////
    // trap_default.dat and trap_override.dat
@@ -1390,16 +1328,18 @@ void updateTrima()
    //
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
-   softcrc("-filelist " FILELISTS_PATH "/caldat.files    -update " CONFIG_CRC_PATH "/caldat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH "/config.crc");
-   softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH "/hwdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH "/machine.crc");
-   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH "/rbcdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH "/terrordat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH "/cassette.crc");
-   softcrc("-filelist " FILELISTS_PATH "/setconfig.files  -update " CONFIG_CRC_PATH "/setconfig.crc");
-   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update "       TRIMA_PATH "/trima.crc");
-   softcrc("-filelist " FILELISTS_PATH "/safety.files    -update "       TRIMA_PATH "/safety.crc");
+   softcrc("-filelist " FILELISTS_PATH "/caldat.files    -update " CONFIG_CRC_PATH	"/caldat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH	"/config.crc");
+   softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH	"/hwdat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH	"/machine.crc");
+   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH	"/rbcdat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH	"/terrordat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH	"/cassette.crc");
+   softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH	"/setconfig.crc");
+   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH		"/trima.crc");
+   softcrc("-filelist " FILELISTS_PATH "/safety.files    -update " TRIMA_PATH		"/safety.crc");
+   softcrc("-filelist " FILELISTS_PATH "/graphics.files  -update " PNAME_GUI_GRAPHICS_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRINGS_CRC);
 
 
    // Verify the installation CRC values
@@ -1412,7 +1352,9 @@ void updateTrima()
         softcrc("-filelist " FILELISTS_PATH "/rbcdat.files -verify "    CONFIG_CRC_PATH "/rbcdat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/cassette.files -verify "  CONFIG_CRC_PATH "/cassette.crc") != 0 ||
-		softcrc("-filelist " FILELISTS_PATH "/setconfig.files -verify "  CONFIG_CRC_PATH "/setconfig.crc") != 0)
+		softcrc("-filelist " FILELISTS_PATH "/setconfig.files -verify "  CONFIG_CRC_PATH "/setconfig.crc") != 0 ||
+		softcrc("-filelist " FILELISTS_PATH "/graphics.files  -verify " PNAME_GUI_GRAPHICS_CRC)           != 0 ||
+		softcrc("-filelist " FILELISTS_PATH "/strings.files   -verify " PNAME_STRINGS_CRC)                != 0)
    {
       fprintf(stdout, "CRC check of installed software failed\n");
       return;
