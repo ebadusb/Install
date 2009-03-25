@@ -6,6 +6,8 @@
  *
  * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.7 2009/03/25 17:48:27Z dslausb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.5  2009/03/25 17:32:12Z  dslausb
+ * Updated for python board, string CRC, and stand-alone graphics
  * Revision 1.4  2009/03/16 15:22:12Z  jsylusb
  * The configurable list (setconfig.dat) is replaced with the template on a downgrade from 6.0 to 5.2, and is deleted on downgrade from 6.0 to 5.1.
  * Revision 1.3  2009/01/07 19:12:09Z  jsylusb
@@ -1315,12 +1317,13 @@ void updateTrima()
    updateSetConfig();
    ///////////////////////////////////////////////////////////////////////////////////////
 
-
+	#ifdef __COMPILE_FOR_VX_54__
    //////////////////////////////////////////////////////////////////////////////////////
-   // trap_default.dat and trap_override.dat
+   // trap_default.dat and trap_override.dat (only when upgrading from 5.1 to 6.0).
    //////////////////////////////////////////////////////////////////////////////////////
    updateTrap();
    //////////////////////////////////////////////////////////////////////////////////////
+   #endif // #ifdef __COMPILE_FOR_VX_54__
 
    // Set permissions in config directory
    fileSort(CONFIG_PATH, FILE_SORT_BY_DATE_ASCENDING, update_file_set_rdonly);
