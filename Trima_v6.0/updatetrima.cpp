@@ -6,6 +6,8 @@
  *
  * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.7 2009/03/25 17:48:27Z dslausb Exp jsylusb $
  * $Log: updatetrima.cpp $
+ * Revision 1.6  2009/03/25 17:42:07Z  dslausb
+ * #ifdef off trap override so we can merge these changes back into the main baseline.
  * Revision 1.5  2009/03/25 17:32:12Z  dslausb
  * Updated for python board, string CRC, and stand-alone graphics
  * Revision 1.4  2009/03/16 15:22:12Z  jsylusb
@@ -997,6 +999,8 @@ void updateSetConfig()
    }
 }
 
+
+#ifdef __COMPILE_FOR_VX_54__
 //////////////////////////////////////////////////////////////////////////////////////
 // trap_default.dat and trap_override.dat
 //////////////////////////////////////////////////////////////////////////////////////
@@ -1020,6 +1024,7 @@ void updateTrap()
 	}
 	attrib(TRAP_OVERRIDE_FILE, "+R");	
 }
+#endif // #ifdef __COMPILE_FOR_VX_54__
 
 //////////////////////////////////////////////////////////////////////////////////////
 //              Global  vars
