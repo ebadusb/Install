@@ -4,8 +4,9 @@
  * Install program for the Trima/vxWorks system
  * (This install script is specifically for updating from 5.1 to 6.0.)
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.7 2009/03/25 17:48:27Z dslausb Exp jsylusb $
+ * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
  * $Log: updatetrima.cpp $
+ * Revision 1.7  2009/03/25 17:48:27Z  dslausb
  * Revision 1.6  2009/03/25 17:42:07Z  dslausb
  * #ifdef off trap override so we can merge these changes back into the main baseline.
  * Revision 1.5  2009/03/25 17:32:12Z  dslausb
@@ -676,6 +677,8 @@ bool update51to5r(CDatFileReader& datfile)
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_10", "500.0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_10", "0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_10", "50" );
+
+		datfile.RemoveLine("PROCEDURE_CONFIG", "key_rinseback_protocol");
    }
 	return true;
 }
