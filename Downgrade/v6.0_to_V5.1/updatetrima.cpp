@@ -3,8 +3,10 @@
  *
  * Install program for the Trima/vxWorks system
  *
- * $Header: //bctquad3/home/BCT_Development/Install/Downgrade/v6.0_to_V5.1/rcs/updatetrima.cpp 1.3 2009/03/16 15:23:12Z jsylusb Exp jsylusb $
+ * $Header: //bctquad3/home/BCT_Development/Install/Downgrade/v6.0_to_V5.1/rcs/updatetrima.cpp 1.3 2009/03/16 15:23:12Z jsylusb Exp $
  * $Log: updatetrima.cpp $
+ * Revision 1.3  2009/03/16 15:23:12Z  jsylusb
+ * The configurable list (setconfig.dat) is replaced with the template on a downgrade from 6.0 to 5.2, and is deleted on downgrade from 6.0 to 5.1.
  * Revision 1.2  2009/01/07 19:19:45Z  jsylusb
  * Updated the script in order to update the trap files. 
  * Revision 1.1  2008/10/23 20:50:10Z  jsylusb
@@ -568,6 +570,12 @@ void updateConfig()
 		  fprintf( stdout, "Setting language to english.\n" );
 	  }
 
+	  value = datfile.GetInt( "PROCEDURE_CONFIG", "key_tbv_vol_setting" );
+	  if (value < 1 || value > 7) {
+		  datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_vol_setting", "1" );
+		  fprintf( stdout, "Setting key_tbv_vol_setting to '1'.\n" );
+	  }
+
 	  for (key[13] = 'a'; key[13] <= 'o'; ++key[13]) {
 		  value = datfile.GetInt( "PRODUCT_DEFINITIONS", key );
 		  if (value < 0 || value > 6) {
@@ -575,6 +583,10 @@ void updateConfig()
 			  fprintf( stdout, key );
 			  fprintf( stdout, " set to product '0'.\n" );
 		  }
+	  }
+
+	  if (datfile.Find("PROCEDURE_CONFIG", "key_rinseback_protocol") == NULL) {
+		  datfile.AddLine("PROCEDURE_CONFIG", "key_rinseback_protocol", "0");
 	  }
    }
 
