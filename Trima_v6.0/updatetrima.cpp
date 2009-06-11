@@ -6,6 +6,8 @@
  *
  * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
  * $Log: updatetrima.cpp $
+ * Revision 1.8  2009/04/15 17:52:08Z  jsylusb
+ * Updated the update script by removing a value that is no longer used.
  * Revision 1.7  2009/03/25 17:48:27Z  dslausb
  * Revision 1.6  2009/03/25 17:42:07Z  dslausb
  * #ifdef off trap override so we can merge these changes back into the main baseline.
@@ -529,7 +531,7 @@ bool checkPasSettings(CDatFileReader& datfile)
 
 	  if (collectVol > collectVolMax)
 	  {
-		 fprintf(stderr, "PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum+1, collectVol, collectVolMax);
+		 fprintf(stdout, "PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum+1, collectVol, collectVolMax);
 		 datfile.SetFloat( "PRODUCT_TEMPLATES", pltVolVarNameStr, collectVolMax );
 		 returnVal = true;
 	  }
@@ -613,11 +615,11 @@ bool update51to5r(CDatFileReader& datfile)
 
 	  // RBC product RAS/PTF info
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "25" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "80" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "25" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "80" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "25" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "80" ); 
 
 	  // TRALI exclusions
       datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
@@ -966,7 +968,6 @@ void updateSetConfig()
    if (currVersion == NULL) {
 	   // if the file isnt there....
        fprintf(stdout, "Adding %s ...\n", FILE_SETCONFIG_DAT);
-       // attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
@@ -1112,7 +1113,7 @@ void updateTrima()
 
       //
       // Save off the old vxWorks image in case of failure ...
-      fprintf( stdout, "Saving the old OS image..." );
+      fprintf( stdout, "Saving the old OS image...\n" );
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
       if ( cp( VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old" ) == ERROR )
       {
@@ -1139,7 +1140,7 @@ void updateTrima()
    }
 
    if ( IsVendor( "Ampro" ) ) {
-      fprintf( stderr, "Copying Ampro bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
+      fprintf( stdout, "Copying Ampro bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
 
       if ( copyFileContiguous( UPDATE_PATH "/bootrom_ampro.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
            copyFileContiguous( UPDATE_PATH "/vxWorks_ampro"    , VXBOOT_PATH "/vxWorks"     ) == ERROR  )
@@ -1149,7 +1150,7 @@ void updateTrima()
       }
    }
    else {
-      fprintf( stderr, "Copying Versalogic bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
+      fprintf( stdout, "Copying Versalogic bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
 
       if ( copyFileContiguous( UPDATE_PATH "/bootrom_versalogic.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
            copyFileContiguous( UPDATE_PATH "/vxWorks_versalogic"    , VXBOOT_PATH "/vxWorks"     ) == ERROR  ) 
@@ -1228,7 +1229,7 @@ void updateTrima()
    
    if ( IsVendor( "Ampro" ) ) {
 
-      fprintf( stderr, "Copying Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
+      fprintf( stdout, "Copying Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
       if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
            cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
 			  remove( SAFETY_BOOT_PATH "/bootrom_bootp.sys" ) == ERROR || 
@@ -1240,8 +1241,9 @@ void updateTrima()
    }
    else {
 
-      fprintf( stderr, "Copying Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
-      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ) 
+      fprintf( stdout, "Copying Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
+      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_BOOT_PATH "/vxWorks_pxe" ) == ERROR ) 
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1250,7 +1252,8 @@ void updateTrima()
 
    if ( remove( SAFETY_BOOT_PATH "/bootrom_ampro.sys" ) == ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     ) == ERROR ||
-        remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR )
+        remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR ||
+        remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe"     ) == ERROR )
    {
       fprintf( stderr, "Removal of temporary OS image failed\n" );
       return;
