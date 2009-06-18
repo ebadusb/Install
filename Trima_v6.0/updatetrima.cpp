@@ -6,6 +6,8 @@
  *
  * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
  * $Log: updatetrima.cpp $
+ * Revision 1.9  2009/06/10 19:03:17Z  rm70006
+ * IT 9270.  Add updates to script from 6.0 to 6.0 update script up to revision 1.69.
  * Revision 1.8  2009/04/15 17:52:08Z  jsylusb
  * Updated the update script by removing a value that is no longer used.
  * Revision 1.7  2009/03/25 17:48:27Z  dslausb
@@ -541,6 +543,70 @@ bool checkPasSettings(CDatFileReader& datfile)
 }
 
 
+// checkRasSettings
+// 
+// Make sure that RAS settings are within range, since we changed the RAS
+// vol range late in development and it has some funky rules (see IT 9113)
+// 
+bool checkRasSettings(CDatFileReader& datfile)
+{
+   bool returnVal = false;
+   bool drbcAlertOn = false;
+   int drbcThreshold = 275;
+
+   // If the paster RAS setting is off, we don't need to bother with this.
+   const char* masterRasOnStr = datfile.Find("PROCEDURE_CONFIG", "key_mss_rbc_on");
+
+   // See if the DRBC alert is on.
+   const char* drbcAlertOnStr = datfile.Find("PROCEDURE_CONFIG", "key_drbc_alert");
+   if (drbcAlertOnStr && atoi(drbcAlertOnStr)) drbcAlertOn = true;
+
+   // See if the DRBC alert is on.
+   if (drbcAlertOn)
+   {
+	   const char* drbcThreshStr = datfile.Find("PROCEDURE_CONFIG", "key_drbc_threshold");
+	   if (drbcThreshStr) drbcThreshold = atoi(drbcThreshStr);
+   }
+
+   for (int prodNum = 0; prodNum < NUM_CRIT_DOSE; prodNum++)
+   {
+	  // Variable name string
+	  char rasVolVarNameStr[64];
+	  char rbcDoseVarNameStr[64];
+
+	  int dose = 0;
+	  int rasVol = 0;
+
+	  // Find the PAS toggle setting
+	  sprintf (rasVolVarNameStr, "key_rbc_mss_volume_%d", prodNum+1);
+	  sprintf (rbcDoseVarNameStr, "key_rbc_dose_%d", prodNum+1);
+
+	  const char* rasVolStr = datfile.Find("PRODUCT_TEMPLATES", rasVolVarNameStr);
+	  const char* rbcDoseStr = datfile.Find("PRODUCT_TEMPLATES", rbcDoseVarNameStr);
+
+	  if (rasVolStr) rasVol = atoi(rasVolStr);
+	  else continue;
+
+	  if (rbcDoseStr) dose = atoi(rbcDoseStr);
+	  else continue;
+
+	  if (dose >= drbcThreshold && rasVol < 160)
+	  {
+		  datfile.SetFloat( "PRODUCT_TEMPLATES", rasVolVarNameStr, 200 );
+		  returnVal = true;
+	  }
+
+	  if (dose < drbcThreshold && rasVol < 80)
+	  {
+		  datfile.SetFloat( "PRODUCT_TEMPLATES", rasVolVarNameStr, 100 );
+		  returnVal = true;
+	  }
+   }
+
+   return returnVal;
+}
+
+
 bool update51to5r(CDatFileReader& datfile)
 {
 	// make this one of the newly added config values... or it wont update!
@@ -713,12 +779,14 @@ void updateConfig()
    bool updatePostCountReturn = updatePostCount(datfile);
    bool update51to5RReturn = update51to5r(datfile);
    bool checkPasSettingsReturn = checkPasSettings(datfile);
+   bool checkRasSettingsReturn = checkRasSettings(datfile);
 
    // Note that function calls are done above to avoid the
-   // short circuit OR.  We want all three to be evaluated.
+   // short circuit OR.  We want all four to be evaluated.
    if(updatePostCountReturn	||
 	  update51to5RReturn	||
-	  checkPasSettingsReturn)
+	  checkPasSettingsReturn||
+	  checkRasSettingsReturn)
    {
 	   datfile.WriteCfgFile(FILE_CONFIG_DAT);
 	   cerr << "config.dat file converted." << endl;
@@ -1055,6 +1123,9 @@ void updateGlobVars()
 }
 //////////////////////////////////////////////////////////////////////////////////////
 
+// Define the following variable if you want your output
+// to go to a file.
+//#define OUTPUTFILE "/machine/log/updateLog.txt"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  The main line of update
@@ -1065,6 +1136,10 @@ void updateTrima()
    // Make sure we don't interrupt anybody else who is running ...
    //
    taskPrioritySet( taskIdSelf(), 250 );
+
+   #ifdef OUTPUTFILE
+   freopen( OUTPUTFILE, "w", stdout );
+   #endif
 
     //
     // Make /vxboot and /trima partitions writable
@@ -1383,6 +1458,10 @@ void updateTrima()
    remove( UPDATE_PATH "/updatetrima.taz" );
 
    fflush( stdout );
+
+   #ifdef OUTPUTFILE
+   freopen("CON", "w", stdout);
+   #endif
 
    trimaSysStartDiskSync();
 }
