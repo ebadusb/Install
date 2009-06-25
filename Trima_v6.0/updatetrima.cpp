@@ -6,6 +6,8 @@
  *
  * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
  * $Log: updatetrima.cpp $
+ * Revision 1.10  2009/06/17 20:19:29Z  dslausb
+ * IT 9290:  Address the case where RAS is already present but out of range.
  * Revision 1.9  2009/06/10 19:03:17Z  rm70006
  * IT 9270.  Add updates to script from 6.0 to 6.0 update script up to revision 1.69.
  * Revision 1.8  2009/04/15 17:52:08Z  jsylusb
@@ -296,7 +298,7 @@ static FileCallBackStatus update_file_set_rdonly(const char * fullPathName)
     if ( stat((char *)fullPathName, &fileStat) == OK &&
           (fileStat.st_mode & S_IFDIR) != 0 )
     {
-        fileSort(fullPathName, FILE_SORT_BY_DATE_ASCENDING, update_file_set_rdwrite);
+        fileSort(fullPathName, FILE_SORT_BY_DATE_ASCENDING, update_file_set_rdonly);
         attrib(fullPathName, "-R");
     }
     else
@@ -1125,7 +1127,7 @@ void updateGlobVars()
 
 // Define the following variable if you want your output
 // to go to a file.
-//#define OUTPUTFILE "/machine/log/updateLog.txt"
+//#define OUTPUTFILE "/machine/log/updateLog.slick"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  The main line of update
@@ -1140,6 +1142,8 @@ void updateTrima()
    #ifdef OUTPUTFILE
    freopen( OUTPUTFILE, "w", stdout );
    #endif
+
+   update_file_set_rdwrite(CONFIG_PATH);
 
     //
     // Make /vxboot and /trima partitions writable
@@ -1411,9 +1415,6 @@ void updateTrima()
    //////////////////////////////////////////////////////////////////////////////////////
    #endif // #ifdef __COMPILE_FOR_VX_54__
 
-   // Set permissions in config directory
-   fileSort(CONFIG_PATH, FILE_SORT_BY_DATE_ASCENDING, update_file_set_rdonly);
-
    //
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
@@ -1431,6 +1432,9 @@ void updateTrima()
    softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRINGS_CRC);
 
 
+   // Set permissions in config directory
+   update_file_set_rdonly(CONFIG_PATH);
+   
    // Verify the installation CRC values
    if ( softcrc("-filelist " FILELISTS_PATH "/trima.files -verify  "    TRIMA_PATH      "/trima.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/safety.files -verify "    TRIMA_PATH      "/safety.crc") != 0 ||
