@@ -6,6 +6,8 @@
  *
  * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
  * $Log: updatetrima.cpp $
+ * Revision 1.11  2009/06/25 16:03:08Z  dslausb
+ * IT 9093 - Make sure config files can't be overwritten in place via FTP
  * Revision 1.10  2009/06/17 20:19:29Z  dslausb
  * IT 9290:  Address the case where RAS is already present but out of range.
  * Revision 1.9  2009/06/10 19:03:17Z  rm70006
@@ -662,7 +664,7 @@ bool update51to5r(CDatFileReader& datfile)
       datfile.AddLine( "PROCEDURE_CONFIG", "key_air_removal",            "1" );
 
 	  // DRBC TBV limit
-	  datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "4.5" );
+	  datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "3.9" );
 
 	  // Updatting HCT from 32 to 30
 	  datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",   			"30" );
