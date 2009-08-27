@@ -109,6 +109,14 @@
 		#define STRING_DIRECTORY CONFIG_PATH "/strings"
 	#endif // #ifndef STRING_DIRECTORY
 
+	#ifndef DROP_IN_FONTS_DIR
+		#define DROP_IN_FONTS_DIR CONFIG_PATH "/fonts"
+	#endif // #ifndef DROP_IN_FONTS_DIR
+
+	#ifndef DATA_DIRECTORY
+		#define DATA_DIRECTORY CONFIG_PATH "/data"
+	#endif // #ifndef DATA_DIRECTORY
+
 	#ifndef GRAPHICS_PATH
 		#define GRAPHICS_PATH      CONFIG_PATH "/graphics"
 	#endif // #ifndef GRAPHICS_PATH
@@ -132,6 +140,14 @@
 	#ifndef FILE_GUI_GRAPHICS_CRC
 		#define FILE_GUI_GRAPHICS_CRC     "graphics.crc"
 	#endif // #ifndef FILE_GUI_GRAPHICS_CRC
+
+	#ifndef FILENAME_FONT_CRC_FILE
+		#define FILENAME_FONT_CRC_FILE     "fonts.crc"
+	#endif // #ifndef FILENAME_FONT_CRC_FILE
+
+	#ifndef FILENAME_DATA_CRC_FILE
+		#define FILENAME_DATA_CRC_FILE     "data.crc"
+	#endif // #ifndef FILENAME_DATA_CRC_FILE
 
 	#ifndef PNAME_GUI_GRAPHICS_CRC
 		#define PNAME_GUI_GRAPHICS_CRC      CONFIG_CRC_PATH "/"  FILE_GUI_GRAPHICS_CRC
@@ -1127,6 +1143,18 @@ void updateGlobVars()
 }
 //////////////////////////////////////////////////////////////////////////////////////
 
+
+static int verifyCrc(const char* commandLine)
+{
+	int crcReturnVal = softcrc(commandLine);
+
+	if (crcReturnVal != 0) 
+       printf("CRC ERROR %d on command line \"%s\"\n", crcReturnVal, commandLine);
+
+	return crcReturnVal;
+}
+
+
 // Define the following variable if you want your output
 // to go to a file.
 //#define OUTPUTFILE "/machine/log/updateLog.slick"
@@ -1296,6 +1324,37 @@ void updateTrima()
    
    //
    // Uncompress the update file
+   printf("Extracting the font files...\n");
+
+   if ( tarExtract( UPDATE_PATH "/fonts.taz", DROP_IN_FONTS_DIR ) == ERROR )
+   {
+      printf("Extraction of the font files failed.\n");
+      return;
+   }
+   if ( remove( UPDATE_PATH "/fonts.taz" ) == ERROR )
+   {
+      printf("Removal of font archive image failed\n");
+      return;
+   }
+
+   //
+   // Uncompress the update file
+   printf("Extracting the data files...\n");
+
+   if ( tarExtract( UPDATE_PATH "/data.taz", DATA_DIRECTORY ) == ERROR )
+   {
+      printf("Extraction of the data files failed.\n");
+      return;
+   }
+
+   if ( remove( UPDATE_PATH "/data.taz" ) == ERROR )
+   {
+      printf("Removal of data archive image failed\n");
+      return;
+   }
+   
+   //
+   // Uncompress the update file
    fprintf( stdout, "Extracting the graphics files...\n" );
    if ( tarExtract( UPDATE_PATH "/graphics.taz", GRAPHICS_PATH ) == ERROR )
    {
@@ -1433,27 +1492,27 @@ void updateTrima()
    softcrc("-filelist " FILELISTS_PATH "/graphics.files  -update " PNAME_GUI_GRAPHICS_CRC);
    softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRINGS_CRC);
 
+   softcrc("-filelist " FILELISTS_PATH "/fonts.files     -update " FILENAME_FONT_CRC_FILE				);
+   softcrc("-filelist " FILELISTS_PATH "/data.files      -update " FILENAME_DATA_CRC_FILE				);
 
    // Set permissions in config directory
    update_file_set_rdonly(CONFIG_PATH);
    
-   // Verify the installation CRC values
-   if ( softcrc("-filelist " FILELISTS_PATH "/trima.files -verify  "    TRIMA_PATH      "/trima.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/safety.files -verify "    TRIMA_PATH      "/safety.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/caldat.files -verify "    CONFIG_CRC_PATH "/caldat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/config.files -verify "    CONFIG_CRC_PATH "/config.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/hwdat.files -verify "     CONFIG_CRC_PATH "/hwdat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/machine.files -verify "   CONFIG_CRC_PATH "/machine.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/rbcdat.files -verify "    CONFIG_CRC_PATH "/rbcdat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0 ||
-        softcrc("-filelist " FILELISTS_PATH "/cassette.files -verify "  CONFIG_CRC_PATH "/cassette.crc") != 0 ||
-		softcrc("-filelist " FILELISTS_PATH "/setconfig.files -verify "  CONFIG_CRC_PATH "/setconfig.crc") != 0 ||
-		softcrc("-filelist " FILELISTS_PATH "/graphics.files  -verify " PNAME_GUI_GRAPHICS_CRC)           != 0 ||
-		softcrc("-filelist " FILELISTS_PATH "/strings.files   -verify " PNAME_STRINGS_CRC)                != 0)
-   {
-      fprintf(stdout, "CRC check of installed software failed\n");
-      return;
-   }
+	// Verify the installation CRC values
+	if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files	-verify "	CONFIG_CRC_PATH	"/caldat.crc"	) ||
+        verifyCrc("-filelist " FILELISTS_PATH "/config.files	-verify "	CONFIG_CRC_PATH	"/config.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files		-verify "	CONFIG_CRC_PATH	"/hwdat.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	-verify "	CONFIG_CRC_PATH	"/rbcdat.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "	CONFIG_CRC_PATH	"/terrordat.crc") ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "	CONFIG_CRC_PATH	"/cassette.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "	CONFIG_CRC_PATH	"/setconfig.crc") ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "	PNAME_GUI_GRAPHICS_CRC			) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/strings.files	-verify "	PNAME_STRINGS_CRC				) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/fonts.files		-verify "	FILENAME_FONT_CRC_FILE			) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "	FILENAME_DATA_CRC_FILE			) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "	TRIMA_PATH		"/safety.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "	TRIMA_PATH		"/trima.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "	CONFIG_CRC_PATH	"/machine.crc"	)) return;
 
    fprintf( stdout, "Trima software update complete.\n" );
 
