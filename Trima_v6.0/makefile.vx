@@ -10,7 +10,7 @@ ifeq ($(BUILD_TYPE),CLEAN)
 all: clean
 else
 .PHONY: all
-all: check_opt_change local_build
+all: check_opt_change bin/updateTrima
 endif
 
 # ------------------------------------------------------------------------------
@@ -42,12 +42,13 @@ update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(
 include $(COMDIR)/makefile.process_app
 
 # ------------------------------------------------------------------------------
-# This is the primary target for this makefile.  makefile.process_app
-# handles build APP_LIST with all of the defined applications.
+# Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-.PHONY: local_build
-local_build: $(APP_LIST)
-	@rename .\bin\update.out updateTrima
+bin/updateTrima:$(update_dir)/update.out
+	cp $< $@
 
+# ------------------------------------------------------------------------------
+# Actually build the outfile
+# ------------------------------------------------------------------------------
 include $(COMDIR)/makefile.build_apps
 

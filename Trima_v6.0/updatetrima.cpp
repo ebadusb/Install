@@ -137,30 +137,22 @@
 		#define PNAME_SERVICE_GRAPHICS  GRAPHICS_PATH "/"  FILE_SERVICE_GRAPHICS
 	#endif // #ifndef PNAME_SERVICE_GRAPHICS
 
-	#ifndef FILE_GUI_GRAPHICS_CRC
-		#define FILE_GUI_GRAPHICS_CRC     "graphics.crc"
-	#endif // #ifndef FILE_GUI_GRAPHICS_CRC
-
-	#ifndef FILENAME_FONT_CRC_FILE
-		#define FILENAME_FONT_CRC_FILE     "fonts.crc"
-	#endif // #ifndef FILENAME_FONT_CRC_FILE
-
-	#ifndef FILENAME_DATA_CRC_FILE
-		#define FILENAME_DATA_CRC_FILE     "data.crc"
-	#endif // #ifndef FILENAME_DATA_CRC_FILE
-
 	#ifndef PNAME_GUI_GRAPHICS_CRC
-		#define PNAME_GUI_GRAPHICS_CRC      CONFIG_CRC_PATH "/"  FILE_GUI_GRAPHICS_CRC
+		#define PNAME_GUI_GRAPHICS_CRC	CONFIG_CRC_PATH "/graphics.crc"
 	#endif // #ifndef PNAME_GUI_GRAPHICS_CRC
+	
+	#ifndef PNAME_FONT_CRC_FILE
+		#define PNAME_FONT_CRC_FILE		CONFIG_CRC_PATH "/fonts.crc"
+	#endif // #ifndef PNAME_FONT_CRC_FILE
+	
+	#ifndef PNAME_DATA_CRC_FILE
+		#define PNAME_DATA_CRC_FILE		CONFIG_CRC_PATH "/data.crc"
+	#endif // #ifndef PNAME_DATA_CRC_FILE
+	
+	#ifndef PNAME_STRING_CRC_FILE
+		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
+	#endif // #ifndef PNAME_STRING_CRC_FILE
 
-	#ifndef FILENAME_STRING_CRC_FILE
-		#define FILENAME_STRING_CRC_FILE "strings.crc"
-	#endif // #ifndef FILENAME_STRING_CRC_FILE
-
-	#ifndef PNAME_STRINGS_CRC
-		#define PNAME_STRINGS_CRC CONFIG_CRC_PATH "/" FILENAME_STRING_CRC_FILE
-	#endif // #ifndef PNAME_STRINGS_CRC
-		
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -204,7 +196,7 @@ int copyFileContiguous(const char * from, const char * to)
       int bytesRead;
 
       fstat(fromFD, &fileStat);
-      fprintf( stdout, "copying %s to %s: file length = %ld bytes\n", from, to, fileStat.st_size);
+      printf("copying %s to %s: file length = %ld bytes\n", from, to, fileStat.st_size);
 
       /*
        * Make destination a contiguous file (required for boot image)
@@ -219,7 +211,7 @@ int copyFileContiguous(const char * from, const char * to)
 
       if ( bytesCopied != fileStat.st_size)
       {
-         fprintf( stdout, "Copy failed (%ld bytes written)\n", bytesCopied);
+         printf("Copy failed (%ld bytes written)\n", bytesCopied);
       }
       else
       {
@@ -256,7 +248,7 @@ int unzipFile(const char * from, const char * to)
          kBytesWritten = bytesWritten/1024;
       }
 
-      fprintf( stdout, "\tUncompression complete\n" );
+      printf("\tUncompression complete\n" );
       gzclose(fromFD);
       close(toFD);
        
@@ -553,7 +545,7 @@ bool checkPasSettings(CDatFileReader& datfile)
 
 	  if (collectVol > collectVolMax)
 	  {
-		 fprintf(stdout, "PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum+1, collectVol, collectVolMax);
+		 printf("PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum+1, collectVol, collectVolMax);
 		 datfile.SetFloat( "PRODUCT_TEMPLATES", pltVolVarNameStr, collectVolMax );
 		 returnVal = true;
 	  }
@@ -877,7 +869,7 @@ void updateRBC()
    attrib(CONFIG_PATH FILE_RBC_DAT, "-R");
    if ( cp( TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT ) == ERROR )
    {
-      fprintf( stdout, "copy of rbc.dat failed\n" );
+      printf("copy of rbc.dat failed\n");
       return;
    }
    attrib(CONFIG_PATH FILE_RBC_DAT, "+R");
@@ -902,14 +894,14 @@ void updateHW()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      printf("Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
       if ( IsVendor( "Ampro" ) )
       {
          if ( cp( TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT ) == ERROR )
          {
-               fprintf( stdout, "copy of hw_ampro.dat failed\n" );
+               printf("copy of hw_ampro.dat failed\n");
                return;
          }
       }
@@ -917,7 +909,7 @@ void updateHW()
       {
          if ( cp( TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
-            fprintf( stdout, "copy of hw_versalogic.dat failed\n" );
+            printf("copy of hw_versalogic.dat failed\n");
             return;
          }
       }
@@ -941,12 +933,12 @@ void updateSW()
    if ( newVersion &&
          ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
       attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
 
       if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
       {
-         fprintf( stdout, "copy of %s failed\n", FILE_SW_DAT );
+         printf("copy of %s failed\n", FILE_SW_DAT);
          return;
       }
 
@@ -971,12 +963,12 @@ void updateTerror()
     
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      printf("Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
       attrib(TERROR_CONFIG_FILE, "-R");
 
       if ( cp( TEMPLATES_PATH "/terror_config.dat", CONFIG_PATH "/terror_config.dat" ) == ERROR )
       {
-         fprintf( stdout, "copy of terror_config.dat failed\n" );
+         printf("copy of terror_config.dat failed\n");
          return;
       }
 
@@ -1000,12 +992,12 @@ void updateSounds()
 		(newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
 	  )
    {
-      fprintf(stdout, "Updating sounds.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      printf("Updating sounds.dat to new version %s from existing version %s...\n", newVersion, currVersion);
       attrib(PNAME_SOUNDSDAT, "-R");
 
       if ( cp( TEMPLATES_PATH "/" FILE_SOUNDS_DAT, PNAME_SOUNDSDAT ) == ERROR )
       {
-         fprintf( stdout, "copy of sounds.dat failed\n" );
+         printf("copy of sounds.dat failed\n");
          return;
       }
 
@@ -1028,12 +1020,12 @@ void updateCassette()
     
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+      printf("Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "-R");
 
       if ( cp( TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT ) == ERROR )
       {
-         fprintf( stdout, "copy of %s failed\n", FILE_CASSETTE_DAT );
+         printf("copy of %s failed\n", FILE_CASSETTE_DAT);
          return;
       }
 
@@ -1055,11 +1047,11 @@ void updateSetConfig()
 
    if (currVersion == NULL) {
 	   // if the file isnt there....
-       fprintf(stdout, "Adding %s ...\n", FILE_SETCONFIG_DAT);
+       printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
-          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
+          printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
           return;
        }
 
@@ -1068,12 +1060,12 @@ void updateSetConfig()
    }
    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) < 0 ) {
 	   // Override the file
-       fprintf(stdout, "Overriding %s ...\n", FILE_SETCONFIG_DAT);
+       printf("Overriding %s ...\n", FILE_SETCONFIG_DAT);
 	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
-          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
+          printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
           return;
        }
 
@@ -1082,12 +1074,12 @@ void updateSetConfig()
    }
    else if (currVersion != NULL && newVersion == NULL) {
 	   // Remove the file
-       fprintf(stdout, "Removing %s ...\n", FILE_SETCONFIG_DAT);
+       printf("Removing %s ...\n", FILE_SETCONFIG_DAT);
 	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 	   remove(CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    }
    else {
-       fprintf(stdout, "%s already exists ...\n", FILE_SETCONFIG_DAT);
+       printf("%s already exists ...\n", FILE_SETCONFIG_DAT);
    }
 }
 
@@ -1103,7 +1095,7 @@ void updateTrap()
 	attrib(TRAP_DEFAULTS_FILE, "-R");
 	if (cp(TEMPLATES_PATH "/trap_default.dat", TRAP_DEFAULTS_FILE) == ERROR)
 	{
-		fprintf(stdout, "copy of trap_default.dat\n");
+		printf("copy of trap_default.dat\n");
 		return;
 	}
 	attrib(TRAP_DEFAULTS_FILE, "+R");
@@ -1111,7 +1103,7 @@ void updateTrap()
 	attrib(TRAP_OVERRIDE_FILE, "-R");
 	if (cp(TEMPLATES_PATH "/trap_override.dat", TRAP_OVERRIDE_FILE) == ERROR)
 	{
-		fprintf(stdout, "copy of trap_override.dat\n");
+		printf("copy of trap_override.dat\n");
 		return;
 	}
 	attrib(TRAP_OVERRIDE_FILE, "+R");	
@@ -1200,10 +1192,10 @@ void updateTrima()
    
    //
    // Extract the update files
-   fprintf( stdout, "Extracting updateTrima ...\n" );
+   printf("Extracting updateTrima ...\n");
    if ( tarExtract( UPDATE_PATH "/updateTrima.taz", UPDATE_PATH ) == ERROR )
    {
-      fprintf( stdout, "Extraction of update files failed\n" );
+      printf("Extraction of update files failed\n");
       return;
    }
 
@@ -1222,21 +1214,23 @@ void updateTrima()
 
       //
       // Save off the old vxWorks image in case of failure ...
-      fprintf( stdout, "Saving the old OS image...\n" );
+      printf("Saving the old OS image...\n");
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
+
       if ( cp( VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old" ) == ERROR )
       {
-         fprintf( stdout, "Archive of old OS image failed\n" );
+         printf("Archive of old OS image failed\n");
       }
 
    }
     
    //
    // Store the new files in the proper position
-   fprintf( stdout, "Extracting the OS image...\n" );
+   printf("Extracting the OS image...\n");
+
    if ( tarExtract( UPDATE_PATH "/vxboot.taz", UPDATE_PATH ) == ERROR )
    {
-      fprintf( stdout, "Extraction of OS image failed\n" );
+      printf("Extraction of OS image failed\n");
       return;
    }
 
@@ -1249,7 +1243,7 @@ void updateTrima()
    }
 
    if ( IsVendor( "Ampro" ) ) {
-      fprintf( stdout, "Copying Ampro bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
+      printf("Copying Ampro bootrom.sys and vxworks to %s\n", VXBOOT_PATH);
 
       if ( copyFileContiguous( UPDATE_PATH "/bootrom_ampro.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
            copyFileContiguous( UPDATE_PATH "/vxWorks_ampro"    , VXBOOT_PATH "/vxWorks"     ) == ERROR  )
@@ -1259,7 +1253,7 @@ void updateTrima()
       }
    }
    else {
-      fprintf( stdout, "Copying Versalogic bootrom.sys and vxworks to %s\n", VXBOOT_PATH );
+      printf("Copying Versalogic bootrom.sys and vxworks to %s\n", VXBOOT_PATH);
 
       if ( copyFileContiguous( UPDATE_PATH "/bootrom_versalogic.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
            copyFileContiguous( UPDATE_PATH "/vxWorks_versalogic"    , VXBOOT_PATH "/vxWorks"     ) == ERROR  ) 
@@ -1283,7 +1277,7 @@ void updateTrima()
     
    //
    // Remove existing Trima files
-   fprintf( stdout, "Removing old Trima files...\n" );
+   printf("Removing old Trima files...\n");
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
@@ -1296,29 +1290,33 @@ void updateTrima()
    
    //
    // Uncompress the update file
-   fprintf( stdout, "Extracting the Trima software files...\n" );
+   printf("Extracting the Trima software files...\n");
+
    if ( tarExtract( UPDATE_PATH "/trima.taz", TRIMA_PATH ) == ERROR )
    {
-      fprintf( stdout, "Extraction of the Trima software failed.\n" );
+      printf("Extraction of the Trima software failed.\n");
       return;
    }
+
    if ( remove( UPDATE_PATH "/trima.taz" ) == ERROR )
    {
-      fprintf( stdout, "Removal of Trima archive image failed\n" );
+      printf("Removal of Trima archive image failed\n");
       return;
    }
 
    //
    // Uncompress the update file
-   fprintf( stdout, "Extracting the string.info files...\n" );
+   printf("Extracting the string.info files...\n");
+
    if ( tarExtract( UPDATE_PATH "/strings.taz", STRING_DIRECTORY ) == ERROR )
    {
-      fprintf( stdout, "Extraction of the string.info files failed.\n" );
+      printf("Extraction of the string.info files failed.\n");
       return;
    }
+
    if ( remove( UPDATE_PATH "/strings.taz" ) == ERROR )
    {
-      fprintf( stdout, "Removal of string archive image failed\n" );
+      printf("Removal of string archive image failed\n");
       return;
    }
    
@@ -1355,21 +1353,24 @@ void updateTrima()
    
    //
    // Uncompress the update file
-   fprintf( stdout, "Extracting the graphics files...\n" );
+   printf("Extracting the graphics files...\n");
+
    if ( tarExtract( UPDATE_PATH "/graphics.taz", GRAPHICS_PATH ) == ERROR )
    {
-      fprintf( stdout, "Extraction of the graphics files failed.\n" );
+      printf("Extraction of the graphics files failed.\n");
       return;
    }
+
    if ( remove( UPDATE_PATH "/graphics.taz" ) == ERROR )
    {
-      fprintf( stdout, "Removal of graphics archive image failed\n" );
+      printf("Removal of graphics archive image failed\n");
       return;
    }
    
    if ( IsVendor( "Ampro" ) ) {
 
-      fprintf( stdout, "Copying Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
+      printf("Copying Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
+
       if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
            cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
 			  remove( SAFETY_BOOT_PATH "/bootrom_bootp.sys" ) == ERROR || 
@@ -1381,7 +1382,8 @@ void updateTrima()
    }
    else {
 
-      fprintf( stdout, "Copying Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH );
+      printf("Copying Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
+
       if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
            cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_BOOT_PATH "/vxWorks_pxe" ) == ERROR ) 
       {
@@ -1479,21 +1481,21 @@ void updateTrima()
    //
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
-   softcrc("-filelist " FILELISTS_PATH "/caldat.files    -update " CONFIG_CRC_PATH	"/caldat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH	"/config.crc");
-   softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH	"/hwdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH	"/machine.crc");
-   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH	"/rbcdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH	"/terrordat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH	"/cassette.crc");
-   softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH	"/setconfig.crc");
-   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH		"/trima.crc");
-   softcrc("-filelist " FILELISTS_PATH "/safety.files    -update " TRIMA_PATH		"/safety.crc");
-   softcrc("-filelist " FILELISTS_PATH "/graphics.files  -update " PNAME_GUI_GRAPHICS_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRINGS_CRC);
 
-   softcrc("-filelist " FILELISTS_PATH "/fonts.files     -update " FILENAME_FONT_CRC_FILE				);
-   softcrc("-filelist " FILELISTS_PATH "/data.files      -update " FILENAME_DATA_CRC_FILE				);
+	softcrc("-filelist " FILELISTS_PATH "/caldat.files		-update "	CONFIG_CRC_PATH	"/caldat.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/config.files		-update "	CONFIG_CRC_PATH	"/config.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/hwdat.files		-update "	CONFIG_CRC_PATH	"/hwdat.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/rbcdat.files		-update "	CONFIG_CRC_PATH	"/rbcdat.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/terrordat.files	-update "	CONFIG_CRC_PATH	"/terrordat.crc"	);
+	softcrc("-filelist " FILELISTS_PATH "/cassette.files	-update "	CONFIG_CRC_PATH	"/cassette.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/setconfig.files	-update "	CONFIG_CRC_PATH	"/setconfig.crc"	);
+	softcrc("-filelist " FILELISTS_PATH "/graphics.files	-update "	PNAME_GUI_GRAPHICS_CRC				);
+	softcrc("-filelist " FILELISTS_PATH "/strings.files		-update "	PNAME_STRING_CRC_FILE				);
+	softcrc("-filelist " FILELISTS_PATH "/fonts.files		-update "	PNAME_FONT_CRC_FILE					);
+	softcrc("-filelist " FILELISTS_PATH "/data.files		-update "	PNAME_DATA_CRC_FILE					);
+	softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "	TRIMA_PATH		"/safety.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/trima.files		-update "	TRIMA_PATH		"/trima.crc"		);
+	softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "	CONFIG_CRC_PATH	"/machine.crc"		);
 
    // Set permissions in config directory
    update_file_set_rdonly(CONFIG_PATH);
@@ -1506,19 +1508,19 @@ void updateTrima()
 	    verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "	CONFIG_CRC_PATH	"/terrordat.crc") ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "	CONFIG_CRC_PATH	"/cassette.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "	CONFIG_CRC_PATH	"/setconfig.crc") ||
-	    verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "	PNAME_GUI_GRAPHICS_CRC			) ||
-	    verifyCrc("-filelist " FILELISTS_PATH "/strings.files	-verify "	PNAME_STRINGS_CRC				) ||
-	    verifyCrc("-filelist " FILELISTS_PATH "/fonts.files		-verify "	FILENAME_FONT_CRC_FILE			) ||
-		verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "	FILENAME_DATA_CRC_FILE			) ||
-	    verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "	TRIMA_PATH		"/safety.crc"	) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/graphics.files  -verify "	PNAME_GUI_GRAPHICS_CRC			) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify "	PNAME_STRING_CRC_FILE			) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify "	PNAME_FONT_CRC_FILE				) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "	PNAME_DATA_CRC_FILE				) ||
+		verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "	TRIMA_PATH		"/safety.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "	TRIMA_PATH		"/trima.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "	CONFIG_CRC_PATH	"/machine.crc"	)) return;
 
-   fprintf( stdout, "Trima software update complete.\n" );
+   printf("Trima software update complete.\n");
 
    // Delete the update script so that it doesn't run again on the subsequent boot if the GTS guy
    // is still holding down the buttons.
-   fprintf(stdout, "removing update script.\n");
+   printf("Removing update script.\n");
    remove( UPDATE_PATH "/updatetrima" );
    remove( UPDATE_PATH "/updatetrima.taz" );
 
