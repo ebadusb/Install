@@ -4,7 +4,7 @@
  * Install program for the Trima/vxWorks system
  * (This install script is specifically for updating from 5.1 to 6.0.)
  *
- * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
+ * $Header$
  * $Log: updatetrima.cpp $
  * Revision 1.11  2009/06/25 16:03:08Z  dslausb
  * IT 9093 - Make sure config files can't be overwritten in place via FTP
@@ -153,23 +153,6 @@
 		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
 	#endif // #ifndef PNAME_STRING_CRC_FILE
 
-	#ifndef SAFETY_VXWORKS_PXE_IMAGE
-		#define SAFETY_VXWORKS_PXE_IMAGE    SAFETY_BOOT_PATH "/vxWorks_pxe"
-	#endif // #ifndef SAFETY_VXWORKS_PXE_IMAGE
-
-	#ifndef SAFETY_BOOTROM_PXE_IMAGE
-		#define SAFETY_BOOTROM_PXE_IMAGE	SAFETY_BOOT_PATH "/bootrom_pxe.sys"
-	#endif // #ifndef SAFETY_BOOTROM_PXE_IMAGE
-
-	#ifdef SAFETY_BOOTROM_IMAGE
-		#undef SAFETY_BOOTROM_IMAGE
-	#endif
-    #define SAFETY_BOOTROM_IMAGE        SAFETY_BOOT_PATH "/bootrom.sys"
-
-	#ifdef SAFETY_VXWORKS_IMAGE
-		#undef SAFETY_VXWORKS_IMAGE
-	#endif
-    #define SAFETY_VXWORKS_IMAGE		SAFETY_BOOT_PATH "/vxWorks"
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -1406,8 +1389,10 @@ void updateTrima()
    {
       printf("Copying Safety Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE )       == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_VXWORKS_IMAGE )       == ERROR )
+      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
+			  remove( SAFETY_BOOT_PATH "/bootrom_bootp.sys" ) == ERROR || 
+			  remove( SAFETY_BOOT_PATH "/bootrom_pxe.sys" ) == ERROR )
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1417,10 +1402,8 @@ void updateTrima()
    {
       printf("Copying Safety Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"      , SAFETY_VXWORKS_IMAGE )     == ERROR ||
-           cp( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys" , SAFETY_BOOTROM_IMAGE )     == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe"  , SAFETY_VXWORKS_PXE_IMAGE ) == ERROR ||
-           cp( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"   , SAFETY_BOOTROM_PXE_IMAGE ) == ERROR )
+      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_BOOT_PATH "/vxWorks_pxe" ) == ERROR ) 
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
