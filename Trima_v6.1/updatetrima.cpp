@@ -39,9 +39,11 @@
 #include <taskLib.h>
 #include <unistd.h>
 #include <usrLib.h>
-#include <stdio.h>
 #include <fcntl.h>
-#include <math.h>
+
+#include <cmath>
+#include <cstdio>
+#include <string>
 
 #include "zlib.h"
 #include "filenames.h"
@@ -153,6 +155,14 @@
 		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
 	#endif // #ifndef PNAME_STRING_CRC_FILE
 
+	#ifndef SAFETY_BOOTROM_PXE_IMAGE
+		#define SAFETY_BOOTROM_PXE_IMAGE	SAFETY_BOOT_PATH "/bootrom_pxe.sys"
+	#endif
+
+	#ifndef SAFETY_VXWORKS_PXE_IMAGE
+		#define SAFETY_VXWORKS_PXE_IMAGE  SAFETY_BOOT_PATH "/vxWorks_pxe"
+	#endif
+
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -160,6 +170,8 @@
 	#include "trimaOs.h"
 
 #endif // #ifdef __COMPILE_FOR_VX_54__
+
+using namespace std;
 
 #ifdef __cplusplus
 extern "C" { 
@@ -619,7 +631,7 @@ bool checkRasSettings(CDatFileReader& datfile)
 }
 
 
-bool update51to5r(CDatFileReader& datfile)
+bool update51to60(CDatFileReader& datfile)
 {
 	// make this one of the newly added config values... or it wont update!
 	if ( datfile.Find("PRODUCT_TEMPLATES", "key_plt_yield_10") )
@@ -789,14 +801,14 @@ void updateConfig()
    }
 
    bool updatePostCountReturn = updatePostCount(datfile);
-   bool update51to5RReturn = update51to5r(datfile);
+   bool update51to60Return = update51to60(datfile);
    bool checkPasSettingsReturn = checkPasSettings(datfile);
    bool checkRasSettingsReturn = checkRasSettings(datfile);
 
    // Note that function calls are done above to avoid the
    // short circuit OR.  We want all four to be evaluated.
    if(updatePostCountReturn	||
-	  update51to5RReturn	||
+	  update51to60Return	||
 	  checkPasSettingsReturn||
 	  checkRasSettingsReturn)
    {
@@ -804,7 +816,7 @@ void updateConfig()
 	   cerr << "config.dat file converted." << endl;
    }
    else
-	   cerr << "Up to date 5.R config file found. No conversion needed." << endl;
+	   cerr << "Up to date 6.0 config file found. No conversion needed." << endl;
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -824,33 +836,86 @@ void updateCal()
       return;
    }
       
-   if ( !datfile.Find("TOUCHSCREEN","screen_horizontal_size") )
-   {
-      cerr << " ... pre-v5.1 cal.dat file found.  Unable to Convert!  ending..." << endl;
+	//For first time installs, copy the touchscreen template file over
+   struct stat tsFileStat;
+	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR )  
+	{
+		std::string tsTmpl(TEMPLATES_PATH "/" FILE_TCHSCRN_DAT);
+		if( stat(const_cast<char*>(tsTmpl.c_str()), &tsFileStat) == OK )
+		{
+			if ( cp(tsTmpl.c_str(), PNAME_TCHSCRNDAT ) == ERROR )
+				cerr << "copy of " << tsTmpl << " to " << PNAME_TCHSCRNDAT  << " failed" << endl;
+			else
+				cerr << "copied" << tsTmpl << " to " << PNAME_TCHSCRNDAT  << " successfully" << endl;
+		}
+	}
+
+
+	CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
+	if ( tscrnFile.Error() )
+	{
+		cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
 
-   // check if 5.R by looking for a new parameter.......
-   if ( datfile.Find("TOUCHSCREEN", "a") )
-   {
-      cerr << "v5.R " << FILE_CAL_DAT << " file found.  No conversion needed" << endl;
-      return;
-   }
+	const char* tsHeader = "TOUCHSCREEN";
+	const std::string tsAF []= {"a","b","c","d","e","f"};
+	const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge", 
+		"tsraw_top_edge", "tsraw_bottom_edge" };
 
-   cerr << "Pre-v5.R " << FILE_CAL_DAT << " file found.  Conversion needed" << endl;
+
+	// Is it an old 6.0 install (5.8)
+	if ( datfile.Find(tsHeader, "a") )
+   {
+      cerr << "v6.0 " << FILE_CAL_DAT << " old 6.0 cal file found.  Conversion needed" << endl;
+		//Move all TOUCHSCREEN related data to touch_screen.dat
+		
+		//Transfer values from cal.dat to touch_screen.dat
+		for(int i=0; i<=5; i++)
+		{
+			tscrnFile.SetValue(tsHeader, tsAF[i].c_str(), datfile.Find(tsHeader, tsAF[i].c_str()));
+			datfile.RemoveLine(tsHeader, tsAF[i].c_str());
+		}
+		for (int i=0; i<=5; i++) //Keep both loops separate. 
+		{
+			tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), datfile.Find(tsHeader, tsOriginal[i].c_str()));
+			datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+		}
+		datfile.RemoveLine(tsHeader);
+	}
+	else if( datfile.Find(tsHeader) ) 
+	{
+		cerr << "Pre-v6.0 " << FILE_CAL_DAT << " file found.  Conversion needed" << endl;
    //////////////////////////////////////////////////////////////////////////////////
-   //                 5.1/P-->5.R changes
+		//                 5.1/P-->6.0 changes
    //////////////////////////////////////////////////////////////////////////////////
    {
-      datfile.AddLine( "TOUCHSCREEN", "a", "0.842105263" );
-      datfile.AddLine( "TOUCHSCREEN", "b", "0.0" );
-      datfile.AddLine( "TOUCHSCREEN", "c", "-75.7894737" );
-      datfile.AddLine( "TOUCHSCREEN", "d", "0.0" );
-      datfile.AddLine( "TOUCHSCREEN", "e", "0.685714286" );
-	  datfile.AddLine( "TOUCHSCREEN", "f", "-89.1428571" );
-   }
+			tscrnFile.SetValue( tsHeader, "a", "0.842105263" );
+			tscrnFile.SetValue( tsHeader, "b", "0.0" );
+			tscrnFile.SetValue( tsHeader, "c", "-75.7894737" );
+			tscrnFile.SetValue( tsHeader, "d", "0.0" );
+			tscrnFile.SetValue( tsHeader, "e", "0.685714286" );
+			tscrnFile.SetValue( tsHeader, "f", "-89.1428571" );
+		}
+		for (int i=0; i<=5; i++)  
+		{
+			tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), datfile.Find(tsHeader, tsOriginal[i].c_str()));
+			datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+		}
+		datfile.RemoveLine(tsHeader);
+	}
+	else 
+	{
+		struct stat fileStat;
+		if ( stat((char *)PNAME_TCHSCRNDAT, &fileStat) == OK )
+			cerr << "File " << FILE_TCHSCRN_DAT << " present with and up to date " << FILE_CAL_DAT << ". No conversion needed" << endl; 
+		else
+			cerr << " ... pre-v5.1 " << FILE_CAL_DAT << " file found.  Unable to Convert!  ending..." << endl;
+		return;
+	}
 
-   datfile.WriteCfgFile(FILE_CAL_DAT);
+	tscrnFile.Write(PNAME_TCHSCRNDAT);
+   datfile.Write(FILE_CAL_DAT);
 
    cerr << FILE_CAL_DAT << " file converted." << endl;
 }
@@ -866,13 +931,13 @@ const char *newVersion  = "";
 void updateRBC()
 {
    // Put the rbc.dat file in the correct location.
-   attrib(CONFIG_PATH FILE_RBC_DAT, "-R");
+   attrib(CONFIG_PATH "/" FILE_RBC_DAT, "-R");
    if ( cp( TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT ) == ERROR )
    {
       printf("copy of rbc.dat failed\n");
       return;
    }
-   attrib(CONFIG_PATH FILE_RBC_DAT, "+R");
+   attrib(CONFIG_PATH "/" FILE_RBC_DAT, "+R");
 
 }
 //////////////////////////////////////////////////////////////////////////////////
@@ -1402,8 +1467,10 @@ void updateTrima()
    {
       printf("Copying Safety Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_BOOT_PATH "/vxWorks_pxe" ) == ERROR ) 
+      if (cp( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys",	SAFETY_BOOTROM_IMAGE	) == ERROR ||
+		  cp( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys",	SAFETY_BOOTROM_PXE_IMAGE) == ERROR ||
+		  cp( SAFETY_BOOT_PATH "/vxWorks_versalogic",		SAFETY_VXWORKS_IMAGE	) == ERROR ||
+          cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe",	SAFETY_VXWORKS_PXE_IMAGE) == ERROR )
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1411,6 +1478,8 @@ void updateTrima()
    }
 
    if ( remove( SAFETY_BOOT_PATH "/bootrom_ampro.sys" ) == ERROR ||
+       remove( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys"	)				== ERROR ||
+       remove( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"	)				== ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     ) == ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe"     ) == ERROR )
@@ -1420,6 +1489,24 @@ void updateTrima()
    }
 
    
+	//Uncompress the optional tools archive if it exists
+	struct stat fileStat;
+
+	if ( stat((char *)UPDATE_PATH "/engr_tools.taz", &fileStat) == OK )
+	{
+		printf("Extracting the engr tools files...\n");
+		
+		if (tarExtract(UPDATE_PATH "/engr_tools.taz", ROOT "/machine/tools") == ERROR)
+		{
+			printf("Extraction of the Tools files failed.\n");
+		}
+		
+		if (remove(UPDATE_PATH "/engr_tools.taz") == ERROR )
+		{
+			printf("Removal of Tools archive image failed\n");
+		}
+	}
+
    // Update the configuration files ...
    ///////////////////////////////////////////////////////////////////////////////////
    //              Config.dat
@@ -1429,7 +1516,7 @@ void updateTrima()
 
 
    ///////////////////////////////////////////////////////////////////////////////////
-   //              CAL.dat
+   //              CAL.dat and touch_screen.dat
    ///////////////////////////////////////////////////////////////////////////////////
    updateCal();
    ///////////////////////////////////////////////////////////////////////////////////
