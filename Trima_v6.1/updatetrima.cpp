@@ -155,14 +155,23 @@
 		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
 	#endif // #ifndef PNAME_STRING_CRC_FILE
 
+	#ifndef SAFETY_VXWORKS_PXE_IMAGE
+		#define SAFETY_VXWORKS_PXE_IMAGE    SAFETY_BOOT_PATH "/vxWorks_pxe"
+	#endif // #ifndef SAFETY_VXWORKS_PXE_IMAGE
+
 	#ifndef SAFETY_BOOTROM_PXE_IMAGE
 		#define SAFETY_BOOTROM_PXE_IMAGE	SAFETY_BOOT_PATH "/bootrom_pxe.sys"
-	#endif
+	#endif // #ifndef SAFETY_BOOTROM_PXE_IMAGE
 
-	#ifndef SAFETY_VXWORKS_PXE_IMAGE
-		#define SAFETY_VXWORKS_PXE_IMAGE  SAFETY_BOOT_PATH "/vxWorks_pxe"
+	#ifdef SAFETY_BOOTROM_IMAGE
+		#undef SAFETY_BOOTROM_IMAGE
 	#endif
+    #define SAFETY_BOOTROM_IMAGE        SAFETY_BOOT_PATH "/bootrom.sys"
 
+	#ifdef SAFETY_VXWORKS_IMAGE
+		#undef SAFETY_VXWORKS_IMAGE
+	#endif
+    #define SAFETY_VXWORKS_IMAGE		SAFETY_BOOT_PATH "/vxWorks"
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -835,9 +844,7 @@ void updateCal()
       cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
-      
-	//For first time installs, copy the touchscreen template file over
-   struct stat tsFileStat;
+	struct stat tsFileStat;
 	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR )  
 	{
 		std::string tsTmpl(TEMPLATES_PATH "/" FILE_TCHSCRN_DAT);
@@ -1454,10 +1461,8 @@ void updateTrima()
    {
       printf("Copying Safety Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOT_PATH "/bootrom.sys" ) == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_BOOT_PATH "/vxWorks"     ) == ERROR ||
-			  remove( SAFETY_BOOT_PATH "/bootrom_bootp.sys" ) == ERROR || 
-			  remove( SAFETY_BOOT_PATH "/bootrom_pxe.sys" ) == ERROR )
+      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE )       == ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_VXWORKS_IMAGE )       == ERROR )
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1467,10 +1472,10 @@ void updateTrima()
    {
       printf("Copying Safety Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if (cp( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys",	SAFETY_BOOTROM_IMAGE	) == ERROR ||
-		  cp( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys",	SAFETY_BOOTROM_PXE_IMAGE) == ERROR ||
-		  cp( SAFETY_BOOT_PATH "/vxWorks_versalogic",		SAFETY_VXWORKS_IMAGE	) == ERROR ||
-          cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe",	SAFETY_VXWORKS_PXE_IMAGE) == ERROR )
+      if ( cp( SAFETY_BOOT_PATH "/vxWorks_versalogic"      , SAFETY_VXWORKS_IMAGE )     == ERROR ||
+           cp( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys" , SAFETY_BOOTROM_IMAGE )     == ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe"  , SAFETY_VXWORKS_PXE_IMAGE ) == ERROR ||
+           cp( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"   , SAFETY_BOOTROM_PXE_IMAGE ) == ERROR )
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1488,7 +1493,6 @@ void updateTrima()
       return;
    }
 
-   
 	//Uncompress the optional tools archive if it exists
 	struct stat fileStat;
 
