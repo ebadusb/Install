@@ -120,6 +120,33 @@
 #include "crc.c"
 
 #include "datfile.h"
+#undef __COMPILE_FOR_VX_54__
+#ifdef __COMPILE_FOR_VX_54__
+	#include "trima_opsys.h"
+#endif
+
+#ifndef TEMPLATES_PATH
+	#define TEMPLATES_PATH "/trima/config/templates"
+#endif
+#ifndef FILE_CASSETTE_DAT
+	#define FILE_CASSETTE_DAT "cassette.dat"
+#endif // #ifndef FILE_CASSETTE_DAT
+
+#ifndef FILE_SETCONFIG_DAT
+	#define FILE_SETCONFIG_DAT "setconfig.dat"
+#endif // #ifndef FILE_SETCONFIG_DAT
+
+#ifndef CLINICAL_BUILD
+	#define CLINICAL_BUILD CONFIG_PATH "/clinical_build"
+#endif // #ifndef CLINICAL_BUILD
+
+#ifndef TEST_BUILD
+	#define TEST_BUILD CONFIG_PATH "/test_build"
+#endif // #ifndef TEST_BUILD
+
+#define SOFTCRC_PATH       TRIMA_PATH   "/softcrc"
+#define FILELISTS_PATH     SOFTCRC_PATH "/filelists"
+
 
 #ifdef __cplusplus
 extern "C" { 
@@ -129,7 +156,6 @@ int cp(const char * from, const char * to);
 int xcopy (const char * src, const char *dest);
 int copyFileContiguous(const char * from, const char * to);
 int unzipFile(const char * from, const char * to);
-
 void updateTrima();
 
 int softcrc(const char * options);
@@ -158,14 +184,13 @@ int copyFileContiguous(const char * from, const char * to)
       int bytesRead;
 
       fstat(fromFD, &fileStat);
-      fprintf( stdout, "copying %s to %s: file length = %ld bytes\n", from, to, fileStat.st_size);
+      fprintf( stderr, "copying %s to %s: file length = %ld bytes\n", from, to, fileStat.st_size);
 
       /*
        * Make destination a contiguous file (required for boot image)
        */
       ftruncate(toFD, 0);
       ioctl(toFD, FIOCONTIG, fileStat.st_size);
-
       while ( (bytesRead = read(fromFD, buffer, 512)) > 0 )
       {
          bytesCopied += write(toFD, buffer, bytesRead);
@@ -173,8 +198,8 @@ int copyFileContiguous(const char * from, const char * to)
 
       if ( bytesCopied != fileStat.st_size)
       {
-         fprintf( stdout, "Copy failed (%ld bytes written)\n", bytesCopied);
-      }
+         fprintf( stderr, "Copy failed (%ld bytes written)\n", bytesCopied);
+		}
       else
       {
          result = bytesCopied;
@@ -188,7 +213,6 @@ int copyFileContiguous(const char * from, const char * to)
 
    if ( fromFD >= 0 ) close(fromFD);
    if ( toFD >= 0 ) close(toFD);
-
    return result;
 }
 
@@ -210,7 +234,7 @@ int unzipFile(const char * from, const char * to)
          kBytesWritten = bytesWritten/1024;
       }
 
-      fprintf( stdout, "\tUncompression complete\n" );
+      fprintf( stderr, "\tUncompression complete\n" );
       gzclose(fromFD);
       close(toFD);
        
@@ -316,12 +340,20 @@ const char * findSetting(const char * setting, const char * fileName)
     return result;
 }
 
+
+
+
+
+
+
+
+
 enum { MaxIDStringLength = 256 };
 
-//
+   //
 // Scan memory for specified character pattern.  Used to find ID strings
 // in BIOS ROM and expansion ROM memory areas.
-//
+   //
 static const char * FindIDString(
                                 const char * memPtr,          // start of memory block
                                 unsigned int memLength,       // length of memory block (in bytes)
@@ -349,10 +381,10 @@ static const char * FindIDString(
 
    if ( resultString )
    {
-      //
+         //
       // Found the specified pattern.  Extend the string to get the printable
       // characters surrounding it.
-      //
+         //
       unsigned int   stringStart = memStart;
       while ( stringStart > 0 &&
               isprint(memPtr[stringStart-1]) &&
@@ -398,7 +430,6 @@ static const char * FindIDString(
 
    return resultString;
 }
-
 
 //
 // The following strings are used to identify ID/copyright
@@ -448,30 +479,189 @@ static bool IsVendor( const char * vendor )
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
 //
 //  Update the dat files.....
 //
 ///////////////////////////////////////////////////////////////////////////////////
 //              Config.dat
 ///////////////////////////////////////////////////////////////////////////////////
-void updateConfig()
+//IT 8737 (5.14) - Force post count config setting to 100K 
+bool updatePostCount(CDatFileReader& datfile)
 {
-   //
-   // Create the dat file reader to retrieve the configuration data.
-   //
-   CDatFileReader datfile(PNAME_CONFIGDAT);
-   if ( datfile.Error() )
-   {
-      cerr << "Config file read error : " << datfile.Error() << endl;
-      return;
+   float postCount = datfile.GetFloat("PROCEDURE_CONFIG", "key_post_plat");
+   if (postCount < 100000) {
+	   datfile.RemoveLine("PROCEDURE_CONFIG", "key_post_plat");
+	   datfile.AddLine("PROCEDURE_CONFIG", "key_post_plat", "100000");
+	   cerr << "Changed donor post count from "<< postCount << " to 100000" << endl;
+	   return true;
    }
-      
-   cerr << "v6.0 config.dat file found.  Conversion needed" << endl;
+   return false;
+}
+
+// Returns true if updates were made and false if not.
+bool updateConfig51to517(CDatFileReader& datfile)
+{
+	if ( !datfile.Find("PRODUCT_TEMPLATES","key_plt_amap_single_yield_min") )
+	{
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_min", "1.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_max", "4.5" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_min", "5.5" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_max", "8.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_min", "9.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_max", "12.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_conc", "1400" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_conc", "1400" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_conc", "1400" );
+
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_a", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_b", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_c", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_d", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_e", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_f", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_g", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_h", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_i", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_j", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_k", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_l", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n", "0" );
+		datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o", "0" );
+
+		return true;
+	}
+
+	return false;
+}
+
+// Returns true if updates were made and false if not.
+bool updateConfig50to51(CDatFileReader& datfile)
+{
+	if ( datfile.Find("PROCEDURE_CONFIG","key_rinseback_protocol") )
+	{
+	   return false;
+	}
+	cerr << "pre-v5.1 config.dat file found.  Conversion needed" << endl;
+
+	/* IT 6050 ------------------------------------------------------------------*/
+	/*                                                                           */
+	/*   ...                                                                     */
+	/* Mon May 5 14:30:13 MDT 2003 -Scott Butzke- My suggestions for             */
+	/* manufacturing implementation are:                                         */ 
+	/*   ...                                                                     */
+	/*   - key_weight_setting: ... For upgrades, copy V5"less than" to all three */
+	/*     "less than" fields, weight setting to all three weight cutoffs,       */
+	/*     and "greater than" to the "key_weight_3_greater_than_vol" field.      */                                 
+	/*   ...                                                                     */
+	/*   - key_plasma_1 to 6: ... for upgrades set plasma1 to V5 small, plasma2  */ 
+	/*     to V5 medium, and plasma3-6 to V5 large.                              */
+	/*   ...                                                                     */
+	/*                                                                           */
+	/* IT 6050 ------------------------------------------------------------------*/
+
+	/*
+		 Changes for v5.1 ...
+
+		   key_weight_1_setting=<key_weight_setting>
+		   key_weight_2_setting=<key_weight_setting>
+		   key_weight_3_setting=<key_weight_setting>
+		   key_weight_1_less_than_vol=<key_less_than_vol>
+		   key_weight_2_less_than_vol=<key_less_than_vol>
+		   key_weight_3_less_than_vol=<key_less_than_vol>
+		   key_weight_3_greater_than_vol=<key_greater_than_vol>
+		   ...
+		   key_pls_volume_1=<key_sm_vol>
+		   key_pls_volume_2=<key_med_vol>
+		   key_pls_volume_3=<key_lg_vol>
+		   key_pls_volume_4=<key_lg_vol>
+		   key_pls_volume_5=<key_lg_vol>
+		   key_pls_volume_6=<key_lg_vol>
+		   ...
+		   key_pls_amap_minimum=<key_pls_amap_min>
+	*/
+
+	{
+	   float weightSetting = datfile.GetFloat( "PROCEDURE_CONFIG", "key_weight_setting" );
+	   char weightSettingStr[16];
+	   sprintf( weightSettingStr, "%0.1f", weightSetting );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_1_setting", weightSettingStr );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_2_setting", weightSettingStr );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_setting", weightSettingStr );
+	   datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_setting" );
+	}
+	{
+	   float lessThanVol = datfile.GetFloat( "PROCEDURE_CONFIG", "key_less_than_vol" );
+	   char lessThanVolStr[16];
+	   sprintf( lessThanVolStr, "%0.1f", lessThanVol );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_1_less_than_vol", lessThanVolStr );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_2_less_than_vol", lessThanVolStr );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_less_than_vol", lessThanVolStr );
+	   datfile.RemoveLine( "PROCEDURE_CONFIG", "key_less_than_vol" );
+	}
+	{
+	   float greaterThanVol = datfile.GetFloat( "PROCEDURE_CONFIG", "key_greater_than_vol" );
+	   char greaterThanVolStr[16];
+	   sprintf( greaterThanVolStr, "%0.1f", greaterThanVol );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_greater_than_vol", greaterThanVolStr );
+	   datfile.RemoveLine( "PROCEDURE_CONFIG", "key_greater_than_vol" );
+	}
+	{
+	   float smallVol = datfile.GetFloat( "PRODUCT_TEMPLATES", "key_sm_vol" );
+	   float mediumVol = datfile.GetFloat( "PRODUCT_TEMPLATES", "key_med_vol" );
+	   float largeVol = datfile.GetFloat( "PRODUCT_TEMPLATES", "key_lg_vol" );
+	   char smallVolStr[16];
+	   char mediumVolStr[16];
+	   char largeVolStr[16];
+	   sprintf( smallVolStr, "%0.1f", smallVol );
+	   sprintf( mediumVolStr, "%0.1f", mediumVol );
+	   sprintf( largeVolStr, "%0.1f", largeVol );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_1", smallVolStr );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_2", mediumVolStr );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_3", largeVolStr );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_4", largeVolStr );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_5", largeVolStr );
+	   datfile.AddLine( "PRODUCT_TEMPLATES", "key_pls_volume_6", largeVolStr );
+	   datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_sm_vol" );
+	   datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_med_vol" );
+	   datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_lg_vol" );
+	}
+	{
+	   float amapMin = datfile.GetFloat( "PREDICTION_CONFIG", "key_amap_min" );
+	   char amapMinStr[16];
+	   sprintf( amapMinStr, "%0.1f", amapMin );
+	   datfile.AddLine( "PREDICTION_CONFIG", "key_pls_amap_minimum", amapMinStr );
+	   datfile.RemoveLine( "PREDICTION_CONFIG", "key_pls_amap_min" );
+	}
+
+	/*
+		 New values for v5.1 ...
+
+		   - key_rinseback_protocol=0
+		   - key_audit_tracking=0
+		   - key_pls_amap_maximum=1000
+	*/
+	{
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_rinseback_protocol", "0" );
+	   datfile.AddLine( "PROCEDURE_CONFIG", "key_audit_tracking", "0" );
+	   datfile.AddLine( "PREDICTION_CONFIG", "key_pls_amap_maximum", "1000" );
+	}
+	return true;
+}
+
+bool updateConfig60to51(CDatFileReader& datfile)
+{
+	bool update = false;
+   if(datfile.Find("LANGUAGE_UNIT_CONFIG","key_crit_or_glob") != NULL)
+	{
+		update = true;
+		cerr << "v6.0 config.dat file found.  Conversion needed" << endl;
+	}
+
    //////////////////////////////////////////////////////////////////////////////////
    //                 6.0-->5.1 changes
    //////////////////////////////////////////////////////////////////////////////////
+	if(update)
    {
 	  datfile.RemoveLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob" );
 
@@ -567,21 +757,21 @@ void updateConfig()
 	  value = datfile.GetInt( "LANGUAGE_UNIT_CONFIG", "key_lang" );
 	  if (value < 0 || value > 12) {
 		  datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_lang", "0" );
-		  fprintf( stdout, "Setting language to english.\n" );
+		  fprintf( stderr, "Setting language to english.\n" );
 	  }
 
 	  value = datfile.GetInt( "PROCEDURE_CONFIG", "key_tbv_vol_setting" );
 	  if (value < 1 || value > 7) {
 		  datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_vol_setting", "1" );
-		  fprintf( stdout, "Setting key_tbv_vol_setting to '1'.\n" );
+		  fprintf( stderr, "Setting key_tbv_vol_setting to '1'.\n" );
 	  }
 
 	  for (key[13] = 'a'; key[13] <= 'o'; ++key[13]) {
 		  value = datfile.GetInt( "PRODUCT_DEFINITIONS", key );
 		  if (value < 0 || value > 6) {
 			  datfile.SetValue( "PRODUCT_DEFINITIONS", key, "0" );
-			  fprintf( stdout, key );
-			  fprintf( stdout, " set to product '0'.\n" );
+			  fprintf( stderr, key );
+			  fprintf( stderr, " set to product '0'.\n" );
 		  }
 	  }
 
@@ -589,12 +779,39 @@ void updateConfig()
 		  datfile.AddLine("PROCEDURE_CONFIG", "key_rinseback_protocol", "0");
 	  }
    }
-
-   datfile.WriteCfgFile(FILE_CONFIG_DAT);
-
-   cerr << "config.dat file converted." << endl;
+	return update;
 }
+
+void updateConfig()
+{
+   //
+   // Create the dat file reader to retrieve the configuration data.
+   //
+   CDatFileReader datfile(PNAME_CONFIGDAT);
+   if ( datfile.Error() )
+   {
+      cerr << "Config file read error : " << datfile.Error() << endl;
+      return;
+   }
+      
+   bool update = 0;
+
+   update |= updatePostCount(datfile);
+   update |= updateConfig50to51(datfile);
+   update |= updateConfig51to517(datfile);
+	update |= updateConfig60to51(datfile);
+   if (update)
+   {
+	   datfile.WriteCfgFile(FILE_CONFIG_DAT);
+	   cerr << "config.dat file converted." << endl;
+   }
+	else
+		cerr << "Up to date v5.1 config.dat file found.  No conversion needed" << endl;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -611,13 +828,110 @@ void updateCal()
       cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
-      
-   if ( !datfile.Find("TOUCHSCREEN","screen_horizontal_size") )
-   {
-      cerr << " ... pre-v5.1 cal.dat file found.  Unable to Convert!  ending..." << endl;
+	const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge", 
+		"tsraw_top_edge", "tsraw_bottom_edge" };
+
+	const char* tsHeader = "TOUCHSCREEN";
+	struct stat fileStat;
+	if ( stat((char *)PNAME_TCHSCRNDAT, &fileStat) == OK )
+	{ 	// 6.0 spiral 4 file 
+		CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
+		datfile.AddSection("[TOUCHSCREEN]");
+		for (int i=0; i<=5; i++) //Keep both loops separate. 
+		{
+			datfile.AddLine(tsHeader, tsOriginal[i].c_str(), tscrnFile.Find(tsHeader, tsOriginal[i].c_str()));
+		}
+		datfile.Write(PNAME_CALDAT);
+		tscrnFile.Write(PNAME_TCHSCRNDAT);
+
+		if ( remove( PNAME_TCHSCRNDAT ) == ERROR )
+      {
+         fprintf( stderr, "Removal of %s file failed\n", PNAME_TCHSCRNDAT );
+      }
       return;
    }
-   cerr << "v5.2 " << FILE_CAL_DAT << " file found.  No conversion needed" << endl;
+
+   else if ( !datfile.Find("TOUCHSCREEN","screen_horizontal_size") )
+   {
+      cerr << "pre-v5.1 cal.dat file found.  Conversion needed" << endl;
+
+      FILE * fp;
+		fp = fopen("/config/absf.2", "r");
+
+      char x1Str[8];
+      char x2Str[8];
+      char y1Str[8];
+      char y2Str[8];
+
+		if ( fp )
+		{
+         char buffer[256];
+         char *savePtr=0;
+         char *p=0;
+         int temp;
+         fgets( buffer, 256, fp );
+         fclose(fp);
+
+         p = strtok_r(buffer," :x",&savePtr); // 0 x position
+         p = strtok_r( NULL ," :x",&savePtr); // 0 y position
+         p = strtok_r( NULL ," :x",&savePtr); // max x position
+         p = strtok_r( NULL ," :x",&savePtr); // max y position
+         p = strtok_r( NULL ," :x",&savePtr); // x1 position
+         strcpy(x1Str,p);
+         p = strtok_r( NULL ," :x",&savePtr); // x2 position
+         strcpy(x2Str,p);
+         p = strtok_r( NULL ," :x",&savePtr); // y1 position
+         strcpy(y1Str,p);
+         p = strtok_r( NULL ," :x",&savePtr); // y2 position
+         strcpy(y2Str,p);
+
+         attrib("/config/absf.2","-R");
+         if ( remove( "/config/absf.2" ) == ERROR )
+         {
+            fprintf( stderr, "Removal of absf.2 file failed\n" );
+         }
+
+      }
+      else
+      {
+         //
+         // Default values if no absf.2 file ...
+         //
+         sprintf( x1Str,"%d",90 );
+         sprintf( x2Str,"%d",850 );
+         sprintf( y1Str,"%d",130 );
+         sprintf( y2Str,"%d",830 );
+      }
+
+
+      datfile.AddComment(" ");
+      datfile.AddSection("[TOUCHSCREEN]");
+      datfile.AddComment("#");
+      datfile.AddComment("# Touch screen calibration values");
+      datfile.AddComment("#");
+      datfile.AddComment("# These values specify the logical screen size in pixels.");
+      datfile.AddComment("#");
+      datfile.AddLine("screen_horizontal_size", "640");
+      datfile.AddLine("screen_vertical_size", "480");
+      datfile.AddComment(" ");
+      datfile.AddComment("#");
+      datfile.AddComment("# These values correspond to the raw touchscreen readings for the specified");
+      datfile.AddComment("# screen edges.  They are used along with the screen size specified above");
+      datfile.AddComment("# to convert raw touch screen readings to pixel based coordinates.");
+      datfile.AddComment("#");
+      datfile.AddLine("tsraw_left_edge", x1Str);
+      datfile.AddLine("tsraw_right_edge", x2Str);
+      datfile.AddLine("tsraw_top_edge", y1Str);
+      datfile.AddLine("tsraw_bottom_edge", y2Str);
+
+      datfile.Write(PNAME_CALDAT);
+
+      cerr << "cal.dat file converted." << endl;
+
+      return;
+   }
+
+   cerr << "v5.1 cal.dat file found.  No conversion needed" << endl;
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -631,13 +945,13 @@ const char *newVersion  = "";
 void updateRBC()
 {
    // Put the rbc.dat file in the correct location.
-   attrib(CONFIG_PATH FILE_RBC_DAT, "-R");
+   attrib(CONFIG_PATH "/" FILE_RBC_DAT, "-R");
    if ( cp( TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT ) == ERROR )
    {
-      fprintf( stdout, "copy of rbc.dat failed\n" );
+      fprintf( stderr, "copy of rbc.dat failed\n" );
       return;
    }
-   attrib(CONFIG_PATH FILE_RBC_DAT, "+R");
+   attrib(CONFIG_PATH "/" FILE_RBC_DAT, "+R");
 
 }
 //////////////////////////////////////////////////////////////////////////////////
@@ -659,14 +973,14 @@ void updateHW()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      fprintf(stderr, "Updating hw.dat to different version %s from existing version %s...\n", newVersion, currVersion);
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
       if ( IsVendor( "Ampro" ) )
       {
          if ( cp( TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT ) == ERROR )
          {
-               fprintf( stdout, "copy of hw_ampro.dat failed\n" );
+               fprintf( stderr, "copy of hw_ampro.dat failed\n" );
                return;
          }
       }
@@ -674,12 +988,12 @@ void updateHW()
       {
          if ( cp( TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
-            fprintf( stdout, "copy of hw_versalogic.dat failed\n" );
+            fprintf( stderr, "copy of hw_versalogic.dat failed\n" );
             return;
          }
       }
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "+R");
-      fflush(stdout);
+      fflush(stderr);
    }
 
 }
@@ -698,17 +1012,17 @@ void updateSW()
    if ( newVersion &&
          ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      fprintf(stderr, "Updating sw.dat to different version %s from existing version %s...\n", newVersion, currVersion);
       attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
 
       if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
       {
-         fprintf( stdout, "copy of %s failed\n", FILE_SW_DAT );
+         fprintf( stderr, "copy of %s failed\n", FILE_SW_DAT );
          return;
       }
 
       attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
-      fflush(stdout);
+      fflush(stderr);
    }
 
 }
@@ -728,17 +1042,17 @@ void updateTerror()
     
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      fprintf(stderr, "Updating terror_config.dat to different version %s from existing version %s...\n", newVersion, currVersion);
       attrib(TERROR_CONFIG_FILE, "-R");
 
       if ( cp( TEMPLATES_PATH "/terror_config.dat", CONFIG_PATH "/terror_config.dat" ) == ERROR )
       {
-         fprintf( stdout, "copy of terror_config.dat failed\n" );
+         fprintf( stderr, "copy of terror_config.dat failed\n" );
          return;
       }
 
       attrib(CONFIG_PATH "/terror_config.dat", "+R");
-      fflush(stdout);
+      fflush(stderr);
    }
 
 }
@@ -758,7 +1072,7 @@ void updateSounds()
 	}
 	
 	attrib(PNAME_SOUNDSDAT, "+R");
-	fflush(stdout);
+	fflush(stderr);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -773,17 +1087,17 @@ void updateCassette()
     
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      fprintf(stdout, "Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+      fprintf(stderr, "Updating %s to different version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "-R");
 
       if ( cp( TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT ) == ERROR )
       {
-         fprintf( stdout, "copy of %s failed\n", FILE_CASSETTE_DAT );
+         fprintf( stderr, "copy of %s failed\n", FILE_CASSETTE_DAT );
          return;
       }
 
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
-      fflush(stdout);
+      fflush(stderr);
    }
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -800,40 +1114,40 @@ void updateSetConfig()
 
    if (currVersion == NULL) {
 	   // if the file isnt there....
-       fprintf(stdout, "Adding %s ...\n", FILE_SETCONFIG_DAT);
+       fprintf(stderr, "Adding %s ...\n", FILE_SETCONFIG_DAT);
        // attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
-          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
+          fprintf( stderr, "copy of %s failed\n", FILE_SETCONFIG_DAT );
           return;
        }
 
        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
-       fflush(stdout);
+       fflush(stderr);
    }   
    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) < 0 ) {
 	   // Override the file
-       fprintf(stdout, "Overriding %s ...\n", FILE_SETCONFIG_DAT);
+       fprintf(stderr, "Overriding %s ...\n", FILE_SETCONFIG_DAT);
 	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 
        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
        {
-          fprintf( stdout, "copy of %s failed\n", FILE_SETCONFIG_DAT );
+          fprintf( stderr, "copy of %s failed\n", FILE_SETCONFIG_DAT );
           return;
        }
 
        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
-       fflush(stdout);
+       fflush(stderr);
    }
    else if (currVersion != NULL && newVersion == NULL) {
 	   // Remove the file
-       fprintf(stdout, "Removing %s ...\n", FILE_SETCONFIG_DAT);
+       fprintf(stderr, "Removing %s ...\n", FILE_SETCONFIG_DAT);
 	   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
 	   remove(CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    }
    else {
-       fprintf(stdout, "%s already exists ...\n", FILE_SETCONFIG_DAT);
+       fprintf(stderr, "%s already exists ...\n", FILE_SETCONFIG_DAT);
    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -842,6 +1156,47 @@ void updateSetConfig()
 //////////////////////////////////////////////////////////////////////////////////////
 //              Global  vars
 //////////////////////////////////////////////////////////////////////////////////////
+bool updateGlobVars50to51(CDatFileReader& datfile)
+{
+	
+   if ( !datfile.Find( "EXTERNALIP" ) )
+   {
+      cerr << "pre-v5.1 globvars file found.  Conversion needed" << endl;
+
+      // v5.1--------------
+      //  MACHINE=1T000XX
+      //  SENPID=000000000000
+      //  EXTERNALIP=172.21.127.255
+      //  EXTERNALBIP=172.21.255.255
+
+      // v5.0--------------
+      //  MACHINE=XX
+      //  CENPID=000000000000
+      //  SENPID=000000000000
+      //  ENPID486I=000000000000
+      //  AN2IP=172.21.127.255
+      //  AN2BIP=172.21.255.255
+
+      string an2ip   = datfile.GetString("AN2IP");
+      string an2bip  = datfile.GetString("AN2BIP");
+      datfile.RemoveLine("CENPID");
+      datfile.RemoveLine("ENPID486I");
+      datfile.RemoveLine("AN2IP");
+      datfile.RemoveLine("AN2BIP");
+      datfile.AddLine("EXTERNALIP",an2ip.c_str());
+      datfile.AddLine("EXTERNALBIP",an2bip.c_str());
+
+      datfile.Write(GLOBVARS_FILE);
+
+      cerr << "globvars file converted." << endl;
+
+      return true;
+   }
+
+   cerr << "v5.1 globvars file found.  No conversion needed" << endl;
+	return false;
+}
+
 void updateGlobVars() 
 {
    //
@@ -854,15 +1209,10 @@ void updateGlobVars()
       return;
    }
 
-   if ( !datfile.Find( "EXTERNALIP" ) )
-   {
-      cerr << "pre-v5.1 globvars file found Unable to Convert... ending" << endl;
-      return;
-   }
-
-   cerr << "v5.2 globvars file found.  No conversion needed" << endl;
+	bool update = updateGlobVars50to51(datfile);
+	if(!update)
+		cerr << "v5.2 globvars file found.  No conversion needed" << endl;
 }
-//////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -878,7 +1228,7 @@ void updateTrima()
     //
     // Make /vxboot and /trima partitions writable
     DOS_VOLUME_DESC_ID  pVolDesc;
-    pVolDesc = dosFsVolDescGet((void *)VXBOOT_PATH, NULL);
+	pVolDesc = dosFsVolDescGet(const_cast<char*>("/vxboot"), NULL);
     if ( !pVolDesc )
     {
         perror(VXBOOT_PATH);
@@ -897,11 +1247,52 @@ void updateTrima()
     cbioModeSet(pVolDesc->pCbio, O_RDWR);   
    
    //
-   // Extract the update files
-   fprintf( stdout, "Extracting updateTrima ...\n" );
-   if ( tarExtract( UPDATE_PATH "/updateTrima.taz", UPDATE_PATH ) == ERROR )
+   // Extract v5 files, if this is an upgrade from v5 ...
+   //
+   struct stat archiveDir;
+   struct stat archive;
+   stat( "/machine/v5_archive", &archiveDir );
+   stat( "/machine/v5_archive/config/machine.tar", &archive );
+
+   if ( S_ISDIR( archiveDir.st_mode ) &&
+        S_ISREG( archive.st_mode ) )
    {
-      fprintf( stdout, "Extraction of update files failed\n" );
+      fprintf( stderr, "Found /machine/v5_archive directory\n" );
+      fprintf( stderr, " ... Extracting v5.0 machine files\n" );
+       
+   //
+   // Extract the update files
+      fprintf( stderr, "Extracting machine.tar ...\n" );
+      if ( tarExtract( "/machine/v5_archive/config/machine.tar", "/machine/tmp" ) == ERROR )
+      {
+         fprintf( stderr, "Extraction of v5.0 machine files failed\n" );
+         return;
+      }
+
+      if ( cp( "/machine/v5_archive/config/machine.tar", "/machine/v5_archive/config/old_machine.tar" ) == ERROR ||
+           remove( "/machine/v5_archive/config/machine.tar" ) == ERROR )
+           
+      {
+         fprintf( stderr, "Move of machine.tar to old_machine.tar failed\n" );
+         return;
+      }
+
+      //
+      // Move the machine files to the /config partition ....
+      fprintf( stderr, "Moving machine files ...\n" );
+      if ( xcopy( "/machine/tmp/d/machine","/config" ) == ERROR )
+      {
+         fprintf( stderr, "Moving the v5.0 machine files failed\n" );
+         return;
+      }
+   }
+
+	//
+   // Extract the update files
+   fprintf( stderr, "Extracting updateTrima ...\n" );
+   if ( tarExtract( "/machine/update/updateTrima.taz", "/machine/update" ) == ERROR )
+   {
+      fprintf( stderr, "Extraction of update files failed\n" );
       return;
    }
 
@@ -920,21 +1311,21 @@ void updateTrima()
 
       //
       // Save off the old vxWorks image in case of failure ...
-      fprintf( stdout, "Saving the old OS image..." );
+      fprintf( stderr, "Saving the old OS image..." );
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
       if ( cp( VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old" ) == ERROR )
       {
-         fprintf( stdout, "Archive of old OS image failed\n" );
+         fprintf( stderr, "Archive of old OS image failed\n" );
       }
 
    }
     
    //
    // Store the new files in the proper position
-   fprintf( stdout, "Extracting the OS image...\n" );
+   fprintf( stderr, "Extracting the OS image...\n" );
    if ( tarExtract( UPDATE_PATH "/vxboot.taz", UPDATE_PATH ) == ERROR )
    {
-      fprintf( stdout, "Extraction of OS image failed\n" );
+      fprintf( stderr, "Extraction of OS image failed\n" );
       return;
    }
 
@@ -943,20 +1334,20 @@ void updateTrima()
    if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
         copyFileContiguous( UPDATE_PATH "/vxWorks"    , VXBOOT_PATH "/vxWorks"     ) == ERROR )
    {
-      fprintf( stdout, "Install of OS image failed\n" );
+      fprintf( stderr, "Install of OS image failed\n" );
       return;
    }
    if ( remove( UPDATE_PATH "/bootrom.sys" ) == ERROR ||
         remove( UPDATE_PATH "/vxWorks"     ) == ERROR ||
         remove( UPDATE_PATH "/vxboot.taz"  ) == ERROR )
    {
-      fprintf( stdout, "Removal of temporary OS image failed\n" );
+      fprintf( stderr, "Removal of temporary OS image failed\n" );
       return;
    }
     
    //
    // Remove existing Trima files
-   fprintf( stdout, "Removing old Trima files...\n" );
+   fprintf( stderr, "Removing old Trima files...\n" );
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
@@ -967,19 +1358,19 @@ void updateTrima()
    
    //
    // Uncompress the update file
-   fprintf( stdout, "Extracting the Trima software files...\n" );
-   if ( tarExtract( UPDATE_PATH "/trima.taz", TRIMA_PATH ) == ERROR )
+   fprintf( stderr, "Extracting the Trima software files...\n" );
+   if ( tarExtract( "/machine/update/trima.taz", "/trima" ) == ERROR )
    {
-      fprintf( stdout, "Extraction of the Trima software failed.\n" );
+      fprintf( stderr, "Extraction of the Trima software failed.\n" );
       return;
    }
-   if ( remove( UPDATE_PATH "/trima.taz" ) == ERROR )
+   if ( remove( "/machine/update/trima.taz" ) == ERROR )
    {
-      fprintf( stdout, "Removal of Trima archive image failed\n" );
+      fprintf( stderr, "Removal of Trima archive image failed\n" );
       return;
    }
 
-   
+   //
    // Update the configuration files ...
    ///////////////////////////////////////////////////////////////////////////////////
    //              Config.dat
@@ -1073,19 +1464,19 @@ void updateTrima()
         softcrc("-filelist " FILELISTS_PATH "/rbcdat.files -verify "    CONFIG_CRC_PATH "/rbcdat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0)
    {
-      fprintf(stdout, "CRC check of installed software failed\n");
+      fprintf(stderr, "CRC check of installed software failed\n");
       return;
    }
 
-   fprintf( stdout, "Trima software update complete.\n" );
+   fprintf( stderr, "Trima software update complete.\n" );
 
    // Delete the update script so that it doesn't run again on the subsequent boot if the GTS guy
    // is still holding down the buttons.
-   fprintf(stdout, "removing update script.\n");
+   fprintf(stderr, "removing update script.\n");
    remove( UPDATE_PATH "/updatetrima" );
    remove( UPDATE_PATH "/updatetrima.taz" );
 
-   fflush( stdout );
+   fflush( stderr );
 
    trimaSysStartDiskSync();
 }
