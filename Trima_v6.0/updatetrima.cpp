@@ -4,7 +4,7 @@
  * Install program for the Trima/vxWorks system
  * (This install script is specifically for updating from 5.1 to 6.0.)
  *
- * $Header: E:/BCT_Development/Install/Trima_v6.0/rcs/updatetrima.cpp 1.11 2009/06/25 16:03:08Z dslausb Exp dslausb $
+ * $Header$
  * $Log: updatetrima.cpp $
  * Revision 1.11  2009/06/25 16:03:08Z  dslausb
  * IT 9093 - Make sure config files can't be overwritten in place via FTP
@@ -844,10 +844,10 @@ void updateCal()
       cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
-      
+
 	//For first time installs, copy the touchscreen template file over
-   struct stat tsFileStat;
-	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR)  
+	struct stat tsFileStat;
+	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR )  
 	{
 		std::string tsTmpl(TEMPLATES_PATH "/" FILE_TCHSCRN_DAT);
 		if( stat(const_cast<char*>(tsTmpl.c_str()), &tsFileStat) == OK )
@@ -872,7 +872,6 @@ void updateCal()
 	const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge", 
 		"tsraw_top_edge", "tsraw_bottom_edge" };
 
-
 	// Is it an old 6.0 install (5.8)
 	if ( datfile.Find(tsHeader, "a") )
    {
@@ -882,13 +881,25 @@ void updateCal()
 		//Transfer values from cal.dat to touch_screen.dat
 		for(int i=0; i<=5; i++)
 		{
-			tscrnFile.SetValue(tsHeader, tsAF[i].c_str(), datfile.Find(tsHeader, tsAF[i].c_str()));
-			datfile.RemoveLine(tsHeader, tsAF[i].c_str());
+			const char* val = datfile.Find(tsHeader, tsAF[i].c_str());
+			if(val)
+			{
+				tscrnFile.SetValue(tsHeader, tsAF[i].c_str(), val);
+				datfile.RemoveLine(tsHeader, tsAF[i].c_str());
+			}
+			else
+				std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
 		}
 		for (int i=0; i<=5; i++) //Keep both loops separate. 
 		{
-			tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), datfile.Find(tsHeader, tsOriginal[i].c_str()));
-			datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+			const char* val = datfile.Find(tsHeader, tsOriginal[i].c_str());
+			if(val)
+			{
+				tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), val);
+				datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+			}
+			else
+				std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
 		}
 		datfile.RemoveLine(tsHeader);
 	}
@@ -924,7 +935,7 @@ void updateCal()
 	}
 
 	tscrnFile.Write(PNAME_TCHSCRNDAT);
-   datfile.Write(FILE_CAL_DAT);
+   datfile.Write(PNAME_CALDAT);
 
    cerr << FILE_CAL_DAT << " file converted." << endl;
 }
