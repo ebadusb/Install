@@ -872,6 +872,40 @@ void updateCal()
 	const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge", 
 		"tsraw_top_edge", "tsraw_bottom_edge" };
 
+	// Is it an old 6.0 install (5.8)
+	if ( datfile.Find(tsHeader, "a") )
+   {
+      cerr << "v6.0 " << FILE_CAL_DAT << " old 6.0 cal file found.  Conversion needed" << endl;
+		//Move all TOUCHSCREEN related data to touch_screen.dat
+		
+		//Transfer values from cal.dat to touch_screen.dat
+		for(int i=0; i<=5; i++)
+		{
+			const char* val = datfile.Find(tsHeader, tsAF[i].c_str());
+			if(val)
+			{
+				tscrnFile.SetValue(tsHeader, tsAF[i].c_str(), val);
+				datfile.RemoveLine(tsHeader, tsAF[i].c_str());
+			}
+			else
+				std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
+		}
+		for (int i=0; i<=5; i++) //Keep both loops separate. 
+		{
+			const char* val = datfile.Find(tsHeader, tsOriginal[i].c_str());
+			if(val)
+			{
+				tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), val);
+				datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+			}
+			else
+				std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
+		}
+		datfile.RemoveLine(tsHeader);
+	}
+	else if( datfile.Find(tsHeader) ) 
+	{
+		cerr << "Pre-v6.0 " << FILE_CAL_DAT << " file found.  Conversion needed" << endl;
    //////////////////////////////////////////////////////////////////////////////////
 		//                 5.1/P-->6.0 changes
    //////////////////////////////////////////////////////////////////////////////////
