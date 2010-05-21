@@ -146,11 +146,11 @@
 	#ifndef PNAME_FONT_CRC_FILE
 		#define PNAME_FONT_CRC_FILE		CONFIG_CRC_PATH "/fonts.crc"
 	#endif // #ifndef PNAME_FONT_CRC_FILE
-	
+
 	#ifndef PNAME_DATA_CRC_FILE
 		#define PNAME_DATA_CRC_FILE		CONFIG_CRC_PATH "/data.crc"
 	#endif // #ifndef PNAME_DATA_CRC_FILE
-	
+
 	#ifndef PNAME_STRING_CRC_FILE
 		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
 	#endif // #ifndef PNAME_STRING_CRC_FILE
@@ -167,7 +167,7 @@
 		#undef SAFETY_BOOTROM_IMAGE
 	#endif
     #define SAFETY_BOOTROM_IMAGE        SAFETY_BOOT_PATH "/bootrom.sys"
-
+		
 	#ifdef SAFETY_VXWORKS_IMAGE
 		#undef SAFETY_VXWORKS_IMAGE
 	#endif
@@ -844,12 +844,14 @@ void updateCal()
       cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
-	struct stat tsFileStat;
-	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR )  
+
+	//For first time installs, copy the touchscreen template file over
+   struct stat tsFileStat;
+	if ( stat ((char *)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR)  
 	{
 		std::string tsTmpl(TEMPLATES_PATH "/" FILE_TCHSCRN_DAT);
 		if( stat(const_cast<char*>(tsTmpl.c_str()), &tsFileStat) == OK )
-		{
+   {
 			if ( cp(tsTmpl.c_str(), PNAME_TCHSCRNDAT ) == ERROR )
 				cerr << "copy of " << tsTmpl << " to " << PNAME_TCHSCRNDAT  << " failed" << endl;
 			else
@@ -860,7 +862,7 @@ void updateCal()
 
 	CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
 	if ( tscrnFile.Error() )
-	{
+   {
 		cerr << "Calibration file read error : " << datfile.Error() << endl;
       return;
    }
@@ -870,29 +872,6 @@ void updateCal()
 	const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge", 
 		"tsraw_top_edge", "tsraw_bottom_edge" };
 
-
-	// Is it an old 6.0 install (5.8)
-	if ( datfile.Find(tsHeader, "a") )
-   {
-      cerr << "v6.0 " << FILE_CAL_DAT << " old 6.0 cal file found.  Conversion needed" << endl;
-		//Move all TOUCHSCREEN related data to touch_screen.dat
-		
-		//Transfer values from cal.dat to touch_screen.dat
-		for(int i=0; i<=5; i++)
-		{
-			tscrnFile.SetValue(tsHeader, tsAF[i].c_str(), datfile.Find(tsHeader, tsAF[i].c_str()));
-			datfile.RemoveLine(tsHeader, tsAF[i].c_str());
-		}
-		for (int i=0; i<=5; i++) //Keep both loops separate. 
-		{
-			tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), datfile.Find(tsHeader, tsOriginal[i].c_str()));
-			datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
-		}
-		datfile.RemoveLine(tsHeader);
-	}
-	else if( datfile.Find(tsHeader) ) 
-	{
-		cerr << "Pre-v6.0 " << FILE_CAL_DAT << " file found.  Conversion needed" << endl;
    //////////////////////////////////////////////////////////////////////////////////
 		//                 5.1/P-->6.0 changes
    //////////////////////////////////////////////////////////////////////////////////
@@ -919,10 +898,10 @@ void updateCal()
 		else
 			cerr << " ... pre-v5.1 " << FILE_CAL_DAT << " file found.  Unable to Convert!  ending..." << endl;
 		return;
-	}
+   }
 
 	tscrnFile.Write(PNAME_TCHSCRNDAT);
-   datfile.Write(FILE_CAL_DAT);
+   datfile.Write(PNAME_CALDAT);
 
    cerr << FILE_CAL_DAT << " file converted." << endl;
 }
@@ -1117,7 +1096,7 @@ void updateSetConfig()
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
 
-   if (currVersion == NULL) {
+  if (currVersion == NULL) {
 	   // if the file isnt there....
        printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
 
@@ -1129,7 +1108,7 @@ void updateSetConfig()
 
        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
        fflush(stdout);
-   }
+   }   
    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) < 0 ) {
 	   // Override the file
        printf("Overriding %s ...\n", FILE_SETCONFIG_DAT);
@@ -1365,9 +1344,9 @@ void updateTrima()
    //
    // Remove existing Trima files
    printf("Removing old Trima files...\n");
-   fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
-   fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
-   fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
+   fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
+   fileSort(SAVEDATA_PATH,   FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
+   fileSort(TOOLS_PATH,      FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(STRING_DIRECTORY,FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    fileSort(GRAPHICS_PATH,   FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
 
@@ -1406,7 +1385,7 @@ void updateTrima()
       printf("Removal of string archive image failed\n");
       return;
    }
-   
+
    //
    // Uncompress the update file
    printf("Extracting the font files...\n");
@@ -1461,8 +1440,8 @@ void updateTrima()
    {
       printf("Copying Safety Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
 
-      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE )       == ERROR ||
-           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"    , SAFETY_VXWORKS_IMAGE )       == ERROR )
+      if ( cp( SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE )	== ERROR ||
+           cp( SAFETY_BOOT_PATH "/vxWorks_ampro"	, SAFETY_VXWORKS_IMAGE )	== ERROR )
       {
 			fprintf( stderr, "Install of OS image failed\n" );
 			return;
@@ -1487,7 +1466,7 @@ void updateTrima()
        remove( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"	)				== ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     ) == ERROR ||
         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR ||
-        remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe"     ) == ERROR )
+        remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe" ) == ERROR )
    {
       fprintf( stderr, "Removal of temporary OS image failed\n" );
       return;
@@ -1510,7 +1489,7 @@ void updateTrima()
 			printf("Removal of Tools archive image failed\n");
 		}
 	}
-
+   
    // Update the configuration files ...
    ///////////////////////////////////////////////////////////////////////////////////
    //              Config.dat
@@ -1591,24 +1570,24 @@ void updateTrima()
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
 
-	softcrc("-filelist " FILELISTS_PATH "/caldat.files		-update "	CONFIG_CRC_PATH	"/caldat.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/config.files		-update "	CONFIG_CRC_PATH	"/config.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/hwdat.files		-update "	CONFIG_CRC_PATH	"/hwdat.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/rbcdat.files		-update "	CONFIG_CRC_PATH	"/rbcdat.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/terrordat.files	-update "	CONFIG_CRC_PATH	"/terrordat.crc"	);
-	softcrc("-filelist " FILELISTS_PATH "/cassette.files	-update "	CONFIG_CRC_PATH	"/cassette.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/setconfig.files	-update "	CONFIG_CRC_PATH	"/setconfig.crc"	);
+   softcrc("-filelist " FILELISTS_PATH "/caldat.files    -update " CONFIG_CRC_PATH	"/caldat.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH	"/config.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH	"/hwdat.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH	"/rbcdat.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH	"/terrordat.crc"	);
+   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH	"/cassette.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH	"/setconfig.crc"	);
 	softcrc("-filelist " FILELISTS_PATH "/graphics.files	-update "	PNAME_GUI_GRAPHICS_CRC				);
 	softcrc("-filelist " FILELISTS_PATH "/strings.files		-update "	PNAME_STRING_CRC_FILE				);
 	softcrc("-filelist " FILELISTS_PATH "/fonts.files		-update "	PNAME_FONT_CRC_FILE					);
 	softcrc("-filelist " FILELISTS_PATH "/data.files		-update "	PNAME_DATA_CRC_FILE					);
 	softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "	TRIMA_PATH		"/safety.crc"		);
-	softcrc("-filelist " FILELISTS_PATH "/trima.files		-update "	TRIMA_PATH		"/trima.crc"		);
+   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH		"/trima.crc"		);
 	softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "	CONFIG_CRC_PATH	"/machine.crc"		);
 
    // Set permissions in config directory
    update_file_set_rdonly(CONFIG_PATH);
-   
+
 	// Verify the installation CRC values
 	if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files	-verify "	CONFIG_CRC_PATH	"/caldat.crc"	) ||
         verifyCrc("-filelist " FILELISTS_PATH "/config.files	-verify "	CONFIG_CRC_PATH	"/config.crc"	) ||
@@ -1617,11 +1596,11 @@ void updateTrima()
 	    verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "	CONFIG_CRC_PATH	"/terrordat.crc") ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "	CONFIG_CRC_PATH	"/cassette.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "	CONFIG_CRC_PATH	"/setconfig.crc") ||
-		verifyCrc("-filelist " FILELISTS_PATH "/graphics.files  -verify "	PNAME_GUI_GRAPHICS_CRC			) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "	PNAME_GUI_GRAPHICS_CRC			) ||
 		verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify "	PNAME_STRING_CRC_FILE			) ||
 		verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify "	PNAME_FONT_CRC_FILE				) ||
 		verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "	PNAME_DATA_CRC_FILE				) ||
-		verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "	TRIMA_PATH		"/safety.crc"	) ||
+	    verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "	TRIMA_PATH		"/safety.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "	TRIMA_PATH		"/trima.crc"	) ||
 	    verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "	CONFIG_CRC_PATH	"/machine.crc"	)) return;
 
@@ -1638,7 +1617,6 @@ void updateTrima()
    #ifdef OUTPUTFILE
    freopen("CON", "w", stdout);
    #endif
-
    trimaSysStartDiskSync();
 }
                           
