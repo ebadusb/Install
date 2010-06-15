@@ -677,7 +677,7 @@ bool update51to60(CDatFileReader& datfile)
       datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_rbc_on",           "0" );
 
 	  // Operators potentially discard flagged products
-	  datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
+//	  datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
 
 	  // DRBC threshold
       datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_threshold",       "300" );
