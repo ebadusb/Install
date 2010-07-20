@@ -760,22 +760,22 @@ bool update51to60(CDatFileReader& datfile)
 
 	  // Four extra PLT procedures
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_7", "8.0" );
-		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_7", "500.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_7", "571.4286" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_7", "0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_7", "50" );
 		
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_8", "9.0" );
-		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_8", "500.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_8", "642.8571" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_8", "0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_8", "50" );
 		
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_9", "10.0" );
-		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_9", "500.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_9", "714.2857" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_9", "0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_9", "50" );
 		
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_10", "11.0" );
-		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_10", "500.0" );
+		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_10", "785.7143" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_10", "0" );
 		datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_10", "50" );
 
