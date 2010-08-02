@@ -674,7 +674,7 @@ bool update51to60(CDatFileReader& datfile)
 
 	  // Master RAS and PAS toggles
       datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_plt_on",           "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_rbc_on",           "0" );
+      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_rbc_on",           "1" );
 
 	  // Operators potentially discard flagged products
 	  datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
@@ -696,7 +696,7 @@ bool update51to60(CDatFileReader& datfile)
 	  datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "3.9" );
 
 	  // Updatting HCT from 32 to 30
-	  datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",   			"30" );
+	  datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",   			"32" );
 
 	  //  PLT product PAS info
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
@@ -714,11 +714,11 @@ bool update51to60(CDatFileReader& datfile)
 
 	  // RBC product RAS/PTF info
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "80" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "100" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "80" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "160" ); 
       datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3", "0" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "80" ); 
+      datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "200" ); 
 
 	  // TRALI exclusions
       datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
