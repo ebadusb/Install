@@ -917,12 +917,22 @@ void updateCal()
 			tscrnFile.SetValue( tsHeader, "e", "0.685714286" );
 			tscrnFile.SetValue( tsHeader, "f", "-89.1428571" );
 		}
-		for (int i=0; i<=5; i++)  
-		{
-			tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), datfile.Find(tsHeader, tsOriginal[i].c_str()));
-			datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
-		}
-		datfile.RemoveLine(tsHeader);
+
+        const char *val = 0;
+        for (int i=0; i<=5; i++)
+        {
+            val = datfile.Find(tsHeader, tsOriginal[i].c_str());
+            if ( val )
+            {
+                tscrnFile.SetValue(tsHeader, tsOriginal[i].c_str(), val);
+                datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
+            }
+        }
+
+        while ( datfile.Find(tsHeader) )
+        {
+            datfile.RemoveLine(tsHeader);
+        }
 	}
 	else 
 	{
