@@ -1,0 +1,65 @@
+# $Header: //bctQuad3/home/BCT_Development/Trima5.R_PAS/Trima/update/RCS/makefile.vx 1.1 2008/03/12 16:06:16 jheiusb Exp $
+#
+# Makefile - makefile for the update utility
+#
+# $Log: makefile.vx $
+#
+
+ifeq ($(BUILD_TYPE),CLEAN)
+.PHONY: all
+all: clean
+else
+.PHONY: all
+all: check_opt_change bin/updateTrima
+endif
+
+# ------------------------------------------------------------------------------
+# Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
+# ------------------------------------------------------------------------------
+COMDIR = \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_build-6.87_1
+
+# ------------------------------------------------------------------------------
+# Define include directories needed for apps built in this directory
+# ------------------------------------------------------------------------------
+ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I../Install_Common
+
+# ------------------------------------------------------------------------------
+# Define location for Trima libraries
+# ------------------------------------------------------------------------------
+LIBDIR = 
+
+#OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
+ADDN_ASFLAGS : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
+ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
+ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
+ADDN_CCFLAGS := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
+
+include $(MAINDIR)/makefile.vxc
+
+
+
+# ------------------------------------------------------------------------------
+# Definitions required for building update.out
+# ------------------------------------------------------------------------------
+APP_NAME := update
+update_dir  = bin
+update_map  = update.map
+update_cxx_files = updatetrima.cpp updatetrimaEngine.cpp updatetrimaTo6X.cpp updatetrimaBase.cpp
+update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
+include $(COMDIR)/makefile.process_app
+vpath %.cpp ../Install_Common
+vpath %.h ../Install_Common
+
+# ------------------------------------------------------------------------------
+# Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
+# ------------------------------------------------------------------------------
+SCRIPTLOC = ../Scripts/updateTrima-5.1-6.1
+bin/updateTrima:$(update_dir)/update.out
+	cp $< $@
+	cp $< $(SCRIPTLOC)
+
+# ------------------------------------------------------------------------------
+# Actually build the outfile
+# ------------------------------------------------------------------------------
+include $(COMDIR)/makefile.build_apps
+
