@@ -45,10 +45,12 @@ APP_NAME := update
 update_dir  = bin
 update_map  = update.map
 update_cxx_files = updatetrima.cpp updatetrimaEngine.cpp updatetrimaTo51.cpp updatetrimaBase.cpp
+update_c_files = discover_hw.c
 update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
 include $(COMDIR)/makefile.process_app
 vpath %.cpp ../Install_Common
-vpath %.h ../Install_Common
+vpath %.c ../Install_Common ../Install_Common/os
+vpath %.h ../Install_Common $(WIND_BASE)
 
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
