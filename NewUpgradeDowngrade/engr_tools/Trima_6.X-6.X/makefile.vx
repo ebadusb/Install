@@ -16,12 +16,12 @@ endif
 # ------------------------------------------------------------------------------
 # Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
 # ------------------------------------------------------------------------------
-COMDIR ?= \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_build-6.87_1
+COMDIR = \\bctquad3\HOME\BCT_Development\Trima5.R\Trima\common_builds\common_build_6.298
 
 # ------------------------------------------------------------------------------
 # Define include directories needed for apps built in this directory
 # ------------------------------------------------------------------------------
-ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I../Install_Common
+ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I../../Install_Common
 
 # ------------------------------------------------------------------------------
 # Define location for Trima libraries
@@ -29,10 +29,10 @@ ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I../
 LIBDIR = 
 
 #OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
-ADDN_ASFLAGS : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
-ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
-ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
-ADDN_CCFLAGS := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_ASFLAGS : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CCFLAGS := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
 
 include $(MAINDIR)/makefile.vxc
 
@@ -44,21 +44,21 @@ include $(MAINDIR)/makefile.vxc
 APP_NAME := update
 update_dir  = bin
 update_map  = update.map
-update_cxx_files = updatetrima.cpp updatetrimaEngine.cpp updatetrimaTo51.cpp updatetrimaBase.cpp
+update_cxx_files = updatetrima.cpp updatetrimaEngine.cpp updatetrimaTo6X.cpp updatetrimaBase.cpp
 update_c_files = discover_hw.c
 update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
 include $(COMDIR)/makefile.process_app
-vpath %.cpp ../Install_Common
-vpath %.c ../Install_Common ../Install_Common/os
-vpath %.h ../Install_Common $(WIND_BASE)
+vpath %.cpp ../../Install_Common
+vpath %.c ../../Install_Common ../../Install_Common/os
+vpath %.h ../../Install_Common $(WIND_BASE)
 
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-SCRIPTLOC = ../Scripts/updateTrima-5.1.0-5.1.7
+SCRIPTLOC = ../Scripts/updateTrima-6.-6.0
 bin/updateTrima:$(update_dir)/update.out
 	cp $< $@
-	cp $< $(SCRIPTLOC)
+#	cp $< $(SCRIPTLOC)
 
 # ------------------------------------------------------------------------------
 # Actually build the outfile

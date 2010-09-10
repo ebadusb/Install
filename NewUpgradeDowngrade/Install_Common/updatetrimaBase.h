@@ -151,6 +151,10 @@ private:
 
 protected:
 
+////////////////////////////////////////////////////////////////
+// Common funtions that shouldn't be overridden
+////////////////////////////////////////////////////////////////
+
    int copyFileContiguous(const char * from, const char * to);
 
    int unzipFile(const char * from, const char * to);
@@ -164,67 +168,29 @@ protected:
    const char * findSetting(const char * setting, FILE * fp);
 
    const char * findSetting(const char * setting, const char * fileName);
-/*
-//
-// Scan memory for specified character pattern.  Used to find ID strings
-// in BIOS ROM and expansion ROM memory areas.
-//
-   const char * FindIDString(const char * memPtr,          // start of memory block
-                             unsigned int memLength,       // length of memory block (in bytes)
-                             const char * pattern,         // pattern to search for
-                             unsigned int & memStart,      // starting byte within memory block for search
-                             unsigned int & stringLength   // length of found string
-                             );
-*/
+
+   int verifyCrc(const char* commandLine);
+
+   bool updatePostCount(CDatFileReader& datfile);
 
 // Read the Projectrevision file and parse the info
    bool readProjectrevision();
 
+////////////////////////////////////////////////////////////////
+// Virtual funtions that can be overridden for each version
+////////////////////////////////////////////////////////////////
+
 // Check if this is an allowed upgrade path
-   bool allowedUpgradePath();
+// This is virtual so it can be overridden in engr_tools
+// to allow updates that aren't allowed in production
+   virtual bool allowedUpgradePath();
 
-/*
-//
-// Scan system BIOS memory area for ID strings
-//
-   bool IsVendor( const char * vendor );
-*/
-
-   int verifyCrc(const char* commandLine);
-
-
-   bool updatePostCount(CDatFileReader& datfile);
-
-////////////////////////////////////////////////////////////////
-// Abstract funtions that need to be overridden for each version
-////////////////////////////////////////////////////////////////
-//
-// Main config file update function, calls the others
-//
-   virtual void updateConfig() = 0;
-
-//
-// does the file extraction
-//
-   virtual bool extractUpdateFiles() = 0;
-
-//
-// Update the config file for the version being installed
-//
-   virtual bool updateConfigVersion(CDatFileReader& datfile) = 0;
-
-//
-// Update the config file from 6.X to 5.1
-// 
 // This is in the base class because it is needed to go 
-// from 5.2 to 5.1 and to go from 5.2 to 6.0
+// from 5.2 to 5.1 and to go from 5.2 to 6.0 
+// because you don't need to downgrade from 5.2 to 5.1.0
+// before going to 6.0 - so we have do it internally
 //
    virtual bool updateConfig52to51(CDatFileReader& datfile);
-
-//
-// cal.dat update function
-//
-   virtual void updateCal() = 0;
 
 //
 // rbc.dat update function
@@ -261,6 +227,30 @@ protected:
 //
    virtual void updateSetConfig();
 
+
+////////////////////////////////////////////////////////////////
+// Abstract funtions that need to be overridden for each version
+////////////////////////////////////////////////////////////////
+//
+// Main config file update function, calls the others
+//
+   virtual void updateConfig() = 0;
+
+//
+// does the file extraction
+//
+   virtual bool extractUpdateFiles() = 0;
+
+//
+// Update the config file for the version being installed
+//
+   virtual bool updateConfigVersion(CDatFileReader& datfile) = 0;
+
+//
+// cal.dat update function
+//
+   virtual void updateCal() = 0;
+
 //
 // trap_default.dat and trap_override.dat update function
 //
@@ -279,7 +269,8 @@ protected:
 public:
    enum { MaxIDStringLength = 256 };
 
-   enum TrimaVersion {V51, V517, V52, V60, V61};
+   // Enum of versions - MUST ADD NEW VERSIONS TO THE END
+   enum TrimaVersion {V51, V517, V52, V60, V61, V518};
 
 protected:
 

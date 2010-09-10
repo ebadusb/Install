@@ -16,7 +16,7 @@ endif
 # ------------------------------------------------------------------------------
 # Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
 # ------------------------------------------------------------------------------
-COMDIR = \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_build-6.87_1
+COMDIR ?= \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_build-6.87_1
 
 # ------------------------------------------------------------------------------
 # Define include directories needed for apps built in this directory
@@ -55,7 +55,7 @@ vpath %.h ../Install_Common $(WIND_BASE)
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-SCRIPTLOC = ../Scripts/updateTrima-5.1-5.1
+SCRIPTLOC = ../Scripts/updateTrima-5.1.0-5.1.0
 bin/updateTrima:$(update_dir)/update.out
 	cp $< $@
 	cp $< $(SCRIPTLOC)

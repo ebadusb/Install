@@ -10,35 +10,30 @@
 #include "crc.c"
 #include <fstream>
 
-//
-// The following strings are used to identify ID/copyright
-// strings within ROM data
-//
-static const char * romIDString[] =
-{
-    "copyright",
-    "Copyright",
-    "COPYRIGHT",
-    "BIOS",
-    NULL        // must be last entry
-};
+// The number of Trima versions - INCREMENT WHEN THERE ARE NEW VERSIONS
+static const int numberOfVersions = 6;
 
-// The number of Trima versions
-static const int numberOfVersions = 5;
-
-// The array of version names
-static const char * TrimaVersionName[] = {"5.1.0", "5.1.7", "5.2", "6.0", "6.1"};
+// The array of version names - MUST ADD NEW VERSIONS TO THE END
+static const char * TrimaVersionName[] = {"5.1.0", "5.1.7", "5.2", "6.0", "6.1", "5.1.8"};
 
 // The array of allowed upgrade paths
 static const bool allowedUpgrade[][numberOfVersions] = 
 {
-    // V51   V517  V52   V60   V61
-    {true, true, true, true, true},     // From 5.1.0
-    {true, true, false, false, false},  // From 5.1.7
-    {true, false, true, true, false},   // From 5.2
-    {true, false, false, true, false},  // From 6.0
-    {true, false, false, false, true}   // From 6.1
+    //            To:
+    //V51  V517   V52    V60    V61    V518
+    {true, true,  true,  true,  true,  true},   // From 5.1.0
+    {true, true,  false, false, false, false},  // From 5.1.7
+    {true, false, true,  true,  false, false},  // From 5.2
+    {true, false, false, true,  false, false},  // From 6.0
+    {true, false, false, false, true,  false},  // From 6.1
+    {true, false, false, false, false, true}    // From 5.1.8
 };
+
+// The array of allowed upgrade paths for Python
+static const bool allowedPythonUpgrade[] = 
+    //            To:
+    //V51   V517   V52    V60    V61    V518
+    {false, false, false, true,  true,  true};   // From anywhere
 
 using namespace std;
 
@@ -273,128 +268,57 @@ const char * updatetrimaBase :: findSetting(const char * setting, const char * f
     return result;
 }
 
-/*
-const char * updatetrimaBase :: FindIDString(
-                                            const char * memPtr,          // start of memory block
-                                            unsigned int memLength,       // length of memory block (in bytes)
-                                            const char * pattern,         // pattern to search for
-                                            unsigned int & memStart,      // starting byte within memory block for search
-                                            unsigned int & stringLength   // length of found string
-                                            )
-{
-    int patternLength = strlen(pattern);
-    const char * resultString = NULL;
-
-    while ( memStart < memLength-patternLength &&
-            !resultString )
-    {
-        if ( memPtr[memStart] == pattern[0] &&
-             memcmp(&memPtr[memStart], pattern, patternLength) == 0 )
-        {
-            resultString = &memPtr[memStart];
-        }
-        else
-        {
-            memStart += 1;
-        }
-    }
-
-    if ( resultString )
-    {
-        //
-        // Found the specified pattern.  Extend the string to get the printable
-        // characters surrounding it.
-        //
-        unsigned int   stringStart = memStart;
-        while ( stringStart > 0 &&
-                isprint(memPtr[stringStart-1]) &&
-                (memPtr[stringStart-1] & 0x80) == 0 )
-        {
-            stringStart -= 1;
-        }
-
-        stringLength = patternLength + (memStart-stringStart);
-        while ( stringStart+stringLength < memLength &&
-                stringLength < MaxIDStringLength &&
-                isprint(memPtr[stringStart+stringLength]) &&
-                (memPtr[stringStart+stringLength] & 0x80) == 0 )
-        {
-            stringLength += 1;
-        }
-
-        resultString = &memPtr[stringStart];
-        memStart = stringStart+stringLength;
-
-        if ( stringStart+stringLength < memLength &&
-             resultString[stringLength] != '\0' &&
-             resultString[stringLength] != '\r' &&
-             resultString[stringLength] != '\n' )
-        {
-            //
-            // Reject strings that do not end at the end of the ROM, or do not
-            // end with \0, \n, or \r.
-            //
-            resultString = NULL;
-        }
-        else
-        {
-            //
-            // Strip trailing spaces from string
-            //
-            while ( resultString[stringLength] == ' ' && stringLength > 0 )
-            {
-                stringLength -= 1;
-            }
-        }
-    }
-
-    return resultString;
-}
-*/
-
 bool updatetrimaBase :: readProjectrevision()
 {
     bool retval = true;
-    string projRevText;
-    char decimalPoint;
-    int curMajorRev;
-    int curMinorRev;
-    int curBuild;
+    int curMajorRev = 0;
+    int curMinorRev = 0;
+    int curBuild = 0;
 
+    // Open the projectrevision file and parse the string
+    // File is in the format: "$ProjectRevision: <majorRev>.[<minorRev>.]<build> $"
     ifstream fin;
     fin.open(TRIMA_PROJECT_REVISION_FILE);
     if ( fin.is_open() )
     {
-        fin >> projRevText;
+        char tmpNum[30];
 
-        cerr << "projRevText: " << projRevText << endl;
-
-        if ( projRevText == "$ProjectRevision:" )
+        // Read the "$ProjectRevision:" text and make sure it's right
+        fin.getline(tmpNum, sizeof(tmpNum)-1, ' ');
+        string tmpNumString(tmpNum);
+        if ( tmpNumString == "$ProjectRevision:" )
         {
-            fin >> curMajorRev;
+            // Read the majorRev
+            fin.getline(tmpNum, sizeof(tmpNum)-1, '.');
+            curMajorRev = atoi(tmpNum);
 
-            cerr << "curMajorRev: " << curMajorRev << endl;
-
-            if ( curMajorRev > 7 )
+            if ( curMajorRev )
             {
-                fin >> decimalPoint;
+                // Read the minorRev
+                fin.getline(tmpNum, sizeof(tmpNum)-1, '.');
+                curMinorRev = atoi(tmpNum);
 
-                fin >> curMinorRev;
-                cerr << "curMinorRev: " << curMinorRev << endl;
+                // Read the build
+                fin.getline(tmpNum, sizeof(tmpNum)-1, '.');
+                curBuild = atoi(tmpNum);
 
+                if ( !curBuild )
+                {
+                    // If there's no build then the minorRev was the build (the format was <majorRev>.<build>)
+                    curBuild = curMinorRev;
+                    curMinorRev = 0;
+                }
             }
-
-            fin >> decimalPoint;
-            fin >> curBuild;
-
-            cerr << "curBuild: " << curBuild << endl;
-
+            else
+            {
+                cerr << "Major revision formatted incorrectly." << endl;
+            }
         }
         else
         {
             cerr << "Projectrevision file formatted incorrectly." << endl;
-            retval = false;
         }
+        cerr << "Build of software on Trima: " << curMajorRev << "." << curMinorRev << "." << curBuild << endl;
     }
     else
     {
@@ -405,6 +329,7 @@ bool updatetrimaBase :: readProjectrevision()
     fin.close();
 
 
+    // Figure out what version of the software based on the revision & build info
     switch ( curMajorRev )
     {
     case 9:
@@ -417,22 +342,32 @@ bool updatetrimaBase :: readProjectrevision()
         curTrimaVersion = V52;
         break;
     case 6:
-        if ( curBuild >= 383 )
+        if ( curBuild == 301 )
+        {
+            curTrimaVersion = V51;
+        }
+        else if ( curBuild == 511 )
         {
             curTrimaVersion = V517;
         }
-        else
+        else if ( curBuild > 513 )  // This is a guess and needs to be updated when 5.1.8 is released
         {
+            curTrimaVersion = V518;
+        }
+        else if ( curBuild == 328 || curBuild == 343 || curBuild == 363 || ( curMinorRev == 1 && curBuild == 3) || curBuild == 381 )
+        {
+            // Other pre 5.1.7 builds that may be out there, treat it as 5.1.0
             curTrimaVersion = V51;
         }
         break;
     default:
-        cerr << "Can't determine version of software, assuming 5.1.0" << endl;
+        cerr << "Can't determine version of Trima software, aborting update." << endl;
+        retval = false;
     }
 
-    cout << "curTrimaVersion: " << curTrimaVersion << endl;
-    cout << "fromTrimaVersion: " << fromTrimaVersion << endl;
-    cout << "toTrimaVersion: " << toTrimaVersion << endl;
+    cout << "Software version currently on Trima: " << TrimaVersionName[curTrimaVersion] << endl;
+    cout << "Software version upgrading from (should mach version currently on Trima): " << TrimaVersionName[fromTrimaVersion] << endl;
+    cout << "Software version upgrading to: " << TrimaVersionName[toTrimaVersion] << endl;
 
     return retval;
 }
@@ -443,57 +378,32 @@ bool updatetrimaBase :: allowedUpgradePath()
 
     if ( curTrimaVersion != fromTrimaVersion )
     {
-        cerr << "The current software version on the Trima (" << TrimaVersionName[curTrimaVersion] << ") does not match this upgrade script." << endl;
-        cerr << "This upgrade script is for " << TrimaVersionName[fromTrimaVersion] << "  Use the correct upgrade script." << endl;
+        cerr << "The current software version on the Trima (" << TrimaVersionName[curTrimaVersion] << ") does not match this update script." << endl;
+        cerr << "This update script is for " << TrimaVersionName[fromTrimaVersion] << "  Use the correct update script." << endl;
         retval = false;
     }
 
     if( allowedUpgrade[curTrimaVersion][toTrimaVersion] )
     {
-        cerr << "The upgrade from " << TrimaVersionName[curTrimaVersion] << " to " << TrimaVersionName[toTrimaVersion] << " is allowed." << endl;
+        if ( isVersalogicPython() && !allowedPythonUpgrade[toTrimaVersion] )
+        {
+            cerr << "The update from " << TrimaVersionName[curTrimaVersion] << " to " << TrimaVersionName[toTrimaVersion] << " is not allowed on a VersaLogic Python Trima." << endl;
+            retval = false;
+        }
+        else 
+        {
+            cerr << "The update from " << TrimaVersionName[curTrimaVersion] << " to " << TrimaVersionName[toTrimaVersion] << " is allowed." << endl;
+        }
     }
     else
     {
-        cerr << "The upgrade from " << TrimaVersionName[curTrimaVersion] << " to " << TrimaVersionName[toTrimaVersion] << " is not allowed." << endl;
+        cerr << "The update from " << TrimaVersionName[curTrimaVersion] << " to " << TrimaVersionName[toTrimaVersion] << " is not allowed." << endl;
+        cerr << "Downgrade to version 5.1.0 first." << endl;
         retval = false;
     }
 
     return retval;
 }
-
-/*
-bool updatetrimaBase :: IsVendor( const char * vendor )
-{
-    const unsigned int BIOSAddress = 0xf0000;
-    const unsigned int BIOSLength = 0x10000;
-    char logData[MaxIDStringLength];
-
-    const char * romPtr = (const char *)(BIOSAddress);
-    int  stringIdx = 0;
-    while ( romIDString[stringIdx] )
-    {
-        unsigned int  searchStartIdx = 0;
-        unsigned int  stringLength; 
-        const char *  stringInfo = FindIDString(romPtr, BIOSLength, romIDString[stringIdx], searchStartIdx, stringLength);
-
-        while ( stringInfo )
-        {
-            if ( stringLength < MaxIDStringLength )
-            {
-                if ( strstr(stringInfo, vendor ) != NULL )
-                {
-                    return true;
-                }
-            }
-
-            stringInfo = FindIDString(romPtr, BIOSLength, romIDString[stringIdx], searchStartIdx, stringLength);
-        }
-
-        stringIdx += 1;
-    }
-    return false;
-}
-*/
 
 bool updatetrimaBase :: updatePostCount(CDatFileReader& datfile)
 {
@@ -760,7 +670,30 @@ int updatetrimaBase :: run()
     freopen( OUTPUTFILE, "w", stdout );
 #endif
 
-#ifdef JHTEMP
+    if ( !readProjectrevision() )
+    {
+        cerr << "Aborting update." << endl;
+        return(-1);
+    }
+
+    if ( !allowedUpgradePath() )
+    {
+        cerr << "Aborting update." << endl;
+        return(-1);
+    }
+
+    if ( isAmpro() )
+    {
+        cerr << "This is an Ampro Trima." << endl;
+    }
+    else if ( isVersalogicPython() )
+    {
+        cerr << "This is a Versalogic Python Trima." << endl;
+    }
+    else if ( isVersalogic() )
+    {
+        cerr << "This is a Versalogic Trima." << endl;
+    }
 
     update_file_set_rdwrite(CONFIG_PATH);
 
@@ -827,31 +760,6 @@ int updatetrimaBase :: run()
 #ifdef OUTPUTFILE
     freopen("CON", "w", stdout);
 #endif
-
-#endif //JHTEMP
-    readProjectrevision();
-
-    if ( !allowedUpgradePath() )
-    {
-        cerr << "Aborting upgrade." << endl;
-    }
-
-    if ( isAmpro() )
-    {
-        cerr << "This is an Ampro Trima." << endl;
-    }
-
-    if ( isVersalogic() )
-    {
-        cerr << "This is a Versalogic Trima." << endl;
-    }
-
-    if ( isVersalogicPython() )
-    {
-        cerr << "This is a Versalogic Python Trima." << endl;
-    }
-
-
 
     trimaSysStartDiskSync();
 

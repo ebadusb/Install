@@ -18,25 +18,9 @@
 
 #define	DISPLAY_PCI_DEVICE_CLASS		0x030000
 
-//
-// The following strings are used to identify ID/copyright
-// strings within ROM data
-//
-static const char * romIDString[] =
-{
-    "copyright",
-    "Copyright",
-    "COPYRIGHT",
-    "BIOS",
-    NULL        // must be last entry
-};
-
 char * findIDString( const char * memPtr, unsigned int memLength, 
 							const char * pattern, unsigned int * memStart, 
 							unsigned int * stringLength );
-
-unsigned char IsVendor( const char * vendor );
-
 
 unsigned char checkedHWID = 0;
 unsigned char checkedVersalogicType = 0;
@@ -47,75 +31,8 @@ unsigned char vsbc6Status = 0;
 unsigned char pythonStatus = 0;
 unsigned char ctStatus = 0;
 unsigned char geodeLxStatus = 0;
-static const int MaxIDStringLength = 256;
-
-unsigned char IsVendor( const char * vendor )
-{
-    const unsigned int BIOSAddress = 0xf0000;
-    const unsigned int BIOSLength = 0x10000;
-	 unsigned int  searchStartIdx = 0;
-	 unsigned int  stringLength = 0; 
-	 const char *  stringInfo = 0;
-
-    const char * romPtr = (const char *)(BIOSAddress);
-    int  stringIdx = 0;
-
-	 printf( "in IsVendor\n");
-
-	 while ( romIDString[stringIdx] )
-    {
-		  printf( "in IsVendor, looking for %s\n", romIDString[stringIdx]);
-
-        stringInfo = findIDString(romPtr, BIOSLength, romIDString[stringIdx], &searchStartIdx, &stringLength);
-
-        while ( stringInfo )
-        {
-				printf( "stringInfo is true\n");
-            if ( stringLength < MaxIDStringLength )
-            {
-					 printf( "stringLength < MaxIDStringLength\n");
-                if ( strstr(stringInfo, vendor ) != NULL )
-                {
-						  printf( "strstr(stringInfo, vendor ) != NULL\n");
-                    return 1;
-                }
-            }
-
-            stringInfo = findIDString(romPtr, BIOSLength, romIDString[stringIdx], &searchStartIdx, &stringLength);
-        }
-
-        stringIdx += 1;
-    }
-    return 0;
-}
 
 
-
-static void checkHWID(void)
-{
-
-	amproStatus = versalogicStatus = 0;
-
-	printf( "in checkHWID\n");
-
-	if ( IsVendor("Ampro") )
-	{
-		 printf( "IsVendor true, amproStatus = 1\n");
-		amproStatus = 1;
-	}
-	else
-	{
-		 printf( "biosIDString false\n");
-	
-		if ( IsVendor("Versalogic" ) )
-		{
-			 printf( "biosIDString true, versalogicStatus = 1\n");
-			versalogicStatus = 1;
-		}
-	}
-	checkedHWID = 1;
-}
-/*
 static void checkHWID(void)
 {
 	const unsigned int BIOSAddress = 0xf0000;
@@ -128,39 +45,33 @@ static void checkHWID(void)
 
 	amproStatus = versalogicStatus = 0;
 
-	printf( "in checkHWID\n");
-
 	biosIDString = findIDString(romPtr, BIOSLength, "Ampro", 
 											 &searchStartIdx, &stringLength);
 	if ( biosIDString )
 	{
-		 printf( "biosIDString true, amproStatus = 1\n");
 		amproStatus = 1;
 	}
 	else
 	{
-		 printf( "biosIDString false\n");
 		searchStartIdx = 0;
 		stringLength = 0; 
 	
 		romPtr = (const char *)(BIOSAddress);
 	
-		biosIDString = findIDString(romPtr, BIOSLength, "Versalogic", 
+		biosIDString = findIDString(romPtr, BIOSLength, "VersaLogic", 
 											 &searchStartIdx, &stringLength);
 		if ( biosIDString )
 		{
-			 printf( "biosIDString true, versalogicStatus = 1\n");
 			versalogicStatus = 1;
 		}
 	}
 	checkedHWID = 1;
 }
-*/
+
 unsigned char isAmpro(void)
 {
 	if ( !checkedHWID )
 	{
-		 printf( "in isAmpro\n");
 		checkHWID();
 	}
 
@@ -171,7 +82,6 @@ unsigned char isVersalogic(void)
 {
 	if ( !checkedHWID )
 	{
-		 printf( "in isVersalogic\n");
 		checkHWID();
 	}
 
@@ -182,12 +92,9 @@ static void checkVersalogicType(void)
 {
 	pythonStatus = vsbc6Status = 0;
 
-	printf( "in isVersalogicType\n");
 	if ( isVersalogic() )
 	{
-		 printf( "is isVersalogic\n");
-
-		 if ( isCT655XXGraphics() )
+		if ( isCT655XXGraphics() )
 		{
 			vsbc6Status = 1;
 		}
@@ -203,7 +110,6 @@ unsigned char isVersalogicVSBC6(void)
 {
 	if ( !checkedVersalogicType )
 	{
-		 printf( "in isVersalogicVSBC6\n");
 		checkVersalogicType();
 	}
 
@@ -214,7 +120,6 @@ unsigned char isVersalogicPython(void)
 {
 	if ( !checkedVersalogicType )
 	{
-		 printf( "in isVersalogicPython\n");
 		checkVersalogicType();
 	}
 
@@ -227,28 +132,25 @@ static void checkGraphics(void)
 	const unsigned int GeodeLXVendorID = 0x20811022;
 	unsigned int currentVendorID;
 
-	printf( "in checkGraphics\n");
-
 	ctStatus = geodeLxStatus = 0;
 	currentVendorID = getGraphicsVendorID();
 	if ( currentVendorID == CT655XXVendorID )
 	{
-		 printf( "currentVendorID == CT655XXVendorID\n");
 		ctStatus = 1;
 	}
 	else if ( currentVendorID == GeodeLXVendorID )
 	{
-		 printf( "currentVendorID == GeodeLXVendorID\n");
 		geodeLxStatus = 1;
 	}
 	checkedGraphics = 1;
+
+	printf("currentVendorID == %d\n", currentVendorID);
 }
 
 unsigned char isCT655XXGraphics(void)
 {
 	if ( !checkedGraphics )
 	{
-		 printf( "in isCT655XXGraphics\n");
 		checkGraphics();
 	}
 
@@ -259,7 +161,6 @@ unsigned char isGeodeLXGraphics(void)
 {
 	if ( !checkedGraphics )
 	{
-		 printf( "in isGeodeLXGraphics\n");
 		checkGraphics();
 	}
 
@@ -279,7 +180,6 @@ unsigned int getGraphicsVendorID(void)
 
 #if CPU != SIMNT
 
-	printf( "in getGraphicsVendorID\n");
 	/* Query the PCI bus for display devices */
 	do
 	{
@@ -287,13 +187,15 @@ unsigned int getGraphicsVendorID(void)
 
 		if( pciStatus == OK )
 		{
-			 printf( "pciStatus OK\n");
+			 printf("pciStatus == OK\n");
+
 			/* Is this device recognized by the system? */
 			if( pciConfigInLong( busNo, deviceNo, funcNo, PCI_CFG_VENDOR_ID, &vendorID ) == OK )
 			{
-				 printf( "vendorID = %d\n", vendorID);
 				if( vendorID != 0 )
 				{
+					 printf("vendorID = %d\n", vendorID);
+
 					break;
 				}
 			}
@@ -324,22 +226,17 @@ char * findIDString(
    int patternLength = strlen(pattern);
    const char * resultString = NULL;
 
-	printf( "in findIDString\n");
-	printf( "pattern %s\n", pattern);
    while (*memStart < memLength-patternLength &&
           !resultString)
    {
-//		 printf( "memPtr[*memStart] %s\n", memPtr[*memStart]);
-
-		 if (memPtr[*memStart] == pattern[0] &&
+      if (memPtr[*memStart] == pattern[0] &&
           memcmp(&memPtr[*memStart], pattern, patternLength) == 0)
       {
-			 printf( "found resultString\n");
-			 resultString = &memPtr[*memStart];
+         resultString = &memPtr[*memStart];
       }
       else
       {
-			 *memStart += 1;
+      *memStart += 1;
       }
    }
 
@@ -349,7 +246,7 @@ char * findIDString(
       // Found the specified pattern.  Extend the string to get the printable
       // characters surrounding it.
       */
-		 unsigned int   stringStart = *memStart;
+      unsigned int   stringStart = *memStart;
       while (stringStart > 0 &&
              isprint((int)(memPtr[stringStart-1])) &&
              (memPtr[stringStart-1] & 0x80) == 0)
@@ -363,7 +260,7 @@ char * findIDString(
              isprint((int)(memPtr[stringStart+(*stringLength)])) &&
              (memPtr[stringStart+(*stringLength)] & 0x80) == 0)
       {
-			 *stringLength += 1;
+         *stringLength += 1;
       }
 
       resultString = &memPtr[stringStart];
@@ -385,9 +282,9 @@ char * findIDString(
          /*
          // Strip trailing spaces from string
          */
-			 while (resultString[(*stringLength)] == ' ' && *stringLength > 0)
+         while (resultString[(*stringLength)] == ' ' && *stringLength > 0)
          {
-				 *stringLength -= 1;
+            *stringLength -= 1;
          }
       }
    }

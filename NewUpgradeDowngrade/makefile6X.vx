@@ -1,7 +1,7 @@
 
 
 
-DIR_LIST := Trima_6.0-5.1 Trima_6.0-6.0 Trima_6.1-5.1 Trima_6.1-6.1
+DIR_LIST := Trima_6.0-5.1.0 Trima_6.0-6.0 Trima_6.1-5.1.0 Trima_6.1-6.1
 
 .PHONY: dirs
 dirs : $(DIR_LIST)
