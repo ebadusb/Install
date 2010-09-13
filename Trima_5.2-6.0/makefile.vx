@@ -13,6 +13,11 @@ else
 all: check_opt_change bin/updateTrima
 endif
 
+# ?= won't work in Tornado 2.02 because the version of make is so old
+ifeq ($(UPDATEDIR),  )
+UPDATEDIR = .
+endif
+
 # ------------------------------------------------------------------------------
 # Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
 # ------------------------------------------------------------------------------
@@ -21,7 +26,7 @@ COMDIR = \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_bui
 # ------------------------------------------------------------------------------
 # Define include directories needed for apps built in this directory
 # ------------------------------------------------------------------------------
-ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I../Install_Common
+ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I$(UPDATEDIR)/../Install_Common -I$(UPDATEDIR)
 
 # ------------------------------------------------------------------------------
 # Define location for Trima libraries
@@ -48,15 +53,16 @@ update_cxx_files = updatetrima.cpp updatetrimaEngine.cpp updatetrimaTo6X.cpp upd
 update_c_files = discover_hw.c
 update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
 include $(COMDIR)/makefile.process_app
-vpath %.cpp ../Install_Common
-vpath %.c ../Install_Common ../Install_Common/os
-vpath %.h ../Install_Common $(WIND_BASE)
+vpath %.cpp $(UPDATEDIR)/../Install_Common $(UPDATEDIR)
+vpath %.c $(UPDATEDIR)/../Install_Common $(UPDATEDIR)/../Install_Common/os
+vpath %.h $(UPDATEDIR)/../Install_Common $(UPDATEDIR) $(WIND_BASE)
 
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-SCRIPTLOC = ../Scripts/updateTrima-5.2-6.0
+SCRIPTLOC = $(UPDATEDIR)/../Scripts/updateTrima-5.2-6.0
 bin/updateTrima:$(update_dir)/update.out
+	@if not exist $(UPDATEDIR)/..\Scripts mkdir $(UPDATEDIR)/..\Scripts
 	cp $< $@
 	cp $< $(SCRIPTLOC)
 
