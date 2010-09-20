@@ -792,9 +792,9 @@ bool updatetrimaTo6X :: checkCRC()
     softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH  "/cassette.crc"     );
     softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH  "/setconfig.crc"    );
     softcrc("-filelist " FILELISTS_PATH "/graphics.files	-update "   PNAME_GUI_GRAPHICS_CRC              );
-    softcrc("-filelist " FILELISTS_PATH "/strings.files		-update "   PNAME_STRING_CRC_FILE               );
-    softcrc("-filelist " FILELISTS_PATH "/fonts.files		-update "   PNAME_FONT_CRC_FILE                 );
-    softcrc("-filelist " FILELISTS_PATH "/data.files		-update "   PNAME_DATA_CRC_FILE                 );
+    softcrc("-filelist " FILELISTS_PATH "/strings.files		-update "   PNAME_STRING_CRC               );
+    softcrc("-filelist " FILELISTS_PATH "/fonts.files		-update "   PNAME_FONT_CRC                 );
+    softcrc("-filelist " FILELISTS_PATH "/data.files		-update "   PNAME_DATA_CRC                 );
     softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "   TRIMA_PATH      "/safety.crc"       );
     softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH       "/trima.crc"        );
     softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "   CONFIG_CRC_PATH "/machine.crc"      );
@@ -811,9 +811,9 @@ bool updatetrimaTo6X :: checkCRC()
         verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "   CONFIG_CRC_PATH "/cassette.crc" ) ||
         verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "   CONFIG_CRC_PATH "/setconfig.crc") ||
         verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "   PNAME_GUI_GRAPHICS_CRC          ) ||
-        verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify "   PNAME_STRING_CRC_FILE           ) ||
-        verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify "   PNAME_FONT_CRC_FILE             ) ||
-        verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "   PNAME_DATA_CRC_FILE             ) ||
+        verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify "   PNAME_STRING_CRC           ) ||
+        verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify "   PNAME_FONT_CRC             ) ||
+        verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "   PNAME_DATA_CRC             ) ||
         verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "   TRIMA_PATH      "/safety.crc"   ) ||
         verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "   TRIMA_PATH      "/trima.crc"    ) ||
         verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "   CONFIG_CRC_PATH "/machine.crc"  ))
