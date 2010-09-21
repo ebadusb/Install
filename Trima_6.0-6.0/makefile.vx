@@ -60,7 +60,7 @@ vpath %.h $(UPDATEDIR)/../Install_Common $(UPDATEDIR) $(WIND_BASE)
 # ------------------------------------------------------------------------------
 SCRIPTLOC = $(UPDATEDIR)/../Scripts/updateTrima-6.0-6.0
 bin/updateTrima:$(update_dir)/update.out
-	if not exist $(UPDATEDIR)\..\Scripts mkdir $(UPDATEDIR)\..\Scripts
+	@if not exist "$(UPDATEDIR)\..\Scripts" mkdir "$(UPDATEDIR)\..\Scripts"
 	cp $< $@
 	cp $< $(SCRIPTLOC)
 
