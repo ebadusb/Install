@@ -64,10 +64,9 @@ vpath %.h ../Install_Common $(WIND_BASE)
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-SCRIPTLOC = ../Scripts/updateTrima-5.1.0-5.1.8
-#SCRIPTLOC = $(UPDATEDIR)/../Scripts/updateTrima-5.1.0-5.1.8
+SCRIPTLOC = $(UPDATEDIR)/../Scripts/updateTrima-5.1.0-5.1.8
 bin/updateTrima:$(update_dir)/update.out
-	@if not exist ..\Scripts mkdir ..\Scripts
+	@if not exist "$(UPDATEDIR)\..\Scripts" mkdir "$(UPDATEDIR)\..\Scripts"
 	cp $< $@
 	cp $< $(SCRIPTLOC)
 
