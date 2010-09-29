@@ -124,18 +124,6 @@
     #endif
     #define TRIMA_PROJECT_REVISION_FILE TRIMA_PATH "/projectrevision"
 
-    #ifndef PNAME_STRING_CRC
-        #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE
-    #endif
-
-    #ifndef PNAME_FONT_CRC
-        #define PNAME_FONT_CRC PNAME_FONT_CRC_FILE
-    #endif
-
-    #ifndef PNAME_DATA_CRC
-        #define PNAME_DATA_CRC PNAME_DATA_CRC_FILE
-    #endif
-
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -143,6 +131,19 @@
 	#include "trimaOs.h"
 
 #endif // #ifdef __COMPILE_FOR_VX_54__
+
+// To fix a change in 6.0 that renames these file defines
+#ifndef PNAME_STRING_CRC
+    #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE
+#endif
+
+#ifndef PNAME_FONT_CRC
+    #define PNAME_FONT_CRC PNAME_FONT_CRC_FILE
+#endif
+
+#ifndef PNAME_DATA_CRC
+    #define PNAME_DATA_CRC PNAME_DATA_CRC_FILE
+#endif
 
 
 class updatetrimaBase
