@@ -492,22 +492,47 @@ bool updatetrimaTo51 :: extractUpdateFiles()
         return false;
     }
 
+    /* make the kernel images writable so they can be overwritten */
     attrib(VXBOOT_PATH "/bootrom.sys", "-R");
     attrib(VXBOOT_PATH "/vxWorks", "-R");
-    if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
-         copyFileContiguous( UPDATE_PATH "/vxWorks"    , VXBOOT_PATH "/vxWorks"     ) == ERROR )
+
+
+
+    if (isVersalogicPython())
     {
-        printf("Install of OS image failed\n" );
-        return false;
+       printf("RKM:  This is a Python!.  Reports %d\n", isVersalogicPython()); taskDelay(sysClkRateGet()*10);
+
+       if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
+            copyFileContiguous( UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks"     ) == ERROR )
+       {
+          fprintf( stderr, "Install of Python OS image failed\n" );
+          return false;
+       }
+    }
+    else
+    {
+       printf("RKM:  This is NOT a Python!.  Reports %d\n", isVersalogicPython()); taskDelay(sysClkRateGet()*10);
+
+       if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
+            copyFileContiguous( UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks"     ) == ERROR )
+       {
+          fprintf( stderr, "Install of OS image failed\n" );
+          return false;
+       }
     }
 
-    if ( remove( UPDATE_PATH "/bootrom.sys" ) == ERROR ||
-         remove( UPDATE_PATH "/vxWorks"     ) == ERROR ||
-         remove( UPDATE_PATH "/vxboot.taz"  ) == ERROR )
+    //
+    // Clean up source files provided in the TAR file.
+    //
+    if ( remove( UPDATE_PATH "/bootrom.sys" )    == ERROR ||
+         remove( UPDATE_PATH "/vxWorks_orig" )   == ERROR ||
+         remove( UPDATE_PATH "/vxWorks_python" ) == ERROR ||
+         remove( UPDATE_PATH "/vxboot.taz"  )    == ERROR )
     {
-        printf("Removal of temporary OS image failed\n" );
-        return false;
+       fprintf( stderr, "Removal of temporary OS image failed\n" );
+       return false;
     }
+
 
     //
     // Remove existing Trima files
