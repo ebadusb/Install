@@ -412,46 +412,6 @@ bool updatetrimaTo51 :: updateGlobVars50to51(CDatFileReader& datfile)
 bool updatetrimaTo51 :: extractUpdateFiles()
 {
     //
-    // Extract v5 files, if this is an upgrade from v5 ...
-    //
-    struct stat archiveDir;
-    struct stat archive;
-    stat( "/machine/v5_archive", &archiveDir );
-    stat( "/machine/v5_archive/config/machine.tar", &archive );
-
-    if ( S_ISDIR( archiveDir.st_mode ) &&
-         S_ISREG( archive.st_mode ) )
-    {
-        printf("Found /machine/v5_archive directory\n" );
-        printf(" ... Extracting v5.0 machine files\n" );
-
-        //
-        // Extract the update files
-        printf("Extracting machine.tar ...\n" );
-        if ( tarExtract( "/machine/v5_archive/config/machine.tar", "/machine/tmp" ) == ERROR )
-        {
-            printf("Extraction of v5.0 machine files failed\n" );
-            return false;
-        }
-
-        if ( cp( "/machine/v5_archive/config/machine.tar", "/machine/v5_archive/config/old_machine.tar" ) == ERROR ||
-             remove( "/machine/v5_archive/config/machine.tar" ) == ERROR )
-        {
-            printf("Move of machine.tar to old_machine.tar failed\n" );
-            return false;
-        }
-
-        //
-        // Move the machine files to the /config partition ....
-        printf("Moving machine files ...\n" );
-        if ( xcopy( "/machine/tmp/d/machine","/config" ) == ERROR )
-        {
-            printf("Moving the v5.0 machine files failed\n" );
-            return false;
-        }
-    }
-
-    //
     // Extract the update files
     printf("Extracting updateTrima ...\n" );
     if ( tarExtract( "/machine/update/updateTrima.taz", "/machine/update" ) == ERROR )
@@ -500,8 +460,6 @@ bool updatetrimaTo51 :: extractUpdateFiles()
 
     if (isVersalogicPython())
     {
-       printf("RKM:  This is a Python!.  Reports %d\n", isVersalogicPython()); taskDelay(sysClkRateGet()*10);
-
        if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
             copyFileContiguous( UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks"     ) == ERROR )
        {
@@ -511,8 +469,6 @@ bool updatetrimaTo51 :: extractUpdateFiles()
     }
     else
     {
-       printf("RKM:  This is NOT a Python!.  Reports %d\n", isVersalogicPython()); taskDelay(sysClkRateGet()*10);
-
        if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
             copyFileContiguous( UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks"     ) == ERROR )
        {

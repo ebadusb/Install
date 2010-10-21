@@ -144,7 +144,7 @@ static void checkGraphics(void)
 	}
 	checkedGraphics = 1;
 
-	printf("currentVendorID == %d\n", currentVendorID);
+	//printf("currentVendorID == %d\n", currentVendorID);
 }
 
 unsigned char isCT655XXGraphics(void)
@@ -187,15 +187,12 @@ unsigned int getGraphicsVendorID(void)
 
 		if( pciStatus == OK )
 		{
-			 printf("pciStatus == OK\n");
-
 			/* Is this device recognized by the system? */
 			if( pciConfigInLong( busNo, deviceNo, funcNo, PCI_CFG_VENDOR_ID, &vendorID ) == OK )
 			{
 				if( vendorID != 0 )
 				{
-					 printf("vendorID = %d\n", vendorID);
-
+					 //printf("vendorID = %d\n", vendorID);
 					break;
 				}
 			}
