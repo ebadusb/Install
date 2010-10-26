@@ -366,7 +366,7 @@ bool updatetrimaBase :: readProjectrevision()
     }
 
     cout << "Software version currently on Trima: " << TrimaVersionName[curTrimaVersion] << endl;
-    cout << "Software version upgrading from (should mach version currently on Trima): " << TrimaVersionName[fromTrimaVersion] << endl;
+    cout << "Software version upgrading from (should match version currently on Trima): " << TrimaVersionName[fromTrimaVersion] << endl;
     cout << "Software version upgrading to: " << TrimaVersionName[toTrimaVersion] << endl;
 
     return retval;

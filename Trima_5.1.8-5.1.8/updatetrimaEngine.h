@@ -22,6 +22,9 @@ private:
 
 protected:
 
+   // New kernel names for Python board.  Needs special handling
+   virtual bool extractUpdateFiles(void);
+
 public:
 
 

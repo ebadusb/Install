@@ -440,7 +440,6 @@ bool updatetrimaTo51 :: extractUpdateFiles()
         {
             printf("Archive of old OS image failed\n" );
         }
-
     }
 
     //
@@ -452,43 +451,24 @@ bool updatetrimaTo51 :: extractUpdateFiles()
         return false;
     }
 
-    /* make the kernel images writable so they can be overwritten */
+    /* make the kernel images writeable so they can be overwritten */
     attrib(VXBOOT_PATH "/bootrom.sys", "-R");
     attrib(VXBOOT_PATH "/vxWorks", "-R");
 
-
-
-    if (isVersalogicPython())
+    if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
+         copyFileContiguous( UPDATE_PATH "/vxWorks"    , VXBOOT_PATH "/vxWorks"     ) == ERROR )
     {
-       if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
-            copyFileContiguous( UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks"     ) == ERROR )
-       {
-          fprintf( stderr, "Install of Python OS image failed\n" );
-          return false;
-       }
-    }
-    else
-    {
-       if ( copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
-            copyFileContiguous( UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks"     ) == ERROR )
-       {
-          fprintf( stderr, "Install of OS image failed\n" );
-          return false;
-       }
+        printf("Install of OS image failed\n" );
+        return false;
     }
 
-    //
-    // Clean up source files provided in the TAR file.
-    //
-    if ( remove( UPDATE_PATH "/bootrom.sys" )    == ERROR ||
-         remove( UPDATE_PATH "/vxWorks_orig" )   == ERROR ||
-         remove( UPDATE_PATH "/vxWorks_python" ) == ERROR ||
-         remove( UPDATE_PATH "/vxboot.taz"  )    == ERROR )
+    if ( remove( UPDATE_PATH "/bootrom.sys" ) == ERROR ||
+         remove( UPDATE_PATH "/vxWorks"     ) == ERROR ||
+         remove( UPDATE_PATH "/vxboot.taz"  ) == ERROR )
     {
-       fprintf( stderr, "Removal of temporary OS image failed\n" );
-       return false;
+        printf("Removal of temporary OS image failed\n" );
+        return false;
     }
-
 
     //
     // Remove existing Trima files
@@ -516,7 +496,6 @@ bool updatetrimaTo51 :: extractUpdateFiles()
     }
 
     return true;
-
 }
 
 bool updatetrimaTo51 :: checkCRC()

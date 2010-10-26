@@ -22,10 +22,13 @@ private:
 
 protected:
 
-//
-// Update the config file for the version being installed
-//
+   //
+   // Update the config file for the version being installed
+   //
    virtual bool updateConfigVersion(CDatFileReader& datfile);
+
+   // New kernel names for Python board.  Needs special handling
+   virtual bool extractUpdateFiles(void);
 
 public:
 
