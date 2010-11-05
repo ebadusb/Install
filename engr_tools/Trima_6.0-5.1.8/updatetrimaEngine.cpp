@@ -39,19 +39,8 @@ updatetrimaEngine ::  ~updatetrimaEngine()
 
 bool updatetrimaEngine :: allowedUpgradePath()
 {
-    bool retval = true;
 
-    if ( !isVersalogicPython() )
-    {
-        cerr << "The update from 6.0 to 5.1.8 is not allowed on a non VersaLogic Python Trima." << endl;
-        retval = false;
-    }
-    else
-    {
-        cerr << "The update from 6.0 to 5.1.8 is allowed." << endl;
-    }
-
-    return retval;
+    return true;
 }
 bool updatetrimaEngine :: extractUpdateFiles()
 {
