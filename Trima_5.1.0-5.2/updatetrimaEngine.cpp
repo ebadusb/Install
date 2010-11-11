@@ -27,6 +27,13 @@ updatetrimaEngine ::  ~updatetrimaEngine()
 {
 }
 
+void updatetrimaEngine :: updateTrap()
+{
+    copyTrapFiles();
+
+   return;
+}
+
 bool updatetrimaEngine :: updateConfigVersion(CDatFileReader& datfile)
 {
     // check if 5.P by looking for a new parameter.......

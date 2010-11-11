@@ -240,6 +240,10 @@ protected:
 //
    virtual void updateSetConfig();
 
+//
+// common location for code to copy trap files
+//
+   virtual void copyTrapFiles();
 
 ////////////////////////////////////////////////////////////////
 // Abstract funtions that need to be overridden for each version

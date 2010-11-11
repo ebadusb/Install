@@ -14,7 +14,7 @@ updatetrimaEngine :: updatetrimaEngine() :
 updatetrimaTo6X()
 {
 fromTrimaVersion = V52;
-toTrimaVersion = V52;
+toTrimaVersion = V60;
 }
 
 // Copy constructor - private so nobody can use it

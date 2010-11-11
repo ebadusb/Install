@@ -40,6 +40,13 @@ updatetrimaEngine ::  ~updatetrimaEngine()
 {
 }
 
+void updatetrimaEngine :: updateTrap()
+{
+    copyTrapFiles();
+
+   return;
+}
+
 bool updatetrimaEngine :: updateConfigVersion(CDatFileReader& datfile)
 {
     // If this is a pre 5.1.7 config file

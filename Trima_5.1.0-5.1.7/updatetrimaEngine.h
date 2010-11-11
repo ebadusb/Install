@@ -27,6 +27,9 @@ protected:
 //
    virtual bool updateConfigVersion(CDatFileReader& datfile);
 
+//
+   virtual void updateTrap();
+
 public:
 
 

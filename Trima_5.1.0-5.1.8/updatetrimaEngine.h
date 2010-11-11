@@ -22,6 +22,9 @@ private:
 
 protected:
 
+//
+   virtual void updateTrap();
+
    //
    // Update the config file for the version being installed
    //

@@ -481,23 +481,7 @@ void updatetrimaTo6X :: updateTrap()
 {
     // Since this is a 5.1 to 6.0 upgrade, we must override the trap config files.
 
-    attrib(TRAP_DEFAULTS_FILE, "-R");
-
-    if (cp(TEMPLATES_PATH "/trap_default.dat", TRAP_DEFAULTS_FILE) == ERROR)
-    {
-        printf("copy of trap_default.dat\n");
-        return;
-    }
-    attrib(TRAP_DEFAULTS_FILE, "+R");
-
-    attrib(TRAP_OVERRIDE_FILE, "-R");
-
-    if (cp(TEMPLATES_PATH "/trap_override.dat", TRAP_OVERRIDE_FILE) == ERROR)
-    {
-        printf("copy of trap_override.dat\n");
-        return;
-    }
-    attrib(TRAP_OVERRIDE_FILE, "+R");   
+    copyTrapFiles();
 }
 
 void updatetrimaTo6X :: updateGlobVars() 

@@ -618,6 +618,28 @@ int updatetrimaBase :: verifyCrc(const char* commandLine)
 }
 
 
+void updatetrimaBase :: copyTrapFiles()
+{
+    attrib(TRAP_DEFAULTS_FILE, "-R");
+
+    if (cp(TEMPLATES_PATH "/trap_default.dat", TRAP_DEFAULTS_FILE) == ERROR)
+    {
+        printf("copy of trap_default.dat\n");
+        return;
+    }
+    attrib(TRAP_DEFAULTS_FILE, "+R");
+
+    attrib(TRAP_OVERRIDE_FILE, "-R");
+
+    if (cp(TEMPLATES_PATH "/trap_override.dat", TRAP_OVERRIDE_FILE) == ERROR)
+    {
+        printf("copy of trap_override.dat\n");
+        return;
+    }
+    attrib(TRAP_OVERRIDE_FILE, "+R");   
+
+}
+
 bool updatetrimaBase :: updateConfig52to51(CDatFileReader& datfile)
 {
     // check if 5.P by looking for a new parameter.......
