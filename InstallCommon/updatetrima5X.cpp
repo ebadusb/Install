@@ -351,3 +351,53 @@ bool updatetrima5X :: checkCRC()
     return true;
 }
 
+bool updatetrima5X :: checkPlasmaRB()
+{
+    bool retval = false;
+    const char *configData;
+    const char *swData;
+
+    // Get the rinseback setting from sw.dat
+    swData = findSetting("allow_plasma_rinseback=", PNAME_SWDAT);
+
+    if (swData) cerr << "sw.dat allow_plasma_rinseback = " << swData << endl;
+
+    // If rinseback is turned off in sw.dat make sure it is off in config.dat
+    if ( swData != NULL && swData[0] == '0' )
+    {
+        // Get the rinseback setting from config.dat
+        configData = findSetting("key_plasma_rinseback=", PNAME_CONFIGDAT);
+//        if (configData) cerr << "config.dat key_plasma_rinseback = " << configData << endl;
+
+        // If it's on, turn it off
+        if ( configData != NULL && configData[0] == '1' )
+        {
+            CDatFileReader datfile(PNAME_CONFIGDAT);
+            if ( datfile.Error() )
+            {
+                cerr << "Can't open config.dat to modify key_plasma_rinseback" << endl;
+            }
+            else
+            {
+                // Turn off plasma rinseback
+                if ( datfile.SetValue("PROCEDURE_CONFIG", "key_plasma_rinseback", "0") == true)
+                {
+                    datfile.WriteCfgFile(FILE_CONFIG_DAT);
+//                    cerr << "Set key_plasma_rinseback to 0" << endl;
+                    retval = true;
+
+                    configData = findSetting("key_plasma_rinseback=", PNAME_CONFIGDAT);
+//                    if (configData) cerr << "config.dat key_plasma_rinseback = " << configData << endl;
+
+                }
+                else
+                {
+//                    cerr << "Couldn't set key_plasma_rinseback to 0" << endl;
+                    retval = false;
+                }
+            }
+        }
+    }
+    return retval;
+}
+

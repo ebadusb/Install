@@ -60,6 +60,11 @@ protected:
 //
    virtual bool checkCRC();
 
+//
+// check for inconsistent plasma rinseback settings
+//
+   virtual bool checkPlasmaRB();
+
 public:
 
 

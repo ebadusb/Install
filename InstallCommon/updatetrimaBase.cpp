@@ -529,47 +529,11 @@ int updatetrimaBase :: convertTo510(CDatFileReader& datfile)
    return(0);
 }
 
-bool updatetrimaBase :: updateConfig52to51(CDatFileReader& datfile)
+bool updatetrimaBase :: checkPlasmaRB()
 {
-    // check if 5.P by looking for a new parameter.......
-    if ( !datfile.Find("PROCEDURE_CONFIG", "key_mss_plt_on") )
-    {
-        cerr << "v5.1 config.dat file found.  No conversion needed" << endl;
-        return false;
-    }
-    cerr << "v5.2 config.dat file found.  Conversion needed" << endl;
-
-    //////////////////////////////////////////////////////////////////////////////////
-    //                 5.P (5.2)-->5.1 changes
-    //////////////////////////////////////////////////////////////////////////////////
-
-    datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif" );
-    datfile.RemoveLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol" );
-    datfile.RemoveLine( "PROCEDURE_CONFIG", "key_blood_diversion" );
-    datfile.RemoveLine( "PROCEDURE_CONFIG", "key_mss_plt_on" );
-    datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol" );
-
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_1" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1" ); 
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_2" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2" ); 
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_3" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3" ); 
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_4" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4" ); 
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_5" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5" ); 
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_6" );
-    datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6" ); 
-
-    cerr << "config.dat file converted." << endl;
-
-    return true;
+    return false;
 }
 
-// Define the following variable if you want your output
-// to go to a file.
-//#define OUTPUTFILE "/machine/log/updateLog.slick"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  The main line of update
@@ -627,6 +591,8 @@ int updatetrimaBase :: upgradeFrom510(TrimaVersion fromVersion)
     updateSetConfig();
 
     updateTrap(fromVersion);
+
+    checkPlasmaRB();
 
     // update & check the CRCs
     if ( !checkCRC() )

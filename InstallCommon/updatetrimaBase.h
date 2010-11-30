@@ -103,13 +103,15 @@
 		#define PNAME_STRING_CRC_FILE	CONFIG_CRC_PATH "/strings.crc"
 	#endif // #ifndef PNAME_STRING_CRC_FILE
 
-	#ifndef SAFETY_VXWORKS_PXE_IMAGE
-		#define SAFETY_VXWORKS_PXE_IMAGE    SAFETY_BOOT_PATH "/vxWorks_pxe"
-	#endif // #ifndef SAFETY_VXWORKS_PXE_IMAGE
+   #ifdef SAFETY_VXWORKS_PXE_IMAGE
+      #undef SAFETY_VXWORKS_PXE_IMAGE
+   #endif
+	#define SAFETY_VXWORKS_PXE_IMAGE    SAFETY_BOOT_PATH "/vxWorks_pxe"
 
-	#ifndef SAFETY_BOOTROM_PXE_IMAGE
-		#define SAFETY_BOOTROM_PXE_IMAGE	SAFETY_BOOT_PATH "/bootrom_pxe.sys"
-	#endif // #ifndef SAFETY_BOOTROM_PXE_IMAGE
+	#ifdef SAFETY_BOOTROM_PXE_IMAGE
+      #undef SAFETY_BOOTROM_PXE_IMAGE
+   #endif
+	#define SAFETY_BOOTROM_PXE_IMAGE	SAFETY_BOOT_PATH "/bootrom_pxe.sys"
 
 	#ifdef SAFETY_BOOTROM_IMAGE
 		#undef SAFETY_BOOTROM_IMAGE
@@ -206,13 +208,6 @@ protected:
 // Virtual funtions that can be overridden for each version
 ////////////////////////////////////////////////////////////////
 
-// This is in the base class because it is needed to go 
-// from 5.2 to 5.1 and to go from 5.2 to 6.0 
-// because you don't need to downgrade from 5.2 to 5.1.0
-// before going to 6.0 - so we have do it internally
-//
-   virtual bool updateConfig52to51(CDatFileReader& datfile);
-
 //
 // rbc.dat update function
 //
@@ -257,6 +252,11 @@ protected:
 // Convert files to 510
 //
    virtual int convertTo510(CDatFileReader& datfile);
+
+//
+// check for inconsistent plasma rinseback settings
+//
+   virtual bool checkPlasmaRB();
 
 ////////////////////////////////////////////////////////////////
 // Abstract funtions that need to be overridden for each version
