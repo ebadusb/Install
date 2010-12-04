@@ -509,6 +509,9 @@ void updatetrimaBase :: copyTrapFiles()
 
 int updatetrimaBase :: convertFilesTo510(TrimaVersion toVersion)
 {
+    int retval = 0;
+
+    cerr << "Converting config.dat from to 510" << endl;
 
     //
     // Create the dat file reader to retrieve the configuration data.
@@ -520,7 +523,10 @@ int updatetrimaBase :: convertFilesTo510(TrimaVersion toVersion)
         return (-1);
     }
 
-    return (convertTo510(datfile));
+    retval = convertTo510(datfile);
+    datfile.WriteCfgFile(FILE_CONFIG_DAT);
+
+    return (retval);
 
 }
 

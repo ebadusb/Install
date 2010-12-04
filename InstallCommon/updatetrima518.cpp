@@ -132,6 +132,8 @@ bool updatetrima518 :: updateConfigVersion(CDatFileReader& datfile)
 
 bool updatetrima518 :: extractUpdateFiles()
 {
+   // This is done by the extractTopLevelFiles in updatetrima.cpp
+   /*
     //
     // Extract the update files
     printf("Extracting updateTrima ...\n" );
@@ -141,7 +143,7 @@ bool updatetrima518 :: extractUpdateFiles()
         printf("Extraction of update files failed\n" );
         return false;
     }
-
+*/
     //
     // If we booted up using the default vxWorks image, then
     //  save it for emergency cases ...

@@ -215,8 +215,11 @@ bool updatetrima6X :: updateConfigVersion(CDatFileReader& datfile)
     // If this is a 6.X config file then return
     if ( datfile.Find("PRODUCT_TEMPLATES", "key_plt_yield_10") )
     {
+        cerr << "Converting config.dat from 5X to 6X - not needed" << endl;
         return false;
     }
+
+    cerr << "Converting config.dat from 5X to 6X" << endl;
 
     // Plasma rinseback
     /// (Note: in 5.1 and 5.2 there was an option called "key_rinseback_setting",
@@ -357,8 +360,12 @@ bool updatetrima6X :: updateConfigVersion(CDatFileReader& datfile)
 
 int updatetrima6X :: convertTo510(CDatFileReader& datfile)
 {
+
     if (datfile.Find("LANGUAGE_UNIT_CONFIG","key_crit_or_glob") != NULL)
     {
+
+        cerr << "Converting config.dat from 6X to 510" << endl;
+
         datfile.RemoveLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob" );
 
         datfile.RemoveLine( "PROCEDURE_CONFIG", "key_show_residual_loss" );
@@ -477,8 +484,15 @@ int updatetrima6X :: convertTo510(CDatFileReader& datfile)
 
         if (datfile.Find("PROCEDURE_CONFIG", "key_rinseback_protocol") == NULL)
         {
+            cerr << "Converting adding key_rinseback_protocol" << endl;
+
             datfile.AddLine("PROCEDURE_CONFIG", "key_rinseback_protocol", "0");
         }
+
+    }
+    else
+    {
+        cerr << "Converting config.dat from 6X to 510 - not needed" << endl;
     }
 
     return (0);
