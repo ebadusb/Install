@@ -37,23 +37,24 @@ const char *newVersion;
 static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] = 
 {
     //            To:
-    //V510  V514   V515   V516   V517   V518   V520   V600   V610    
-    {true,  false, true,  true,  true,  true,  true,  true,  true},   // From 5.1.0
-    {false, true,  false, false, false, false, false, false, false},  // From 5.1.4
-    {false, false, true,  false, false, false, false, false, true},   // From 5.1.5
-    {false, false, false, true,  false, true,  false, true,  false},  // From 5.1.6
-    {true,  false, false, false, true,  true,  false, false, false},  // From 5.1.7
-    {false, false, false, false, true,  true,  false, true,  true},   // From 5.1.8
-    {false, false, false, false, false, true,  true,  true,  false},  // From 5.2.0
-    {false, false, false, true,  false, true,  true,  true,  false},  // From 6.0.0
-    {false, false, true,  false, false, true,  false, false, true}    // From 6.1.0
+    //V510  V514   V515   V516   V517   V518   V520   V600   V601   V610    
+    {true,  false, true,  true,  true,  true,  true,  true,  true,  true},   // From 5.1.0
+    {false, true,  false, false, false, false, false, false, false, false},  // From 5.1.4
+    {false, false, true,  false, false, false, false, false, false, true},   // From 5.1.5
+    {false, false, false, true,  false, true,  false, true,  true,  false},  // From 5.1.6
+    {true,  false, false, false, true,  true,  false, false, false, false},  // From 5.1.7
+    {false, false, false, false, true,  true,  false, true,  true,  true},   // From 5.1.8
+    {false, false, false, false, false, true,  true,  true,  true,  false},  // From 5.2.0
+    {false, false, false, true,  false, true,  true,  true,  true,  false},  // From 6.0.0
+    {false, false, false, true,  false, true,  true,  true,  true,  false},  // From 6.0.1
+    {false, false, true,  false, false, true,  false, false, false, true}    // From 6.1.0
 };
 
 // The array of allowed upgrade paths for Python
 static const bool allowedPythonUpgrade[] = 
     //            To:
-    //V510   V514   V515  V516   V517   V518  V520   V600  V610
-    {false, false, false, false, false, true, false, true, true};   // From anywhere
+    //V510   V514   V515  V516   V517   V518  V520   V600  V601  V610
+    {false, false, false, false, false, true, false, true, true, true};   // From anywhere
 
 #ifdef __cplusplus
 extern "C" { 
@@ -129,6 +130,7 @@ bool init()
     if ( (tmpObjPtr = new updatetrima600) != NULL )
     {
         versionMap[V600] = tmpObjPtr;
+        versionMap[V601] = tmpObjPtr;
     }
     else
     {
@@ -153,6 +155,7 @@ bool init()
     versionStringMap[V518] = "5.1.8";
     versionStringMap[V520] = "5.2.0";
     versionStringMap[V600] = "6.0.0";
+    versionStringMap[V601] = "6.0.1";
     versionStringMap[V610] = "6.1.0";
 
     return true;
@@ -345,7 +348,14 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         parsedVersion = V610;
         break;
     case 8:
-        parsedVersion = V600;
+        if ( curMinorRev == 4 && curBuild >= 5 )
+        {
+            parsedVersion = V601;
+        }
+        else
+        {
+            parsedVersion = V600;
+        }
         break;
     case 7:
         parsedVersion = V520;

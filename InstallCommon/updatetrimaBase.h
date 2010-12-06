@@ -150,7 +150,7 @@
 #endif
 
 // Enum of versions
-enum TrimaVersion {V510, V514, V515, V516, V517, V518, V520, V600, V610, NUMBER_OF_VERSIONS};
+enum TrimaVersion {V510, V514, V515, V516, V517, V518, V520, V600, V601, V610, NUMBER_OF_VERSIONS};
 
 
 class updatetrimaBase
