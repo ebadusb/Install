@@ -31,14 +31,9 @@ protected:
    virtual void updateTrap(TrimaVersion fromVersion);
 
 //
-// Convert files to 510
+// Update the config file for the version being installed
 //
-   virtual int convertTo510(CDatFileReader& datfile);
-
-//
-// Update the config file from 5.1.0 to the version being installed
-//
-   virtual bool updateConfigVersion(CDatFileReader& datfile);
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
 
 public:
 

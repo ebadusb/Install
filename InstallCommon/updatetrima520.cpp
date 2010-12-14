@@ -35,7 +35,7 @@ updatetrima520 :: updatetrima520( const updatetrima520 &obj )
 updatetrima520 ::  ~updatetrima520()
 {
 }
-
+/*
 void updatetrima520 :: updateTrap(TrimaVersion fromVersion)
 {
    if ( fromVersion == V510 )
@@ -45,75 +45,46 @@ void updatetrima520 :: updateTrap(TrimaVersion fromVersion)
 
    return;
 }
-
-int updatetrima520 :: convertTo510(CDatFileReader& datfile)
+*/
+bool updatetrima520 :: updatePostCount(CDatFileReader& datfile)
 {
-   // check if 5.2 by looking for a new parameter.......
-   if ( datfile.Find("PROCEDURE_CONFIG", "key_mss_plt_on") )
-   {
-      //////////////////////////////////////////////////////////////////////////////////
-      //                 5.P (5.2)-->5.1 changes
-      //////////////////////////////////////////////////////////////////////////////////
-   
-      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif" );
-      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol" );
-      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_blood_diversion" );
-      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_mss_plt_on" );
-      datfile.RemoveLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol" );
-   
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_1" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1" ); 
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_2" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2" ); 
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_3" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3" ); 
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_4" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4" ); 
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_5" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5" ); 
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_mss_6" );
-      datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6" ); 
-   
-      cerr << "config.dat file converted." << endl;
-   }
-
-   return(0);
+   // Don't update postcount for 5.2.0
+   return false;
 }
 
-bool updatetrima520 :: updateConfigVersion(CDatFileReader& datfile)
+bool updatetrima520 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
 
-   // check if 5.P by looking for a new parameter.......
-   if ( !datfile.Find("PROCEDURE_CONFIG", "key_mss_plt_on") )
+   switch (fromVersion)
    {
-   
-      //////////////////////////////////////////////////////////////////////////////////
-      //                 5.1-->5.P (5.2) changes
-      //////////////////////////////////////////////////////////////////////////////////
-   
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif",  "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol", "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_blood_diversion",      "0" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_plt_on",           "1" );
-      datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol",      "250" );
-   
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_2",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_3",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_4",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_5",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5", "50" ); 
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_6",            "0" );
-      datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6", "50" ); 
-   
-      cerr << "config.dat file converted." << endl;
-   
-      retval = true;
+      case V510:
+      case V512:
+      case V513:
+      case V514:
+      case V515:
+      case V516:
+         retval = updateConfig510520(datfile);
+         break;
+      case V517:
+      case V518:
+         retval = updateConfig517510(datfile);
+         retval |= updateConfig510520(datfile);
+         break;
+      case V520:
+      case V521:
+      case V522:
+         // Do nothing
+         break;
+      case V600:
+      case V601:
+      case V610:
+         retval = updateConfig610600(datfile);
+         retval |= updateConfig600510(datfile);
+         retval |= updateConfig510520(datfile);
+         break;
+      default:
+         break;
    }
 
    return retval;
@@ -147,6 +118,7 @@ void updatetrima520 :: updateSetConfig()
     }
 }
 
+#ifdef REMOVE
 void updatetrima520 :: updateCal()
 {
     //
@@ -166,4 +138,4 @@ void updatetrima520 :: updateCal()
     }
     cerr << "v5.2 " << FILE_CAL_DAT << " file found.  No conversion needed" << endl;
 }
-
+#endif // REMOVE

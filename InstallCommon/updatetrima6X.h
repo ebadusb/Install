@@ -44,11 +44,6 @@ protected:
    virtual bool extractUpdateFiles();
 
 //
-// Update the config file for the version being installed
-//
-   virtual bool updateConfigVersion(CDatFileReader& datfile);
-
-//
 // Update the config file from 6.X to 5.1.0
 //
    virtual int convertTo510(CDatFileReader& datfile);
@@ -56,7 +51,7 @@ protected:
 //
 // Main config file update function, calls the others
 //
-   virtual void updateConfig();
+   virtual void updateConfig(TrimaVersion fromVersion);
 
 //
 // cal.dat update function

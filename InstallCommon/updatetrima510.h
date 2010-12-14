@@ -25,6 +25,10 @@ private:
 
 protected:
 
+//
+// Update the config file for the version being installed
+//
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
 
 public:
 

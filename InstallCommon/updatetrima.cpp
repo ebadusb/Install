@@ -33,28 +33,33 @@ TrimaVersion toTrimaVersion;
 const char *currVersion;
 const char *newVersion;
 
-// The array of allowed upgrade paths
+// The matrix of allowed upgrade paths
+// Yeah, it's a 2 dimensional array, deal with it
 static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] = 
 {
     //            To:
-    //V510  V514   V515   V516   V517   V518   V520   V600   V601   V610    
-    {true,  false, true,  true,  true,  true,  true,  true,  true,  true},   // From 5.1.0
-    {false, true,  false, false, false, false, false, false, false, false},  // From 5.1.4
-    {false, false, true,  false, false, false, false, false, false, true},   // From 5.1.5
-    {false, false, false, true,  false, true,  false, true,  true,  false},  // From 5.1.6
-    {true,  false, false, false, true,  true,  false, false, false, false},  // From 5.1.7
-    {false, false, false, false, true,  true,  false, true,  true,  true},   // From 5.1.8
-    {false, false, false, false, false, true,  true,  true,  true,  false},  // From 5.2.0
-    {false, false, false, true,  false, true,  true,  true,  true,  false},  // From 6.0.0
-    {false, false, false, true,  false, true,  true,  true,  true,  false},  // From 6.0.1
-    {false, false, true,  false, false, true,  false, false, false, true}    // From 6.1.0
+    //V510  V512   V513   V514   V515   V516   V517   V518   V520   V521   V522   V600   V601   V610     // From:
+    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.0
+    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.2
+    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.3
+    {false, false, false, true,  false, false, false, false, false, false, false, false, false, false},  // 5.1.4
+    {false, false, false, false, true,  false, false, false, false, false, false, false, false, true},   // 5.1.5
+    {false, false, false, false, false, true,  false, true,  false, false, false, true,  true,  false},  // 5.1.6
+    {true,  true,  true,  false, false, false, true,  true,  false, false, false, false, false, false},  // 5.1.7
+    {false, false, false, false, false, false, true,  true,  false, false, false, true,  true,  true},   // 5.1.8
+    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.0
+    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.1
+    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.2
+    {false, false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.0
+    {false, false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.1
+    {false, false, false, false, true,  false, false, true,  false, false, false, false, false, true}    // 6.1.0
 };
 
 // The array of allowed upgrade paths for Python
 static const bool allowedPythonUpgrade[] = 
     //            To:
-    //V510   V514   V515  V516   V517   V518  V520   V600  V601  V610
-    {false, false, false, false, false, true, false, true, true, true};   // From anywhere
+    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V601  V610
+    {false, false, false, false, false, false, false, true, false, false, false, true, true, true};   // From anywhere
 
 #ifdef __cplusplus
 extern "C" { 
@@ -81,6 +86,8 @@ bool init()
     if ( (tmpObjPtr = new updatetrima510) != NULL )
     {
         versionMap[V510] = tmpObjPtr;
+        versionMap[V512] = tmpObjPtr;
+        versionMap[V513] = tmpObjPtr;
     }
     else
     {
@@ -90,8 +97,6 @@ bool init()
     if ( (tmpObjPtr = new updatetrima514) != NULL )
     {
         versionMap[V514] = tmpObjPtr;
-
-        // V515 and V516 are exactly like V514 so we're going save some memory here
         versionMap[V515] = tmpObjPtr;
         versionMap[V516] = tmpObjPtr;
     }
@@ -121,6 +126,8 @@ bool init()
     if ( (tmpObjPtr = new updatetrima520) != NULL )
     {
         versionMap[V520] = tmpObjPtr;
+        versionMap[V521] = tmpObjPtr;
+        versionMap[V522] = tmpObjPtr;
     }
     else
     {
@@ -148,12 +155,16 @@ bool init()
 
     // Initialize the printable version strings
     versionStringMap[V510] = "5.1.0";
+    versionStringMap[V512] = "5.1.2";
+    versionStringMap[V513] = "5.1.3";
     versionStringMap[V514] = "5.1.4";
     versionStringMap[V515] = "5.1.5";
     versionStringMap[V516] = "5.1.6";
     versionStringMap[V517] = "5.1.7";
     versionStringMap[V518] = "5.1.8";
     versionStringMap[V520] = "5.2.0";
+    versionStringMap[V521] = "5.2.1";
+    versionStringMap[V522] = "5.2.2";
     versionStringMap[V600] = "6.0.0";
     versionStringMap[V601] = "6.0.1";
     versionStringMap[V610] = "6.1.0";
@@ -358,17 +369,31 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         }
         break;
     case 7:
-        parsedVersion = V520;
+        switch ( curBuild )
+        {
+        case 308:
+            parsedVersion = V521;
+            break;
+        case 310:
+            parsedVersion = V522;
+            break;
+        default:
+            parsedVersion = V520;
+            break;
+        }
         break;
     case 6:
         if ( curBuild == 301 )
         {
             parsedVersion = V510;
         }
-        else if ( curBuild == 328 || curBuild == 343 )
+        else if ( curBuild == 328 )
         {
-            // Other pre 5.1.4 builds that may be out there, treat it as 5.1.0
-            parsedVersion = V510;
+            parsedVersion = V512;
+        }
+        else if ( curBuild == 343)
+        {
+            parsedVersion = V513;
         }
         else if ( curBuild == 363 )
         {
@@ -482,10 +507,6 @@ int updateTrima()
        if ( (topLevelFilesExtracted = extractTopLevelFiles()) )
        {
            cerr << "Extracted top level files." << endl;
-
-//            unzipFile("/machine/update/trima.taz", "/machine/update/trima.untaz");
-//            return (-1);
-
            cerr << "Reading software revision string from trima.taz file." << endl;
 
            if ( findTazRevision(UPDATE_PATH "/trima.taz", revString) )
@@ -537,9 +558,9 @@ int updateTrima()
        cerr << "Can't read the software revision string of software installed on the machine, aborting update." << endl;
        return(-1);
    }
+
    cerr << "Software version of software installed on the machine is: " << versionStringMap[fromTrimaVersion] << endl;
 
-//    return(-1);
 
    // Checking hardware type
    if ( isAmpro() )
@@ -557,6 +578,7 @@ int updateTrima()
    else
    {
        cerr << "Can't determine hardware type, aborting update." << endl;
+       return(-1);
    }
 
    // Check if this upgrade is allowed
@@ -565,50 +587,24 @@ int updateTrima()
        return(-1);
    }
 
-////////////////////////////////////////////////
-   // Do some fancy backup stuff here
-
-
-   // Kick-off the updating
-   // Convert the config files to 5.1.0
-   if ( versionMap[fromTrimaVersion] != NULL && versionMap[fromTrimaVersion]->convertFilesTo510(toTrimaVersion) == 0 )
+   // Extract the top-level files, if haven't done it already
+   if ( retval != -1 && !topLevelFilesExtracted )
    {
-       cerr << "Converted config files from " << versionStringMap[fromTrimaVersion] << " to 5.1.0" << endl;
-
-       if ( !topLevelFilesExtracted )
+       if ( (topLevelFilesExtracted = extractTopLevelFiles()) == false )
        {
-           if ( (topLevelFilesExtracted = extractTopLevelFiles()) == false )
-           {
-               cerr << "Can't extract top level files from updateTrima.taz, aborting update." << endl;
-////////////////////////////////////////////////
-           // Do some fancy restore stuff here
-               retval = -1;
-//               return(-1);
-           }
-       }
-       // Upgrade from 5.1.0 to the version being installed
-       if ( versionMap[toTrimaVersion] != NULL && versionMap[toTrimaVersion]->upgradeFrom510(fromTrimaVersion) == 0 )
-       {
-           cerr << "Successfully installed " << versionStringMap[toTrimaVersion] << endl;
-           retval = 0;
-//           return(0);
-       }
-       else
-       {
-           cerr << "Could not install " << versionStringMap[toTrimaVersion] << endl;
-////////////////////////////////////////////////
-           // Do some fancy restore stuff here
+           cerr << "Can't extract top level files from updateTrima.taz, aborting update." << endl;
            retval = -1;
-//           return(-1);
        }
+   }
+
+   // Do the upgrading
+   if ( versionMap[toTrimaVersion] != NULL && versionMap[toTrimaVersion]->upgrade(fromTrimaVersion) == 0 )
+   {
+       cerr << "Upgraded from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << endl;
    }
    else
    {
-       cerr << "Could not convert config files from " << versionStringMap[fromTrimaVersion] << " to 5.1.0" << endl;
-////////////////////////////////////////////////
-       // Do some fancy restore stuff here
        retval = -1;
-//       return(-1);
    }
 
    // Remove the temp files
@@ -632,8 +628,6 @@ int updateTrima()
    else
    {
        cerr << "     Install failed" << endl;
-//       cerr << "     Previous version restored" << endl;
-//       cerr << "     Software version remains at: " << versionStringMap[fromTrimaVersion] << endl;
    }
    cerr << endl;
 

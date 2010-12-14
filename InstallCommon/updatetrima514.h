@@ -30,6 +30,11 @@ protected:
 //
    virtual void updateTrap(TrimaVersion fromVersion);
 
+//
+// Update the config file for the version being installed
+//
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
+
 public:
 
 

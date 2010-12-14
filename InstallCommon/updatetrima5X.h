@@ -33,12 +33,12 @@ protected:
 //
 // Update the config file for the version being installed
 //
-   virtual bool updateConfigVersion(CDatFileReader& datfile);
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
 
 //
 // Main config file update function, calls the others
 //
-   virtual void updateConfig();
+   virtual void updateConfig(TrimaVersion fromVersion);
 
 //
 // cal.dat update function

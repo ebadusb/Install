@@ -35,23 +35,51 @@ void updatetrima610 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
-bool updatetrima610 :: updateConfigVersion(CDatFileReader& datfile)
+bool updatetrima610 :: updatePostCount(CDatFileReader& datfile)
 {
-    // look for this value to make sure it is the right version of the 
-    // config file for this update
-    if ( datfile.Find("PRODUCT_TEMPLATES", "key_plt_yield_10") )
-    {
-        return false;
-    }
+   // Don't update postcount for 6.1.0
+   return false;
+}
 
-    cerr << "v5.1 config.dat file found. Conversion needed" << endl;
+bool updatetrima610 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
+{
+   bool retval = false;
 
-    // Do the updating that is common to 6.0/6.1
-    updatetrima6X::updateConfigVersion(datfile);
+   switch (fromVersion)
+   {
+      case V510:
+      case V512:
+      case V513:
+      case V514:
+      case V515:
+      case V516:
+         retval = updateConfig5X600(datfile);
+         retval |= updateConfig600610(datfile);
+         break;
+      case V517:
+      case V518:
+         retval = updateConfig517510(datfile);
+         retval |= updateConfig5X600(datfile);
+         retval |= updateConfig600610(datfile);
+         break;
+      case V520:
+      case V521:
+      case V522:
+         retval = updateConfig52X510(datfile);
+         retval |= updateConfig5X600(datfile);
+         retval |= updateConfig600610(datfile);
+         break;
+      case V600:
+      case V601:
+         retval = updateConfig600610(datfile);
+         break;
+      case V610:
+         break;
+         // Do nothing
+      default:
+         break;
+   }
 
-    // Operators potentially discard flagged products
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
-
-    return true;
+   return retval;
 }
 

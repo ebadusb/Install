@@ -47,7 +47,7 @@ updatetrima5X ::  ~updatetrima5X()
 }
 
 
-void updatetrima5X :: updateConfig()
+void updatetrima5X :: updateConfig(TrimaVersion fromVersion)
 {
     //
     // Create the dat file reader to retrieve the configuration data.
@@ -62,7 +62,7 @@ void updatetrima5X :: updateConfig()
     bool writeFile = false;
 
     writeFile |= updatePostCount(datfile);
-    writeFile |= updateConfigVersion(datfile);
+    writeFile |= updateConfigVersion(datfile, fromVersion);
 
     // Note that function calls are done above to avoid the
     // short circuit OR.  We want all to be evaluated.
@@ -77,7 +77,7 @@ void updatetrima5X :: updateConfig()
     }
 }
 
-bool updatetrima5X :: updateConfigVersion(CDatFileReader& datfile)
+bool updatetrima5X :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
     // Default behavior is to do nothing
     return false;
@@ -89,7 +89,7 @@ void updatetrima5X :: updateCal()
 // but it had to be ifdef'd out of 5.2 to prevent compile errors
 // due to differences in the 5.1 & 5.2 filenames.h
 // (this is ugly but it eliminates another abstraction layer)
-#ifndef __TRIMA52__
+//#ifndef __TRIMA52__
     //
     // Create the dat file reader to retrieve the calibration data.
     //
@@ -204,7 +204,7 @@ void updatetrima5X :: updateCal()
 
     cerr << "v5.1 cal.dat file found.  No conversion needed" << endl;
 
-#endif // __TRIMA52__
+//#endif // __TRIMA52__
 }
 
 void updatetrima5X :: updateTrap(TrimaVersion fromVersion)

@@ -31,9 +31,14 @@ protected:
    virtual void updateTrap(TrimaVersion fromVersion);
 
 //
-// Update the config file from 5.1.0 to the version being installed
+// Override updatePostCount to do nothing for 6.1.0
 //
-   virtual bool updateConfigVersion(CDatFileReader& datfile);
+   bool updatePostCount(CDatFileReader& datfile);
+
+//
+// Update the config file for the version being installed
+//
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
 
 public:
 

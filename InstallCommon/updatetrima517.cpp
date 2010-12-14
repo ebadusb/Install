@@ -35,87 +35,42 @@ void updatetrima517 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
-int updatetrima517 :: convertTo510(CDatFileReader& datfile)
-{
-   // If this is a 5.1.7 config file
-   if ( datfile.Find("PRODUCT_TEMPLATES","key_plt_amap_single_yield_min") )
-   {
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_min" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_max" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_min" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_max" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_min" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_max" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_conc" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_conc" );
-       datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_conc" );
-
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_a" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_b" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_c" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_d" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_e" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_f" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_g" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_h" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_i" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_j" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_k" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_l" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n" );
-       datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o" );
-
-   }
-
-   return(0);
-}
-
-bool updatetrima517 :: updateConfigVersion(CDatFileReader& datfile)
+bool updatetrima517 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
 
-    // If this is a pre 5.1.7 config file
-    if ( !datfile.Find("PRODUCT_TEMPLATES","key_plt_amap_single_yield_min") )
-    {
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_min", "3.2" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_max", "4.0" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_min", "6.3" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_max", "8.0" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_min", "9.5" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_max", "11.8" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_conc", "1400" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_conc", "1400" );
-        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_conc", "1400" );
+   switch (fromVersion)
+   {
+      case V510:
+      case V512:
+      case V513:
+      case V514:
+      case V515:
+      case V516:
+         retval = updateConfig510517(datfile);
+         break;
+      case V517:
+      case V518:
+         // Do nothing
+         break;
+      case V520:
+      case V521:
+      case V522:
+         retval = updateConfig52X510(datfile);
+         retval |= updateConfig510517(datfile);
+         break;
 
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_a", "0" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_b", "0" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_c", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_d", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_e", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_f", "1" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_g", "1" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_h", "0" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_i", "0" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_j", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_k", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_l", "1" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m", "1" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n", "0" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o", "1" );
+      case V600:
+      case V601:
+      case V610:
+         retval = updateConfig610600(datfile);
+         retval |= updateConfig600510(datfile);
+         retval |= updateConfig510517(datfile);
+         break;
+      default:
+         break;
+   }
 
-        // change these plasma definitions too
-        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_c");
-        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_l");
-        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_m");
-
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_c", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_l", "2" );
-        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_m", "0" );
-
-        retval = true;
-    }
-
-    return retval;
+   return retval;
 }
 

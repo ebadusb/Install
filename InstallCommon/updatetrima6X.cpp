@@ -178,7 +178,7 @@ bool updatetrima6X :: checkRasSettings(CDatFileReader& datfile)
     return returnVal;
 }
 
-void updatetrima6X :: updateConfig()
+void updatetrima6X :: updateConfig(TrimaVersion fromVersion)
 {
     //
     // Create the dat file reader to retrieve the configuration data.
@@ -193,7 +193,7 @@ void updatetrima6X :: updateConfig()
     bool writeFile = false;
 
     writeFile |= updatePostCount(datfile);
-    writeFile |= updateConfigVersion(datfile);
+    writeFile |= updateConfigVersion(datfile, fromVersion);
     writeFile |= checkPasSettings(datfile);
     writeFile |= checkRasSettings(datfile);
 
@@ -208,154 +208,6 @@ void updatetrima6X :: updateConfig()
     {
         cerr << "Up to date config file found. No conversion needed." << endl;
     }
-}
-
-bool updatetrima6X :: updateConfigVersion(CDatFileReader& datfile)
-{
-    // If this is a 6.X config file then return
-    if ( datfile.Find("PRODUCT_TEMPLATES", "key_plt_yield_10") )
-    {
-        cerr << "Converting config.dat from 5X to 6X - not needed" << endl;
-        return false;
-    }
-
-    cerr << "Converting config.dat from 5X to 6X" << endl;
-
-    // Plasma rinseback
-    /// (Note: in 5.1 and 5.2 there was an option called "key_rinseback_setting",
-    //  which could be set to 0 (normal) or 1 (plasma).  Now, we have two special
-    //  rinseback settings: one for plasma and one for saline.  They're not mutually
-    //  exclusive and each has its own button, so "key_rinseback_setting" became
-    //  "key_plasma_rinseback", and "key_saline_rinseback" was added.  Both are
-    //  0 for off and 1 for on.
-    const char* oldRinsebackSetting = datfile.Find("PROCEDURE_CONFIG", "key_rinseback_setting");
-
-    // If plasma rinseback existed and was turned on, turn it on.
-    if (oldRinsebackSetting && (atoi(oldRinsebackSetting) == 1))
-    {
-        datfile.AddLine( "PROCEDURE_CONFIG", "key_plasma_rinseback",  "1" );
-    }
-    else
-    {
-        datfile.AddLine( "PROCEDURE_CONFIG", "key_plasma_rinseback",  "0" );
-    }
-
-    // Saline Rinseback
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_saline_rinseback",     "0" );
-
-    // Split PAS into separate bag form PLT product
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_mss_split_notif",  "0" );
-
-    // Show blood diversion graphics
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_blood_diversion",      "0" );
-
-    // Master RAS and PAS toggles
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_plt_on",           "0" );
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_mss_rbc_on",           "0" );
-
-    // DRBC threshold
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_threshold",       "300" );
-
-    // RAS and PAS bag volumes
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_plt_def_bag_vol",      "250" );
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_rbc_def_bag_vol",      "100" );
-
-    // PAS bag volume pre-metering override allowed
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_override_pas_bag_vol", "0" );
-
-    // Toggle-able air evac
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_air_removal",            "1" );
-
-    // DRBC TBV limit
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "3.9" );
-
-    // Updatting HCT from 32 to 30
-    datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",            "30" );
-
-    //  PLT product PAS info
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1", "50" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_2",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_2", "50" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_3",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_3", "50" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_4",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_4", "50" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_5",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_5", "50" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_6",            "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_6", "50" ); 
-
-    // RBC product RAS/PTF info
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_1", "0" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", "80" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_2", "0" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", "80" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_3", "0" ); 
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", "80" ); 
-
-    // TRALI exclusions
-    datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
-    datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plasma",  "2" );
-
-    // Hgb units instead of Hct
-    datfile.AddLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob",  "0" );
-
-    // 5 more configurable procedures
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_p",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_p",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_rbc_p",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_blood_type_p",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_time_p",  "120" );
-
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_q",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_q",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_rbc_q",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_blood_type_q",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_time_q",  "120" );
-
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_r",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_r",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_rbc_r",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_blood_type_r",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_time_r",  "120" );
-
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_s",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_s",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_rbc_s",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_blood_type_s",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_time_s",  "120" );
-
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_t",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_t",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_rbc_t",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_blood_type_t",  "0" );
-    datfile.AddLine( "PRODUCT_DEFINITIONS", "key_time_t",  "120" );
-
-    // Four extra PLT procedures
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_7", "8.0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_7", "571.4286" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_7", "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_7", "50" );
-
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_8", "9.0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_8", "642.8571" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_8", "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_8", "50" );
-
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_9", "10.0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_9", "714.2857" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_9", "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_9", "50" );
-
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_yield_10", "11.0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_volume_10", "785.7143" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_10", "0" );
-    datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_10", "50" );
-
-    datfile.RemoveLine("PROCEDURE_CONFIG", "key_rinseback_protocol");
-
-    return true;
 }
 
 int updatetrima6X :: convertTo510(CDatFileReader& datfile)

@@ -128,6 +128,14 @@
     #endif
     #define TRIMA_PROJECT_REVISION_FILE TRIMA_PATH "/projectrevision"
 
+   #ifndef FILE_TCHSCRN_DAT
+      #define FILE_TCHSCRN_DAT	 "touch_screen.dat"
+   #endif
+
+   #ifndef PNAME_TCHSCRNDAT
+      #define PNAME_TCHSCRNDAT	 CONFIG_PATH "/" FILE_TCHSCRN_DAT
+   #endif
+
 #else // #ifdef __COMPILE_FOR_VX_54__
 
 	// These are the real include files.
@@ -150,7 +158,8 @@
 #endif
 
 // Enum of versions
-enum TrimaVersion {V510, V514, V515, V516, V517, V518, V520, V600, V601, V610, NUMBER_OF_VERSIONS};
+// I swear, when I started there were only 5!
+enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V601, V610, NUMBER_OF_VERSIONS};
 
 
 class updatetrimaBase
@@ -163,10 +172,10 @@ public:
    virtual ~updatetrimaBase();
 
    // Convert files to 510
-   virtual int convertFilesTo510(TrimaVersion toVersion);
+//   virtual int convertFilesTo510(TrimaVersion toVersion);
 
    // Upgrade from 510 to this version
-   int upgradeFrom510(TrimaVersion fromVersion);
+   int upgrade(TrimaVersion fromVersion);
 
 private:
    // Copy constructor
@@ -249,14 +258,50 @@ protected:
    virtual void copyTrapFiles();
 
 //
-// Convert files to 510
-//
-   virtual int convertTo510(CDatFileReader& datfile);
-
-//
 // check for inconsistent plasma rinseback settings
 //
    virtual bool checkPlasmaRB();
+
+//
+// update the config.dat from 510 to 517/8
+//
+   virtual bool updateConfig510517(CDatFileReader& datfile);
+
+//
+// update the config.dat from 510 to 520
+//
+   virtual bool updateConfig510520(CDatFileReader& datfile);
+
+//
+// update the config.dat from 517/8 to 510
+//
+   virtual bool updateConfig517510(CDatFileReader& datfile);
+
+//
+// update the config.dat from 52X to 510
+//
+   virtual bool updateConfig52X510(CDatFileReader& datfile);
+
+//
+// update the config.dat from 5X to 600
+//
+   virtual bool updateConfig5X600(CDatFileReader& datfile);
+
+//
+// update the config.dat from 600 to 510
+//
+   virtual bool updateConfig600510(CDatFileReader& datfile);
+
+//
+// update the config.dat from 600 to 610
+//
+   virtual bool updateConfig600610(CDatFileReader& datfile);
+
+//
+// update the config.dat from 610 to 600
+//
+   virtual bool updateConfig610600(CDatFileReader& datfile);
+
 
 ////////////////////////////////////////////////////////////////
 // Abstract funtions that need to be overridden for each version
@@ -264,7 +309,7 @@ protected:
 //
 // Main config file update function, calls the others
 //
-   virtual void updateConfig() = 0;
+   virtual void updateConfig(TrimaVersion fromVersion) = 0;
 
 //
 // does the file extraction
@@ -274,7 +319,7 @@ protected:
 //
 // Update the config file for the version being installed
 //
-   virtual bool updateConfigVersion(CDatFileReader& datfile) = 0;
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion) = 0;
 
 //
 // cal.dat update function

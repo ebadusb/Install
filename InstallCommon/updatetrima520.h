@@ -28,17 +28,17 @@ protected:
 //
 // trap_default.dat and trap_override.dat update function 
 //
-   virtual void updateTrap(TrimaVersion fromVersion);
+//   virtual void updateTrap(TrimaVersion fromVersion);
 
 //
-// Convert files to 510
+// Override updatePostCount to do nothing for 5.2
 //
-   virtual int convertTo510(CDatFileReader& datfile);
+   bool updatePostCount(CDatFileReader& datfile);
 
 //
-// Update the config file from 5.1.0 to the version being installed
+// Update the config file for the version being installed
 //
-   virtual bool updateConfigVersion(CDatFileReader& datfile);
+   virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);
 
 //
 // setconfig.dat update function
@@ -48,7 +48,7 @@ protected:
 //
 // cal.dat update function
 //
-   virtual void updateCal();
+//   virtual void updateCal();
 
 public:
 
