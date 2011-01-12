@@ -632,6 +632,16 @@ bool updatetrimaBase :: updateConfig510517(CDatFileReader& datfile)
       datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_l", "2" );
       datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_m", "0" );
 
+      // 5.1.7/8 don't support Japanese, set to English
+      int value = 0;
+      value = datfile.GetInt( "LANGUAGE_UNIT_CONFIG", "key_lang" );
+      if (value == 5)
+      {
+         datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_lang", "0" );
+         printf("Setting language to english.\n" );
+      }
+
+
       retval = true;
    }
 
