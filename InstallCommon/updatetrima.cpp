@@ -43,15 +43,15 @@ static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] =
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.2
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.3
     {false, false, false, true,  false, false, false, false, false, false, false, false, false, false},  // 5.1.4
-    {false, false, false, false, true,  false, false, false, false, false, false, false, false, true},   // 5.1.5
+    {false, false, false, false, true,  false, false, false, false, false, false, true,  true,  true},   // 5.1.5
     {false, false, false, false, false, true,  false, true,  false, false, false, true,  true,  false},  // 5.1.6
     {true,  true,  true,  false, false, false, true,  true,  false, false, false, false, false, false},  // 5.1.7
     {false, false, false, false, false, false, true,  true,  false, false, false, true,  true,  true},   // 5.1.8
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.0
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.1
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.2
-    {false, false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.0
-    {false, false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.1
+    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.0
+    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.1
     {false, false, false, false, true,  false, false, true,  false, false, false, false, false, true}    // 6.1.0
 };
 
