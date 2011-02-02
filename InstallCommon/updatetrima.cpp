@@ -18,6 +18,10 @@
 
 using namespace std;
 
+// File pointer for development_only file
+FILE *development_only;
+
+
 // Map of versions to their objects
 static map< TrimaVersion, updatetrimaBase * > versionMap; 
 
@@ -428,7 +432,7 @@ bool allowedUpgradePath()
 {
     bool retval = true;
 
-	FILE *development_only = fopen( "/machine/update/development_only", "r" );
+//	FILE *development_only = fopen( "/machine/update/development_only", "r" );
 
     // Check if this upgrade is allowed, bypass this check if the development_only file exists
     if( allowedUpgrade[fromTrimaVersion][toTrimaVersion] || development_only )
@@ -436,17 +440,38 @@ bool allowedUpgradePath()
         // I won't let you brick the machine, even if you're a developer
         if ( isVersalogicPython() && !allowedPythonUpgrade[toTrimaVersion] )
         {
-            cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed on a VersaLogic Python Trima." << endl;
+            if ( development_only )
+            {
+                cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed on a VersaLogic Python Trima." << endl;
+            }
+            else
+            {
+                cerr << "This update path is not allowed on a VersaLogic Python Trima." << endl;
+            }
             retval = false;
         }
         else 
         {
-            cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is allowed." << endl;
+            if ( development_only )
+            {
+                cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is allowed." << endl;
+            }
+            else
+            {
+                cerr << "This update path is allowed." << endl;
+            }
         }
     }
     else
     {
-        cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed." << endl;
+        if ( development_only )
+        {
+            cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed." << endl;
+        }
+        else
+        {
+            cerr << "This update path is not allowed." << endl;
+        }
         retval = false;
     }
 
@@ -486,6 +511,9 @@ int updateTrima()
       return(-1);
    }
 
+   // Look for the development_only file
+   development_only = fopen( "/machine/update/development_only", "r" );
+
    //
    // Find the software version of the updateTrima.taz file
    //
@@ -497,7 +525,10 @@ int updateTrima()
    // Get the revision string from the taz file the easy way - works for new taz files
    if ( findTazRevision(UPDATE_PATH "/updateTrima.taz", revString) )
    {
-       cerr << "Software revision string from updateTrima.taz is: " << revString << endl;
+       if ( development_only )
+       {
+           cerr << "Software revision string from updateTrima.taz is: " << revString << endl;
+       }
    }
    else  // Try getting it the hard way
    {
@@ -511,7 +542,10 @@ int updateTrima()
 
            if ( findTazRevision(UPDATE_PATH "/trima.taz", revString) )
            {
-               cerr << "Software revision string from trima.taz is: " << revString << endl;
+               if ( development_only )
+               {
+                   cerr << "Software revision string from trima.taz is: " << revString << endl;
+               }
            }
            else
            {
@@ -535,14 +569,20 @@ int updateTrima()
        cerr << "Can't determine software version from revision string, aborting update." << endl;
        return(-1);
    }
-   cerr << "Software version from updateTrima.taz is: " << versionStringMap[toTrimaVersion] << endl;
+   if ( development_only )
+   {
+       cerr << "Software version from updateTrima.taz is: " << versionStringMap[toTrimaVersion] << endl;
+   }
 
 
    // Read the "from" revision
    cerr << "Reading software revision string of software installed on the machine." << endl;
    if ( readProjectRevisionFile(revString) )
    {
-       cerr << "Software revision string of software installed on the machine is: " << revString << endl;
+       if ( development_only )
+       {
+           cerr << "Software revision string of software installed on the machine is: " << revString << endl;
+       }
 
        // Parse it
        if ( !parseRevision(revString, fromTrimaVersion) )
@@ -559,7 +599,10 @@ int updateTrima()
        return(-1);
    }
 
-   cerr << "Software version of software installed on the machine is: " << versionStringMap[fromTrimaVersion] << endl;
+   if ( development_only )
+   {
+       cerr << "Software version of software installed on the machine is: " << versionStringMap[fromTrimaVersion] << endl;
+   }
 
 
    // Checking hardware type
@@ -600,7 +643,10 @@ int updateTrima()
    // Do the upgrading
    if ( versionMap[toTrimaVersion] != NULL && versionMap[toTrimaVersion]->upgrade(fromTrimaVersion) == 0 )
    {
-       cerr << "Upgraded from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << endl;
+       if ( development_only )
+       {
+           cerr << "Upgraded from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << endl;
+       }
    }
    else
    {
@@ -622,8 +668,11 @@ int updateTrima()
    if ( retval == 0 )
    {
        cerr << "     Install successful" << endl;
-       cerr << "     Old software version: " << versionStringMap[fromTrimaVersion] << endl;
-       cerr << "     New software version: " << versionStringMap[toTrimaVersion] << endl;
+       if ( development_only )
+       {
+           cerr << "     Old software version: " << versionStringMap[fromTrimaVersion] << endl;
+           cerr << "     New software version: " << versionStringMap[toTrimaVersion] << endl;
+       }
    }
    else
    {
