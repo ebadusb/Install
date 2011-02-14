@@ -749,7 +749,7 @@ bool updatetrimaBase :: updateConfig5X600(CDatFileReader& datfile)
     datfile.AddLine( "PROCEDURE_CONFIG", "key_air_removal",            "1" );
 
     // DRBC TBV limit
-    datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "3.9" );
+    datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "4.5" );
 
     // Updatting HCT from 32 to 30
 //    datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",            "30" );
