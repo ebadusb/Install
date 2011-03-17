@@ -5,27 +5,27 @@
  */
 
 #include "updatetrima.h"
-#include "updatetrima610.h"
+#include "updatetrima602.h"
 
 using namespace std;
 
 // Default constructor
-updatetrima610 :: updatetrima610() :
+updatetrima602 :: updatetrima602() :
 updatetrima6X()
 {
 }
 
 // Copy constructor - private so nobody can use it
-updatetrima610 :: updatetrima610( const updatetrima610 &obj )
+updatetrima602 :: updatetrima602( const updatetrima602 &obj )
 {
 }
 
 // Default destructor
-updatetrima610 ::  ~updatetrima610()
+updatetrima602 ::  ~updatetrima602()
 {
 }
 
-void updatetrima610 :: updateTrap(TrimaVersion fromVersion)
+void updatetrima602 :: updateTrap(TrimaVersion fromVersion)
 {
    if ( fromVersion < V600 )
    {
@@ -35,13 +35,7 @@ void updatetrima610 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
-bool updatetrima610 :: updatePostCount(CDatFileReader& datfile)
-{
-   // Don't update postcount for 6.1.0
-   return false;
-}
-
-bool updatetrima610 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
+bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
 
@@ -54,35 +48,36 @@ bool updatetrima610 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
       case V515:
       case V516:
          retval = updateConfig5X600(datfile);
-         retval |= updateConfig600610(datfile);
+         retval |= updateConfig600602(datfile);
          break;
       case V517:
       case V518:
          retval = updateConfig517510(datfile);
          retval |= updateConfig5X600(datfile);
-         retval |= updateConfig600610(datfile);
+         retval |= updateConfig600602(datfile);
          break;
       case V520:
       case V521:
       case V522:
          retval = updateConfig52X510(datfile);
          retval |= updateConfig5X600(datfile);
-         retval |= updateConfig600610(datfile);
+         retval |= updateConfig600602(datfile);
          break;
       case V600:
-         retval = updateConfig600610(datfile);
+         retval = updateConfig600602(datfile);
          break;
       case V602:
-         retval = updateConfig602600(datfile);
-         retval |= updateConfig600610(datfile);
+         // Do nothing
          break;
       case V610:
+         retval = updateConfig610600(datfile);
+         retval |= updateConfig600602(datfile);
          break;
-         // Do nothing
       default:
          break;
    }
 
    return retval;
 }
+
 

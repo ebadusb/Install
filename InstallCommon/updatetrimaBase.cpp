@@ -982,6 +982,105 @@ bool updatetrimaBase :: updateConfig600510(CDatFileReader& datfile)
    return true;
 }
 
+bool updatetrimaBase :: updateConfig600602(CDatFileReader& datfile)
+{
+    cerr << "updateConfig600602" << endl;
+
+    if ( !datfile.Find("PRODUCT_TEMPLATES","key_plt_amap_single_yield_min") )
+    {
+        cerr << "Converting from 600 to 602" << endl;
+
+        // Add AMAPP stuff
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_min", "3.2" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_max", "4.0" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_min", "6.3" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_max", "8.0" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_min", "9.5" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_max", "11.8" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_conc", "1400" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_conc", "1400" );
+        datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_conc", "1400" );
+
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_a", "0" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_b", "0" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_c", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_d", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_e", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_f", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_g", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_h", "0" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_i", "0" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_j", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_k", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_l", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n", "0" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_p", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_q", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_r", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_s", "1" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_t", "1" );
+
+        // change these plasma definitions too
+        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_c");
+        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_l");
+        datfile.RemoveLine("PRODUCT_DEFINITIONS", "key_plasma_m");
+
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_c", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_l", "2" );
+        datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_m", "0" );
+
+        return true;
+    }
+
+    return false;
+}
+
+bool updatetrimaBase :: updateConfig602600(CDatFileReader& datfile)
+{
+    cerr << "updateConfig602600" << endl;
+
+    if ( datfile.Find("PRODUCT_TEMPLATES","key_plt_amap_single_yield_min") )
+    {
+        cerr << "Converting from 602 to 600" << endl;
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_min" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_yield_max" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_min" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_yield_max" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_min" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_yield_max" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_single_conc" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_double_conc" );
+        datfile.RemoveLine( "PRODUCT_TEMPLATES", "key_plt_amap_triple_conc" );
+
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_a" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_b" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_c" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_d" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_e" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_f" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_g" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_h" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_i" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_j" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_k" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_l" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_p" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_q" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_r" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_s" );
+        datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_t" );
+
+        return true;
+    }
+
+    return false;
+}
+
 bool updatetrimaBase :: updateConfig600610(CDatFileReader& datfile)
 {
     cerr << "updateConfig600610" << endl;

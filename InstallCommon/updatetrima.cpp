@@ -12,6 +12,7 @@
 #include "updatetrima518.h"
 #include "updatetrima520.h"
 #include "updatetrima600.h"
+#include "updatetrima602.h"
 #include "updatetrima610.h"
 #include <map>
 #include <fstream>
@@ -42,7 +43,7 @@ const char *newVersion;
 static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] = 
 {
     //            To:
-    //V510  V512   V513   V514   V515   V516   V517   V518   V520   V521   V522   V600   V601   V610     // From:
+    //V510  V512   V513   V514   V515   V516   V517   V518   V520   V521   V522   V600   V602   V610     // From:
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.0
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.2
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.3
@@ -55,14 +56,14 @@ static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] =
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.1
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.2
     {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.0
-    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.1
+    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.2
     {false, false, false, false, true,  false, false, true,  false, false, false, false, false, true}    // 6.1.0
 };
 
 // The array of allowed upgrade paths for Python
 static const bool allowedPythonUpgrade[] = 
     //            To:
-    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V601  V610
+    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V602  V610
     {false, false, false, false, false, false, false, true, false, false, false, true, true, true};   // From anywhere
 
 #ifdef __cplusplus
@@ -141,7 +142,15 @@ bool init()
     if ( (tmpObjPtr = new updatetrima600) != NULL )
     {
         versionMap[V600] = tmpObjPtr;
-        versionMap[V601] = tmpObjPtr;
+    }
+    else
+    {
+        return false;
+    }
+
+    if ( (tmpObjPtr = new updatetrima602) != NULL )
+    {
+        versionMap[V602] = tmpObjPtr;
     }
     else
     {
@@ -170,7 +179,7 @@ bool init()
     versionStringMap[V521] = "5.2.1";
     versionStringMap[V522] = "5.2.2";
     versionStringMap[V600] = "6.0.0";
-    versionStringMap[V601] = "6.0.1";
+    versionStringMap[V602] = "6.0.2";
     versionStringMap[V610] = "6.1.0";
 
     return true;
@@ -363,9 +372,9 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         parsedVersion = V610;
         break;
     case 8:
-        if ( curMinorRev == 4 && curBuild >= 5 )
+        if ( curMinorRev == 0 && curBuild >= 954 )
         {
-            parsedVersion = V601;
+            parsedVersion = V602;
         }
         else
         {

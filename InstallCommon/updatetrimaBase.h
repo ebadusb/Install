@@ -159,7 +159,7 @@
 
 // Enum of versions
 // I swear, when I started there were only 5!
-enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V601, V610, NUMBER_OF_VERSIONS};
+enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V602, V610, NUMBER_OF_VERSIONS};
 
 
 class updatetrimaBase
@@ -291,6 +291,16 @@ protected:
 // update the config.dat from 600 to 510
 //
    virtual bool updateConfig600510(CDatFileReader& datfile);
+
+//
+// update the config.dat from 600 to 602
+//
+   virtual bool updateConfig600602(CDatFileReader& datfile);
+
+//
+// update the config.dat from 602 to 600
+//
+   virtual bool updateConfig602600(CDatFileReader& datfile);
 
 //
 // update the config.dat from 600 to 610

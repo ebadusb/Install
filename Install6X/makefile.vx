@@ -51,7 +51,7 @@ update_dir  = bin
 update_map  = update.map
 update_cxx_files = updatetrima.cpp updatetrimaBase.cpp updatetrima5X.cpp updatetrima6X.cpp \
                    updatetrima510.cpp updatetrima514.cpp updatetrima517.cpp updatetrima518.cpp updatetrima520.cpp \
-		   updatetrima600.cpp updatetrima610.cpp
+		   updatetrima600.cpp updatetrima602.cpp updatetrima610.cpp
 update_c_files = discover_hw.c
 update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a
 include $(COMDIR)/makefile.process_app
