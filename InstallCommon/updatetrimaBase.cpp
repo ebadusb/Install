@@ -780,6 +780,8 @@ bool updatetrimaBase :: updateConfig5X600(CDatFileReader& datfile)
     datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plt",  "2" );
     datfile.AddLine( "PREDICTION_CONFIG", "key_male_only_plasma",  "2" );
 
+    datfile.AddLine( "PREDICTION_CONFIG",  "key_complementary_plasma", "0" );
+
     // Hgb units instead of Hct
     datfile.AddLine( "LANGUAGE_UNIT_CONFIG", "key_crit_or_glob",  "0" );
 
@@ -1031,6 +1033,9 @@ bool updatetrimaBase :: updateConfig600602(CDatFileReader& datfile)
         datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_l", "2" );
         datfile.AddLine( "PRODUCT_DEFINITIONS", "key_plasma_m", "0" );
 
+
+        datfile.AddLine( "PREDICTION_CONFIG",  "key_complementary_plasma", "0" );
+
         return true;
     }
 
@@ -1074,6 +1079,9 @@ bool updatetrimaBase :: updateConfig602600(CDatFileReader& datfile)
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_r" );
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_s" );
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_t" );
+
+
+        datfile.RemoveLine( "PREDICTION_CONFIG",  "key_complementary_plasma" );
 
         return true;
     }
