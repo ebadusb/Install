@@ -42,16 +42,20 @@ const char *newVersion;
 // Yeah, it's a 2 dimensional array, deal with it
 static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] = 
 {
+    // Note: Not all columns in the documentation matrix are represented here:
+    // 511 is the same as 512, 601 is the same as 600, 519 is the same as 518
+    // 514 and 517 have been removed from the doc matrix to discourage use but are still enforced in code
+    // 
     //            To:
     //V510  V512   V513   V514   V515   V516   V517   V518   V520   V521   V522   V600   V602   V610     // From:
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.0
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.2
     {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.3
     {false, false, false, true,  false, false, false, false, false, false, false, false, false, false},  // 5.1.4
-    {false, false, false, false, true,  false, false, false, false, false, false, true,  true,  true},   // 5.1.5
+    {false, false, false, false, true,  false, false, true,  false, false, false, true,  true,  true},   // 5.1.5
     {false, false, false, false, false, true,  false, true,  false, false, false, true,  true,  false},  // 5.1.6
     {true,  true,  true,  false, false, false, true,  true,  false, false, false, false, false, false},  // 5.1.7
-    {false, false, false, false, false, false, true,  true,  false, false, false, true,  true,  true},   // 5.1.8
+    {true,  false, false, false, false, false, true,  true,  false, false, false, true,  true,  true},   // 5.1.8
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.0
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.1
     {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.2
@@ -400,7 +404,7 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         {
             parsedVersion = V510;
         }
-        else if ( curBuild == 328 )
+        else if ( curBuild == 328 || curBuild == 323 ) // 328 is 5.1.2, 323 is 5.1.1
         {
             parsedVersion = V512;
         }
@@ -424,7 +428,7 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         {
             parsedVersion = V517;
         }
-        else if ( curBuild > 513 )  // This is a guess and needs to be updated when 5.1.8 is released
+        else if ( curBuild >= 648 )
         {
             parsedVersion = V518;
         }
