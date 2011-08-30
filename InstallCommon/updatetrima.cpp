@@ -38,32 +38,6 @@ TrimaVersion toTrimaVersion;
 const char *currVersion;
 const char *newVersion;
 
-// The matrix of allowed upgrade paths
-// Yeah, it's a 2 dimensional array, deal with it
-static const bool allowedUpgrade[][NUMBER_OF_VERSIONS] = 
-{
-    // Note: Not all columns in the documentation matrix are represented here:
-    // 511 is the same as 512, 601 is the same as 600, 519 is the same as 518
-    // 514 and 517 have been removed from the doc matrix to discourage use but are still enforced in code
-    // 
-    //            To:
-    //V510  V512   V513   V514   V515   V516   V517   V518   V520   V521   V522   V600   V602   V610     // From:
-    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.0
-    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.2
-    {true,  true,  true,  false, true,  true,  true,  true,  true,  true,  true,  true,  true,  true},   // 5.1.3
-    {false, false, false, true,  false, false, false, false, false, false, false, false, false, false},  // 5.1.4
-    {false, false, false, false, true,  false, false, true,  false, false, false, true,  true,  true},   // 5.1.5
-    {false, false, false, false, false, true,  false, true,  false, false, false, true,  true,  false},  // 5.1.6
-    {true,  true,  true,  false, false, false, true,  true,  false, false, false, false, false, false},  // 5.1.7
-    {true,  false, false, false, false, false, true,  true,  false, false, false, true,  true,  true},   // 5.1.8
-    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.0
-    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.1
-    {false, false, false, false, false, false, false, true,  true,  true,  true,  true,  true,  false},  // 5.2.2
-    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.0
-    {true,  false, false, false, false, true,  false, true,  true,  true,  true,  true,  true,  false},  // 6.0.2
-    {false, false, false, false, true,  false, false, true,  false, false, false, false, false, true}    // 6.1.0
-};
-
 // The array of allowed upgrade paths for Python
 static const bool allowedPythonUpgrade[] = 
     //            To:
@@ -155,6 +129,7 @@ bool init()
     if ( (tmpObjPtr = new updatetrima602) != NULL )
     {
         versionMap[V602] = tmpObjPtr;
+        versionMap[V603] = tmpObjPtr;
     }
     else
     {
@@ -185,6 +160,7 @@ bool init()
     versionStringMap[V600] = "6.0.0";
     versionStringMap[V602] = "6.0.2";
     versionStringMap[V610] = "6.1.0";
+    versionStringMap[V603] = "6.0.3";
 
     return true;
 }
@@ -368,6 +344,7 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
 
 //    cerr << "Build of software on Trima: " << curMajorRev << "." << curMinorRev << "." << curBuild << endl;
 
+// 511 is the same as 512, 601 is the same as 600, 519 is the same as 518
 
     // Figure out what version of the software based on the revision & build info
     switch ( curMajorRev )
@@ -376,7 +353,11 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         parsedVersion = V610;
         break;
     case 8:
-        if ( curMinorRev == 0 && curBuild >= 954 )
+        if ( curMinorRev == 5 )
+        {
+            parsedVersion = V603;
+        }
+        else if ( curMinorRev == 0 && curBuild >= 954 )
         {
             parsedVersion = V602;
         }
@@ -443,52 +424,36 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
 
 bool allowedUpgradePath()
 {
-    bool retval = true;
+   bool retval = true;
 
 //	FILE *development_only = fopen( "/machine/update/development_only", "r" );
 
-    // Check if this upgrade is allowed, bypass this check if the development_only file exists
-    if( allowedUpgrade[fromTrimaVersion][toTrimaVersion] || development_only )
-    {
-        // I won't let you brick the machine, even if you're a developer
-        if ( isVersalogicPython() && !allowedPythonUpgrade[toTrimaVersion] )
-        {
-            if ( development_only )
-            {
-                cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed on a VersaLogic Python Trima." << endl;
-            }
-            else
-            {
-                cerr << "This update path is not allowed on a VersaLogic Python Trima." << endl;
-            }
-            retval = false;
-        }
-        else 
-        {
-            if ( development_only )
-            {
-                cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is allowed." << endl;
-            }
-            else
-            {
-                cerr << "This update path is allowed." << endl;
-            }
-        }
-    }
-    else
-    {
-        if ( development_only )
-        {
-            cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed." << endl;
-        }
-        else
-        {
-            cerr << "This update path is not allowed." << endl;
-        }
-        retval = false;
-    }
-
-    return retval;
+   // Check if this upgrade is allowed, bypass this check if the development_only file exists
+   // I won't let you brick the machine, even if you're a developer
+   if ( isVersalogicPython() && !allowedPythonUpgrade[toTrimaVersion] )
+   {
+      if ( development_only )
+      {
+         cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is not allowed on a VersaLogic Python Trima." << endl;
+      }
+      else
+      {
+         cerr << "This update path is not allowed on a VersaLogic Python Trima." << endl;
+      }
+      retval = false;
+   }
+   else
+   {
+      if ( development_only )
+      {
+         cerr << "The update from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << " is allowed." << endl;
+      }
+      else
+      {
+         cerr << "This update path is allowed." << endl;
+      }
+   }
+   return retval;
 }
 
 bool extractTopLevelFiles()
