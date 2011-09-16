@@ -683,6 +683,13 @@ bool updatetrimaBase :: updateConfig517510(CDatFileReader& datfile)
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_m" );
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_n" );
         datfile.RemoveLine( "PRODUCT_DEFINITIONS", "key_platelet_amap_o" );
+		
+        int value = datfile.GetInt( "LANGUAGE_UNIT_CONFIG", "key_lang" );
+        if (( value < 0 ) || ( value > 9 ))
+        {
+           datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_lang", "0" );
+           printf( "Setting language to english.\n" );
+        }
 
         return true;
     }
@@ -950,7 +957,7 @@ bool updatetrimaBase :: updateConfig600510(CDatFileReader& datfile)
    int value = 0;
 
    value = datfile.GetInt( "LANGUAGE_UNIT_CONFIG", "key_lang" );
-   if (value < 0 || value > 12)
+   if (value < 0 || value > 9)
    {
       datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_lang", "0" );
       printf("Setting language to english.\n" );
