@@ -159,8 +159,8 @@ bool init()
     versionStringMap[V522] = "5.2.2";
     versionStringMap[V600] = "6.0.0";
     versionStringMap[V602] = "6.0.2";
-    versionStringMap[V610] = "6.1.0";
     versionStringMap[V603] = "6.0.3";
+    versionStringMap[V610] = "6.1.0";
 
     return true;
 }

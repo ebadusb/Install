@@ -28,7 +28,7 @@ COMDIR ?= \\bctquad3\HOME\BCT_Development\Trima5.R\Trima\common_builds\common_bu
 # ------------------------------------------------------------------------------
 # Define include directories needed for apps built in this directory
 # ------------------------------------------------------------------------------
-ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(COMDIR)\os -I$(UPDATEDIR)/../InstallCommon -I$(UPDATEDIR)
+ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(MAINDIR)\os -I$(COMDIR)\os -I$(UPDATEDIR)/../InstallCommon -I$(UPDATEDIR)
 
 # ------------------------------------------------------------------------------
 # Define location for Trima libraries
