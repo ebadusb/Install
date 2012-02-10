@@ -320,7 +320,7 @@ void updatetrimaBase :: updateHW()
         printf("Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
 
         attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
-//        if ( IsVendor( "Ampro" ) )
+
         if ( isAmpro() )
         {
             if ( cp( TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT ) == ERROR )
@@ -444,7 +444,7 @@ void updatetrimaBase :: updateSetConfig()
         attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
         fflush(stdout);
     }
-    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) < 0 )
+    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) != 0 )
     {
         // Override the file
         printf("Overriding %s ...\n", FILE_SETCONFIG_DAT);
