@@ -41,8 +41,8 @@ const char *newVersion;
 // The array of allowed upgrade paths for Python
 static const bool allowedPythonUpgrade[] = 
     //            To:
-    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V602  V610
-    {false, false, false, false, false, false, false, true, false, false, false, true, true, true};   // From anywhere
+    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V602  V610  V611  V612
+    {false, false, false, false, false, false, false, true, false, false, false, true, true, true, true, true};   // From anywhere
 
 #ifdef __cplusplus
 extern "C" { 
@@ -139,6 +139,8 @@ bool init()
     if ( (tmpObjPtr = new updatetrima610) != NULL )
     {
         versionMap[V610] = tmpObjPtr;
+        versionMap[V611] = tmpObjPtr;
+        versionMap[V612] = tmpObjPtr;
     }
     else
     {
@@ -161,6 +163,8 @@ bool init()
     versionStringMap[V602] = "6.0.2";
     versionStringMap[V603] = "6.0.3";
     versionStringMap[V610] = "6.1.0";
+    versionStringMap[V611] = "6.1.1";
+    versionStringMap[V612] = "6.1.2";
 
     return true;
 }
@@ -350,7 +354,18 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
     switch ( curMajorRev )
     {
     case 9:
-        parsedVersion = V610;
+        if ( curBuild < 117 )
+        {
+            parsedVersion = V610;
+        }
+        else if ( curBuild == 117 )
+        {
+            parsedVersion = V611;
+        }
+        else
+        {
+            parsedVersion = V612;
+        }
         break;
     case 8:
         if ( curMinorRev == 5 )

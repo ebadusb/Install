@@ -159,7 +159,7 @@
 
 // Enum of versions
 // I swear, when I started there were only 5!
-enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V602, V603, V610, NUMBER_OF_VERSIONS};
+enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V602, V603, V610, V611, V612, NUMBER_OF_VERSIONS};
 
 
 class updatetrimaBase
