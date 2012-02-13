@@ -71,6 +71,8 @@ bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
          // Do nothing
          break;
       case V610:
+      case V611:
+      case V612:
          retval = updateConfig610600(datfile);
          retval |= updateConfig600602(datfile);
          break;
