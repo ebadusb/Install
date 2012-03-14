@@ -38,11 +38,13 @@ TrimaVersion toTrimaVersion;
 const char *currVersion;
 const char *newVersion;
 
-// The array of allowed upgrade paths for Python
+// The array of versions that support the Python Control Computer 
+// (true = can be installed on a Python)
 static const bool allowedPythonUpgrade[] = 
-    //            To:
-    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   V600  V602  V610  V611  V612
-    {false, false, false, false, false, false, false, true, false, false, false, true, true, true, true, true};   // From anywhere
+    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   
+    {false, false, false, false, false, false, false, true, false, false, false, 
+    //V600 V602  V603  V610  V611  V612  V620
+     true, true, true, true, true, true, true};
 
 #ifdef __cplusplus
 extern "C" { 
@@ -130,6 +132,7 @@ bool init()
     {
         versionMap[V602] = tmpObjPtr;
         versionMap[V603] = tmpObjPtr;
+        versionMap[V620] = tmpObjPtr;
     }
     else
     {
@@ -165,6 +168,7 @@ bool init()
     versionStringMap[V610] = "6.1.0";
     versionStringMap[V611] = "6.1.1";
     versionStringMap[V612] = "6.1.2";
+    versionStringMap[V620] = "6.2.0";
 
     return true;
 }
@@ -353,6 +357,9 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
     // Figure out what version of the software based on the revision & build info
     switch ( curMajorRev )
     {
+    case 10:
+        parsedVersion = V620;
+        break;
     case 9:
         if ( curBuild < 117 )
         {
