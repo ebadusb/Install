@@ -122,6 +122,7 @@ bool init()
     if ( (tmpObjPtr = new updatetrima600) != NULL )
     {
         versionMap[V600] = tmpObjPtr;
+        versionMap[V603] = tmpObjPtr;
     }
     else
     {
@@ -131,7 +132,6 @@ bool init()
     if ( (tmpObjPtr = new updatetrima602) != NULL )
     {
         versionMap[V602] = tmpObjPtr;
-        versionMap[V603] = tmpObjPtr;
         versionMap[V620] = tmpObjPtr;
     }
     else
