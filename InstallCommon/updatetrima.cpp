@@ -357,6 +357,8 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
     // Figure out what version of the software based on the revision & build info
     switch ( curMajorRev )
     {
+    case 11:
+            cerr << "Upgrade 6.3 TBD" << endl;
     case 10:
         parsedVersion = V620;
         break;
