@@ -444,27 +444,9 @@ void updatetrimaBase :: updateSetConfig()
         attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
         fflush(stdout);
     }
-    else if (currVersion != NULL && newVersion != NULL && strcmp(newVersion, currVersion) != 0 )
+    else if (currVersion == NULL && newVersion == NULL)
     {
-        // Override the file
-        printf("Overriding %s ...\n", FILE_SETCONFIG_DAT);
-        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
-
-        if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
-        {
-            printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
-            return;
-        }
-
-        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
-        fflush(stdout);
-    }
-    else if (currVersion != NULL && newVersion == NULL)
-    {
-        // Remove the file
-        printf("Removing %s ...\n", FILE_SETCONFIG_DAT);
-        attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "-R");
-        remove(CONFIG_PATH "/" FILE_SETCONFIG_DAT);
+        printf("copy of %s failed, no template file found\n", FILE_SETCONFIG_DAT);
     }
     else
     {
