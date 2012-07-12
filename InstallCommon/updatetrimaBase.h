@@ -159,7 +159,7 @@
 
 // Enum of versions
 // I swear, when I started there were only 5!
-enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V602, V603, V610, V611, V612, V620, NUMBER_OF_VERSIONS};
+enum TrimaVersion {V510, V512, V513, V514, V515, V516, V517, V518, V520, V521, V522, V600, V602, V603, V610, V611, V612, V620, V630, NUMBER_OF_VERSIONS};
 
 
 class updatetrimaBase
@@ -170,9 +170,6 @@ public:
 
    // Default destructor
    virtual ~updatetrimaBase();
-
-   // Convert files to 510
-//   virtual int convertFilesTo510(TrimaVersion toVersion);
 
    // Upgrade from 510 to this version
    int upgrade(TrimaVersion fromVersion);
@@ -311,6 +308,16 @@ protected:
 // update the config.dat from 610 to 600
 //
    virtual bool updateConfig610600(CDatFileReader& datfile);
+
+//
+// update the config.dat from 602 to 630
+//
+   virtual bool updateConfig602630(CDatFileReader& datfile);
+
+//
+// update the config.dat from 630 to 602
+//
+   virtual bool updateConfig630602(CDatFileReader& datfile);
 
 
 ////////////////////////////////////////////////////////////////

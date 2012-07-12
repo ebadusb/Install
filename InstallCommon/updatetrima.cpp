@@ -14,6 +14,7 @@
 #include "updatetrima600.h"
 #include "updatetrima602.h"
 #include "updatetrima610.h"
+#include "updatetrima630.h"
 #include <map>
 #include <fstream>
 
@@ -43,8 +44,8 @@ const char *newVersion;
 static const bool allowedPythonUpgrade[] = 
     //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   
     {false, false, false, false, false, false, false, true, false, false, false, 
-    //V600 V602  V603  V610  V611  V612  V620
-     true, true, true, true, true, true, true};
+    //V600 V602  V603  V610  V611  V612  V620  V630
+     true, true, true, true, true, true, true, true};
 
 #ifdef __cplusplus
 extern "C" { 
@@ -150,6 +151,15 @@ bool init()
         return false;
     }
 
+    if ( (tmpObjPtr = new updatetrima630) != NULL )
+    {
+        versionMap[V630] = tmpObjPtr;
+    }
+    else
+    {
+        return false;
+    }
+
     // Initialize the printable version strings
     versionStringMap[V510] = "5.1.0";
     versionStringMap[V512] = "5.1.2";
@@ -169,6 +179,7 @@ bool init()
     versionStringMap[V611] = "6.1.1";
     versionStringMap[V612] = "6.1.2";
     versionStringMap[V620] = "6.2.0";
+    versionStringMap[V630] = "6.3.0";
 
     return true;
 }
@@ -358,7 +369,8 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
     switch ( curMajorRev )
     {
     case 11:
-            cerr << "Upgrade 6.3 TBD" << endl;
+        parsedVersion = V630;
+        break;
     case 10:
         parsedVersion = V620;
         break;

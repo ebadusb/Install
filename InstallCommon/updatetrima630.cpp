@@ -5,27 +5,27 @@
  */
 
 #include "updatetrima.h"
-#include "updatetrima602.h"
+#include "updatetrima630.h"
 
 using namespace std;
 
 // Default constructor
-updatetrima602 :: updatetrima602() :
+updatetrima630 :: updatetrima630() :
 updatetrima6X()
 {
 }
 
 // Copy constructor - private so nobody can use it
-updatetrima602 :: updatetrima602( const updatetrima602 &obj )
+updatetrima630 :: updatetrima630( const updatetrima630 &obj )
 {
 }
 
 // Default destructor
-updatetrima602 ::  ~updatetrima602()
+updatetrima630 ::  ~updatetrima630()
 {
 }
 
-void updatetrima602 :: updateTrap(TrimaVersion fromVersion)
+void updatetrima630 :: updateTrap(TrimaVersion fromVersion)
 {
    if ( fromVersion < V600 )
    {
@@ -35,7 +35,7 @@ void updatetrima602 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
-bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
+bool updatetrima630 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
 
@@ -49,12 +49,14 @@ bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
       case V516:
          retval = updateConfig5X600(datfile);
          retval |= updateConfig600602(datfile);
+         retval |= updateConfig602630(datfile);
          break;
       case V517:
       case V518:
          retval = updateConfig517510(datfile);
          retval |= updateConfig5X600(datfile);
          retval |= updateConfig600602(datfile);
+         retval |= updateConfig602630(datfile);
          break;
       case V520:
       case V521:
@@ -62,23 +64,26 @@ bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
          retval = updateConfig52X510(datfile);
          retval |= updateConfig5X600(datfile);
          retval |= updateConfig600602(datfile);
+         retval |= updateConfig602630(datfile);
          break;
       case V600:
       case V603: 
          retval = updateConfig600602(datfile);
+         retval |= updateConfig602630(datfile);
          break;
       case V602:
       case V620:
-         // Do nothing
+         retval = updateConfig602630(datfile);
          break;
       case V610:
       case V611:
       case V612:
          retval = updateConfig610600(datfile);
          retval |= updateConfig600602(datfile);
+         retval |= updateConfig602630(datfile);
          break;
       case V630:
-         retval = updateConfig630602(datfile);
+         // Do nothing
          break;
       default:
          break;
@@ -86,5 +91,4 @@ bool updatetrima602 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
 
    return retval;
 }
-
 

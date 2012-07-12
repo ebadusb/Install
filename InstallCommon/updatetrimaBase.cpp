@@ -14,34 +14,6 @@
 
 #include "targzextract.c"
 
-// The number of Trima versions - INCREMENT WHEN THERE ARE NEW VERSIONS
-//static const int numberOfVersions = 6;
-
-// The array of version names - MUST ADD NEW VERSIONS TO THE END
-//static const char * TrimaVersionName[] = {"5.1.0", "5.1.7", "5.2", "6.0", "6.1", "5.1.8"};
-
-/*
-// The array of allowed upgrade paths
-static const bool allowedUpgrade[][numberOfVersions] = 
-{
-    //            To:
-    //V51  V517   V52    V60    V61    V518
-    {true, true,  true,  true,  true,  true},   // From 5.1.0
-    {true, true,  false, false, false, false},  // From 5.1.7
-    {true, false, true,  true,  false, false},  // From 5.2
-    {true, false, false, true,  false, false},  // From 6.0
-    {true, false, false, false, true,  false},  // From 6.1
-    {true, false, false, false, false, true}    // From 5.1.8
-};
-
-// The array of allowed upgrade paths for Python
-static const bool allowedPythonUpgrade[] = 
-    //            To:
-    //V51   V517   V52    V60    V61    V518
-    {false, false, false, true,  true,  true};   // From anywhere
-*/
-
-
 using namespace std;
 
 #ifdef __cplusplus
@@ -52,10 +24,6 @@ extern "C" {
     int copyFileContiguous(const char * from, const char * to);
 
     int softcrc(const char * options);
-
-//    int tarExtract ( const char *file     /* archive file name */, 
-//                     const char *location /* location for extraction */ );
-
 
 #ifdef __cplusplus
 };
@@ -305,7 +273,6 @@ void updatetrimaBase :: updateHW()
     // Replace hw.dat if the version number has changed
     currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_HW_DAT);
 
-//    if ( IsVendor( "Ampro" ) )
     if ( isAmpro() )
     {
         newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_ampro.dat");
@@ -740,9 +707,6 @@ bool updatetrimaBase :: updateConfig5X600(CDatFileReader& datfile)
     // DRBC TBV limit
     datfile.AddLine( "PROCEDURE_CONFIG", "key_drbc_body_vol",        "4.5" );
 
-    // Updatting HCT from 32 to 30
-//    datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit",            "30" );
-
     //  PLT product PAS info
     datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_mss_1",            "0" );
     datfile.AddLine( "PRODUCT_TEMPLATES", "key_plt_pct_carryover_1", "50" ); 
@@ -1106,6 +1070,251 @@ bool updatetrimaBase :: updateConfig610600(CDatFileReader& datfile)
 
         // Operators potentially discard flagged products
         datfile.RemoveLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags" );
+        return true;
+    }
+
+    return false;
+}
+
+bool updatetrimaBase :: updateConfig602630(CDatFileReader& datfile)
+{
+    cerr << "updateConfig602630" << endl;
+
+    // if there isn't a key_plasma_ratio flag it hasn't been updated to 6.3
+    if ( !datfile.Find("PROCEDURE_CONFIG", "key_plasma_ratio") )
+    {
+        cerr << "Converting from 602 to 630" << endl;
+
+        datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_height", "0" );
+        datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_weight", "0" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_proc_time", "100" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_custom_ratio", "10" );
+
+        datfile.AddLine( "PROCEDURE_CONFIG",  "key_plasma_ratio", "13" );
+
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_ac_rate", "1" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit", "30" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_vol_setting", "49" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_percent", "12" );
+
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_1_setting" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_2_setting" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_3_setting" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_1_less_than_vol" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_2_less_than_vol" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_3_less_than_vol" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_weight_3_greater_than_vol" );
+
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_setting",   "175" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_less_than_vol",   "500.0" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_greater_than_vol",   "600.0" );
+
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_max_plasma_pls",   "600" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_max_plasma_plt",   "400" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_max_plasma_pls_setting",   "1" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_max_plasma_plt_setting",   "1" );
+
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_max_draw_flow", "0" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_air_removal", "0" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_blood_diversion", "1" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_mas_rbc_on", "0" );
+
+        datfile.SetValue( "PREDICTION_CONFIG", "key_pls_amap_minimum", "100" );
+        datfile.SetValue( "PREDICTION_CONFIG", "key_inlet_management", "1" );
+        datfile.SetValue( "PREDICTION_CONFIG", "key_return_management", "1" );
+        datfile.AddLine( "PREDICTION_CONFIG", "key_ffp_volume",   "470" );
+
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_1", "2.2" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_1", "220" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_2", "2.3" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_2", "220,3065" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_3", "3.2" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_3", "260" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_4", "3.3" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_4", "260" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_5", "4" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_5", "260" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_6", "4.2" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_6", "260" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_a", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_a", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_a", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_a", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_b", "2" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_b", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_b", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_b", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_c", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_c", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_c", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_c", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_d", "4" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_d", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_d", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_d", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_e", "5" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_e", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_e", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_e", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_f", "6" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_f", "7" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_f", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_f", "80" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_g", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_g", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_h", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_h", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_i", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_i", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_j", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_j", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_k", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_k", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_l", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_l", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_m", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_n", "0" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_o", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_o", "0" );
+
+
+        return true;
+    }
+
+    return false;
+}
+
+bool updatetrimaBase :: updateConfig630602(CDatFileReader& datfile)
+{
+    cerr << "updateConfig630602" << endl;
+
+    // if there is a key_plasma_ratio flag it hasn't been updated to 6.02
+    if ( datfile.Find("PROCEDURE_CONFIG", "key_plasma_ratio") )
+    {
+        cerr << "Converting from 630 to 602" << endl;
+
+        datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_height", "1" );
+        datfile.SetValue( "LANGUAGE_UNIT_CONFIG", "key_weight", "1" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_proc_time", "150" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_custom_ratio", "11" );
+
+        datfile.RemoveLine( "PROCEDURE_CONFIG",  "key_plasma_ratio" );
+
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_ac_rate", "4" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_post_crit", "32" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_vol_setting", "1" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_tbv_percent", "15" );
+
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_1_setting", "175" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_2_setting", "175" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_setting", "175" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_1_less_than_vol", "500.0" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_2_less_than_vol", "500.0" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_less_than_vol", "500.0" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_3_greater_than_vol", "600.0" );
+
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_setting",   "175" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_less_than_vol",   "500.0" );
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_weight_greater_than_vol",   "600.0" );
+
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_max_plasma_pls" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_max_plasma_plt" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_max_plasma_pls_setting" );
+        datfile.RemoveLine( "PROCEDURE_CONFIG", "key_max_plasma_plt_setting" );
+
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_max_draw_flow", "2" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_air_removal", "1" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_blood_diversion", "0" );
+        datfile.SetValue( "PROCEDURE_CONFIG", "key_mas_rbc_on", "1" );
+
+        datfile.SetValue( "PREDICTION_CONFIG", "key_pls_amap_minimum", "150" );
+        datfile.SetValue( "PREDICTION_CONFIG", "key_inlet_management", "6" );
+        datfile.SetValue( "PREDICTION_CONFIG", "key_return_management", "3" );
+        datfile.RemoveLine( "PREDICTION_CONFIG", "key_ffp_volume" );
+
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_1", "2.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_1", "142.8571" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_2", "3.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_2", "214.2857" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_3", "4.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_3", "285.7143" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_4", "5.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_4", "357.1429" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_5", "6.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_5", "428.5714" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_6", "7.0" );
+        datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_6", "500" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_a", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_a", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_a", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_a", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_b", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_b", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_b", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_b", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_c", "5" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_c", "2" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_c", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_c", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_d", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_d", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_d", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_d", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_e", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_e", "0" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_e", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_e", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_f", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_f", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_f", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_time_f", "120" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_g", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_g", "1" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_h", "2" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_h", "1" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_i", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_rbc_i", "1" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_j", "5" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_j", "1" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_k", "5" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_k", "6" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_l", "3" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_l", "2" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_m", "3" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_n", "3" );
+
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_platelet_o", "1" );
+        datfile.SetValue( "PRODUCT_DEFINITIONS", "key_plasma_o", "8" );
+
         return true;
     }
 
