@@ -144,6 +144,15 @@
 
 #endif // #ifdef __COMPILE_FOR_VX_54__
 
+// Make sure these are defined for everybody
+#ifndef FILE_VISTIP_DAT
+   #define FILE_VISTIP_DAT	 "vista_ip.dat"
+#endif
+
+#ifndef PNAME_VISTIPDAT
+   #define PNAME_VISTIPDAT	 CONFIG_PATH "/" FILE_VISTIP_DAT
+#endif
+
 // To fix a change in 6.0 that renames these file defines
 #ifndef PNAME_STRING_CRC
     #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE
@@ -248,6 +257,11 @@ protected:
 // setconfig.dat update function
 //
    virtual void updateSetConfig();
+
+//
+// vista_ip.dat update function
+//
+   virtual void updateVista();
 
 //
 // common location for code to copy trap files

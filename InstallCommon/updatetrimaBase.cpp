@@ -421,6 +421,58 @@ void updatetrimaBase :: updateSetConfig()
     }
 }
 
+void updatetrimaBase :: updateVista()
+{
+    std::string vistaipTmpl(TEMPLATES_PATH "/" FILE_VISTIP_DAT);
+    struct stat vistaipTemplFileStat;
+
+    // if there's a vista ip template file we have to make sure the config file is updated
+    if ( stat(const_cast<char*>(vistaipTmpl.c_str()), &vistaipTemplFileStat) == OK )
+    {
+        //For first time installs, copy the template file over to config
+        struct stat vistaipFileStat;
+        if ( stat ((char *)PNAME_VISTIPDAT, &vistaipFileStat) == ERROR)
+        {
+            if ( cp(vistaipTmpl.c_str(), PNAME_VISTIPDAT ) == ERROR )
+            {
+                cerr << "copy of " << vistaipTmpl << " to " << PNAME_VISTIPDAT  << " failed" << endl;
+            }
+            else
+            {
+                cerr << "copied" << vistaipTmpl << " to " << PNAME_VISTIPDAT  << " successfully" << endl;
+            }
+        }
+        else  // the config already exists so see if we need to update it
+        {
+            // create the file readers
+            CDatFileReader vistaipConfigFile(PNAME_VISTIPDAT);
+            CDatFileReader vistaipTemplFile(vistaipTmpl.c_str());
+        
+            if ( !vistaipConfigFile.Error() && !vistaipTemplFile.Error() )
+            {
+                // get the format versions
+                float confFormatVer = vistaipConfigFile.GetFloat("Version", "FormatVersion");
+                float templFormatVer = vistaipTemplFile.GetFloat("Version", "FormatVersion");
+
+                // the version of the template is newer, so update the config file
+                if ( templFormatVer > confFormatVer )
+                {
+                    vistaipConfigFile.SetValue("VISTA", "VISTA_DIRECT_SEND_IP", vistaipTemplFile.GetString("VISTA", "VISTA_DIRECT_SEND_IP").c_str());
+                    vistaipConfigFile.SetValue("VISTA", "VISTA_DIRECT_SEND_PORT", vistaipTemplFile.GetString("VISTA", "VISTA_DIRECT_SEND_PORT").c_str());
+                    vistaipConfigFile.Write(PNAME_VISTIPDAT);
+
+                    cerr << PNAME_VISTIPDAT << " file updated." << endl;
+                }
+            }
+            else
+            {
+                cerr << FILE_VISTIP_DAT << " file reader creation error" << endl;
+            }
+        }
+    }
+
+}
+
 int updatetrimaBase :: verifyCrc(const char* commandLine)
 {
     int crcReturnVal = softcrc(commandLine);
@@ -1381,6 +1433,7 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
     updateSounds();
     updateCassette();
     updateSetConfig();
+    updateVista();
 
     updateTrap(fromVersion);
 

@@ -389,7 +389,11 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         }
         break;
     case 8:
-        if ( curMinorRev == 5 )
+        if ( curMinorRev == 8 )  // Call V6.0.6 V6.0.3 for now
+        {
+            parsedVersion = V603;
+        }
+        else if ( curMinorRev == 5 )
         {
             parsedVersion = V603;
         }
