@@ -596,15 +596,24 @@ bool updatetrima6X :: extractUpdateFiles()
     }
 
     //
-    // Clean up source files provided in the TAR file.
+    // Clean up source files provided in the TAR file.  Note ampro files may or may not be
+    // included in archive so we remove all and then check to make sure nothing is left over.
     //
-    if ( remove( UPDATE_PATH "/bootrom.sys" ) == ERROR ||
-         remove( UPDATE_PATH "/vxWorks"     ) == ERROR ||
-         remove( UPDATE_PATH "/bootrom_ampro.sys" ) == ERROR ||
-         remove( UPDATE_PATH "/vxWorks_ampro"     ) == ERROR ||
-         remove( UPDATE_PATH "/bootrom_versalogic.sys" ) == ERROR || 
-         remove( UPDATE_PATH "/vxWorks_versalogic"     ) == ERROR ||
-         remove( UPDATE_PATH "/vxboot.taz"  ) == ERROR )
+    remove( UPDATE_PATH "/bootrom_ampro.sys" );
+    remove( UPDATE_PATH "/vxWorks_ampro"     );
+    remove( UPDATE_PATH "/bootrom.sys" );
+    remove( UPDATE_PATH "/vxWorks"     );
+    remove( UPDATE_PATH "/bootrom_versalogic.sys" );
+    remove( UPDATE_PATH "/vxWorks_versalogic"     );
+    remove( UPDATE_PATH "/vxboot.taz"  );
+
+    if ( attrib( UPDATE_PATH "/bootrom_ampro.sys","-R" ) != ERROR ||
+         attrib( UPDATE_PATH "/vxWorks_ampro","-R"     ) != ERROR ||
+         attrib( UPDATE_PATH "/bootrom.sys","-R" ) != ERROR ||
+         attrib( UPDATE_PATH "/vxWorks","-R"     ) != ERROR ||
+         attrib( UPDATE_PATH "/bootrom_versalogic.sys","-R" ) != ERROR || 
+         attrib( UPDATE_PATH "/vxWorks_versalogic","-R"     ) != ERROR ||
+         attrib( UPDATE_PATH "/vxboot.taz","-R"  ) != ERROR )
     {
         printf("Removal of temporary OS image failed\n" );
         return false;
@@ -732,16 +741,29 @@ bool updatetrima6X :: extractUpdateFiles()
         }
     }
 
-    if ( remove( SAFETY_BOOT_PATH "/bootrom_ampro.sys" ) == ERROR ||
-         remove( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys"  )               == ERROR ||
-         remove( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"    )               == ERROR ||
-         remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     ) == ERROR ||
-         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     ) == ERROR ||
-         remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe" ) == ERROR )
+    //
+    //  These files may or may not exist depending on whether it is a Pentium or Ampro image,
+    //  so remove without checking status and then make sure nothing remains.
+    //
+
+    remove( SAFETY_BOOT_PATH "/bootrom_ampro.sys" );
+    remove( SAFETY_BOOT_PATH "/vxWorks_ampro"     );
+    remove( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys"  );
+    remove( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys"    );
+    remove( SAFETY_BOOT_PATH "/vxWorks_versalogic"     );
+    remove( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe" );
+
+    if ( attrib( SAFETY_BOOT_PATH "/bootrom_ampro.sys","-R" ) != ERROR ||
+         attrib( SAFETY_BOOT_PATH "/vxWorks_ampro","-R" ) != ERROR ||
+         attrib( SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys","-R" ) != ERROR ||
+         attrib( SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys","-R" ) != ERROR ||
+         attrib( SAFETY_BOOT_PATH "/vxWorks_versalogic","-R" ) != ERROR ||
+         attrib( SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe","-R" ) != ERROR )
     {
-        printf("Removal of temporary OS image failed\n" );
+        printf("removal of temporary OS image failed\n" );
         return false;
     }
+
 
     //Uncompress the optional tools archive if it exists
     struct stat fileStat;
