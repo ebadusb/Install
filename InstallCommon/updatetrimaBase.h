@@ -153,6 +153,14 @@
    #define PNAME_VISTIPDAT	 CONFIG_PATH "/" FILE_VISTIP_DAT
 #endif
 
+#ifndef FILE_FEATURES
+   #define FILE_FEATURES "features.bin"
+#endif
+
+#ifndef PNAME_FEATURES
+   #define PNAME_FEATURES CONFIG_PATH "/" FILE_FEATURES
+#endif
+
 // To fix a change in 6.0 that renames these file defines
 #ifndef PNAME_STRING_CRC
     #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE
@@ -196,6 +204,8 @@ protected:
    int copyFileContiguous(const char * from, const char * to);
 
    int unzipFile(const char * from, const char * to);
+
+   int zipFile(const char * from, const char * to);
 
    bool findTazRevision(const char *searchFileName, char *tazRevString);
 

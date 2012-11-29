@@ -154,6 +154,45 @@ int updatetrimaBase :: unzipFile(const char * from, const char * to)
 }
 
 
+int updatetrimaBase :: zipFile(const char * from, const char * to)
+{
+    int    fromFD = open(from, O_RDONLY, 0644);
+    gzFile toFD   = gzopen(to, "w");
+
+    if ( fromFD >= 0 && toFD >= 0 )
+    {
+        int bytesRead;
+        int bytesWritten=0;
+        char  buffer[10*1024];
+
+        while ( (bytesRead = read(fromFD, buffer, 10*1024)) > 0 )
+        {
+            bytesWritten += gzwrite(toFD, buffer, bytesRead);
+        }
+
+        printf("\tCompression complete\n" );
+        gzclose(toFD);
+        close(fromFD);
+
+        return 1;
+    }
+    else
+    {
+        if ( fromFD < 0 )
+        {
+            perror(from);
+        }
+
+        if ( toFD < 0 )
+        {
+            perror(to);
+        }
+    }
+
+    return 0;
+}
+
+
 
 FileCallBackStatus updatetrimaBase :: update_clean_file(const char * fullPathName)
 {
@@ -207,19 +246,35 @@ FileCallBackStatus updatetrimaBase :: update_file_set_rdonly(const char * fullPa
 
 const char * updatetrimaBase :: findSetting(const char * setting, FILE * fp)
 {
+//    printf("findSetting setting=%s\n", setting);
+
     char * result = NULL;
     if ( fp )
     {
         char    buffer[256];
         while ( !result && fgets(buffer, 256, fp) )
         {
+//            printf("findSetting buffer=%s\n", buffer);
+
             char * start = buffer + strspn(buffer, " \t");
             if ( strncmp(start, setting, strlen(setting)) == 0 )
             {
+//                printf("findSetting found %s\n", setting);
+//                printf("findSetting start =%s\n", start);
+//                printf("findSetting strlen %d\n", strlen(setting));
+
                 start += strlen(setting);
+//                printf("findSetting start =%s\n", start);
+
                 start[strcspn(start, "\n\r")] = '\0';
+//                printf("findSetting start =%s\n", start);
+
                 result = (char *)malloc(strlen(start)+1);
+//                printf("findSetting result =%s\n", result);
+
                 strcpy(result, start);
+//                printf("findSetting result =%s\n", result);
+
             }
         }
     }
@@ -231,11 +286,21 @@ const char * updatetrimaBase :: findSetting(const char * setting, const char * f
     const char * result = NULL;  
     FILE * fp = fopen(fileName, "r");
 
+//    printf("findSetting1 setting=%s\n", setting);
+
     if ( fp )
     {
+        printf("opened %s\n", fileName);
+        
         result = findSetting( setting, fp );
         fclose(fp);
     }
+//    else
+//    {
+//        printf("couldn't open %s\n", fileName);
+//    }
+
+//    printf("findSetting1 result =%s\n", result);
 
     return result;
 }
@@ -312,24 +377,164 @@ void updatetrimaBase :: updateHW()
 
 void updatetrimaBase :: updateSW()
 {
-    // Replace sw.dat if the version number has changed
-    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SW_DAT);
-    newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SW_DAT);
+    // Look if there is a features.bin and use it instead of sw.dat
+    struct stat featuresFileStat;
 
-    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+    if ( stat((char *)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
     {
-        printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
-        attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+        printf("features.bin exists\n");
 
-        if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
+        // update features.bin with the machine ID
+
+        // delete any existing temp file
+        if ( stat((char *)TEMPLATES_PATH "/features.temp", &featuresFileStat) == OK )
         {
-            printf("copy of %s failed\n", FILE_SW_DAT);
-            return;
+            remove( TEMPLATES_PATH "/features.temp" );
         }
 
-        attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
-        fflush(stdout);
+        // unzip features.bin to a temp file
+        if ( unzipFile(TEMPLATES_PATH "/" FILE_FEATURES, TEMPLATES_PATH "/features.temp") )
+        {
+            printf("unzipped features.temp\n");
+
+            // open the temp file for appending
+            FILE * fp = fopen(TEMPLATES_PATH "/features.temp", "a");
+            if ( fp )
+            {
+                printf("opened features.temp\n");
+
+                // get the machine name
+                FILE * fp2 = fopen(CONFIG_PATH "/globvars", "r");
+
+                if ( fp2 )
+                {
+                    printf("opened globvars\n");
+                }
+                else
+                {
+                    printf("couldn't open globvars\n");
+                }
+                fclose(fp2);
+
+                const char * machineName = NULL;
+                machineName = findSetting("MACHINE=", CONFIG_PATH "/globvars");
+
+                if ( machineName )
+                {
+                    printf("machine name = %s\n", machineName);
+
+                    unsigned long crcval = 0;
+                    long buflen = 0;
+                    char serialnumBuf[256];
+    
+                    // create the base serial number line
+                    buflen = sprintf(serialnumBuf, "serial_number=%s", machineName);
+    
+                    // calc the crc for the line
+                    crcgen32(&crcval, (const unsigned char *)serialnumBuf, buflen);
+    
+                    // add the crc to the line
+                    char serialnumBufLine[256];
+                    buflen = sprintf(serialnumBufLine, "%s,%x", serialnumBuf, crcval);
+    
+                    // write the machine ID to the file
+                    fprintf(fp, "\n[MACHINE_ID]\n%s\n", serialnumBufLine);
+                    fflush(fp);
+
+                    // close the temp file
+                    fclose(fp);
+
+                    // delete the original features.bin from templates
+                    remove( TEMPLATES_PATH "/" FILE_FEATURES );
+
+                    // zip the temp file to features.bin
+                    if (zipFile(TEMPLATES_PATH "/features.temp", TEMPLATES_PATH "/" FILE_FEATURES) == 0)
+                    {
+                        // zip failed
+                        printf("zip of features.bin failed\n");
+                        goto LEAVEROUTINE;
+                    }
+
+                    // delete the temp file
+                    remove( TEMPLATES_PATH "/features.temp" );
+
+                    // copy features.bin to the config directory
+                    attrib(PNAME_FEATURES, "-R");
+                    if ( cp( TEMPLATES_PATH "/" FILE_FEATURES, PNAME_FEATURES ) == ERROR )
+                    {
+                        printf("copy of %s failed\n", FILE_FEATURES);
+                        goto LEAVEROUTINE;
+                    }
+                    if (attrib(PNAME_FEATURES, "+R") == ERROR)
+                    {
+                        printf("copy of %s to config failed\n", FILE_FEATURES);
+                        goto LEAVEROUTINE;
+                    }
+
+                    unzipFile(TEMPLATES_PATH "/" FILE_FEATURES, TEMPLATES_PATH "/features.temp2");
+
+                }
+                else
+                {
+                    // close the temp file
+                    fclose(fp);
+
+                    // machine name not defined
+                    printf("machine name not defined\n");
+                    goto LEAVEROUTINE;
+                }
+            }
+            else
+            {
+                // can't open the temp file
+                printf("can't open the features.bin temp file\n");
+                goto LEAVEROUTINE;
+            }
+        }
+        else
+        {
+            // unzip failed
+            printf("unzip of features.bin failed\n");
+            goto LEAVEROUTINE;
+        }
+
+        // remove the old sw.dat files
+        remove( PNAME_SWDAT );
+        remove( TEMPLATES_PATH "/" FILE_SW_DAT );
+
     }
+    else
+    {
+        // Not installing features.bin so delete any that exist in config directory
+        if ( stat((char *)PNAME_FEATURES, &featuresFileStat) == OK )
+        {
+//            remove( PNAME_FEATURES );
+        }
+
+        // Replace sw.dat if the version number has changed
+        currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SW_DAT);
+        newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SW_DAT);
+    
+        if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+        {
+            printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+            attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+    
+            if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
+            {
+                printf("copy of %s failed\n", FILE_SW_DAT);
+                goto LEAVEROUTINE;
+            }
+    
+            attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
+            fflush(stdout);
+        }
+    }
+
+    // stuff to do every time you exit
+    LEAVEROUTINE:
+
+    return;
 }
 
 void updatetrimaBase :: updateTerror()
@@ -1415,6 +1620,14 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
     }
 
     cbioModeSet(pVolDesc->pCbio, O_RDWR);   
+
+    // Remove any old copy of features.bin in templates
+    struct stat featuresFileStat;
+
+    if ( stat((char *)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+    {
+        remove( TEMPLATES_PATH "/" FILE_FEATURES );
+    }
 
     // extract the update files
     if ( !extractUpdateFiles() )
