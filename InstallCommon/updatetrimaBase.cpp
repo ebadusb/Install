@@ -1381,6 +1381,8 @@ bool updatetrimaBase :: updateConfig602630(CDatFileReader& datfile)
         datfile.SetValue( "PREDICTION_CONFIG", "key_return_management", "1" );
         datfile.AddLine( "PREDICTION_CONFIG", "key_ffp_volume",   "470" );
 
+        datfile.AddLine( "PROCEDURE_CONFIG", "key_show_pre_aas_flags",   "1" );
+
         datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_1", "2.2" );
         datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_volume_1", "220" );
         datfile.SetValue( "PRODUCT_TEMPLATE", "key_plt_yield_2", "2.3" );
