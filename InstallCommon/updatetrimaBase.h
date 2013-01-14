@@ -211,7 +211,7 @@ protected:
 
    bool readProjectRevisionFile(char *revString);
 
-   bool parseRevision(const char *revString, TrimaVersion &parsedVersion);
+//   bool parseRevision(const char *revString, TrimaVersion &parsedVersion);
 
    static FileCallBackStatus update_clean_file(const char * fullPathName);
 

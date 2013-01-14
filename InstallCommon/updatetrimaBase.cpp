@@ -435,7 +435,7 @@ void updatetrimaBase :: updateSW()
     
                     // add the crc to the line
                     char serialnumBufLine[256];
-                    buflen = sprintf(serialnumBufLine, "%s,%x", serialnumBuf, crcval);
+                    buflen = sprintf(serialnumBufLine, "%s,%lx", serialnumBuf, crcval);
     
                     // write the machine ID to the file
                     fprintf(fp, "\n[MACHINE_ID]\n%s\n", serialnumBufLine);
@@ -508,7 +508,12 @@ void updatetrimaBase :: updateSW()
         // Not installing features.bin so delete any that exist in config directory
         if ( stat((char *)PNAME_FEATURES, &featuresFileStat) == OK )
         {
-//            remove( PNAME_FEATURES );
+            remove( PNAME_FEATURES );
+        }
+
+        if ( stat((char *)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+        {
+            remove( TEMPLATES_PATH "/" FILE_FEATURES );
         }
 
         // Replace sw.dat if the version number has changed
