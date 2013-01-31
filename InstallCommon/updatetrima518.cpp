@@ -192,10 +192,6 @@ bool updatetrima518 :: extractUpdateFiles()
     fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
     fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
 
-    // IT 7051.  Remove clinical file if exists.
-    remove(CLINICAL_BUILD);
-    remove(TEST_BUILD);
-
     //
     // Uncompress the update file
     printf("Extracting the Trima software files...\n" );

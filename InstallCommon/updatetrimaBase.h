@@ -161,6 +161,24 @@
    #define PNAME_FEATURES CONFIG_PATH "/" FILE_FEATURES
 #endif
 
+// special files
+
+#ifndef CLINICAL_BUILD
+   #define CLINICAL_BUILD CONFIG_PATH "/clinical_build"
+#endif
+
+#ifndef TEST_BUILD
+   #define TEST_BUILD CONFIG_PATH "/test_build"
+#endif
+
+#ifndef TELNET_ON
+   #define TELNET_ON CONFIG_PATH "/telnet"
+#endif
+
+#ifndef PNAME_FTP_ALLOWED
+   #define PNAME_FTP_ALLOWED CONFIG_PATH "/ftp_with_cassette_down"
+#endif
+
 // To fix a change in 6.0 that renames these file defines
 #ifndef PNAME_STRING_CRC
     #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE

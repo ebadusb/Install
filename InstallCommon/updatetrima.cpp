@@ -680,6 +680,19 @@ int updateTrima()
    remove( UPDATE_PATH "/vxWorks_versalogic" );
    remove( UPDATE_PATH "/vxboot.taz" );
 
+   // Delete the "special" files if it isn't a development install
+   if ( !development_only )
+   {
+       attrib( CLINICAL_BUILD,"-R" );
+       attrib( TEST_BUILD,"-R" );
+       attrib( TELNET_ON,"-R" );
+       attrib( PNAME_FTP_ALLOWED,"-R" );
+
+       remove( CLINICAL_BUILD );
+       remove( TEST_BUILD );
+       remove( TELNET_ON );
+       remove( PNAME_FTP_ALLOWED );
+   }
 
    // Write an install summary
    cerr << endl << "Install summary:" << endl;
