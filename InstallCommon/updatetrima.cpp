@@ -655,30 +655,9 @@ int updateTrima()
        {
            cerr << "Can't extract top level files from updateTrima.taz, aborting update." << endl;
            retval = -1;
+           goto LEAVEROUTINE;
        }
    }
-
-   // Do the upgrading
-   if ( versionMap[toTrimaVersion] != NULL && versionMap[toTrimaVersion]->upgrade(fromTrimaVersion) == 0 )
-   {
-       if ( development_only )
-       {
-           cerr << "Upgraded from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << endl;
-       }
-   }
-   else
-   {
-       retval = -1;
-   }
-
-   // Remove the temp files
-   remove( UPDATE_PATH "/bootrom.sys" );
-   remove( UPDATE_PATH "/vxWorks" );
-   remove( UPDATE_PATH "/bootrom_ampro.sys" );
-   remove( UPDATE_PATH "/vxWorks_ampro" );
-   remove( UPDATE_PATH "/bootrom_versalogic.sys" );
-   remove( UPDATE_PATH "/vxWorks_versalogic" );
-   remove( UPDATE_PATH "/vxboot.taz" );
 
    // Delete the "special" files if it isn't a development install
    if ( !development_only )
@@ -693,6 +672,31 @@ int updateTrima()
        remove( TELNET_ON );
        remove( PNAME_FTP_ALLOWED );
    }
+
+   // Do the upgrading
+   if ( versionMap[toTrimaVersion] != NULL && versionMap[toTrimaVersion]->upgrade(fromTrimaVersion) == 0 )
+   {
+       if ( development_only )
+       {
+           cerr << "Upgraded from " << versionStringMap[fromTrimaVersion] << " to " << versionStringMap[toTrimaVersion] << endl;
+       }
+   }
+   else
+   {
+       retval = -1;
+       goto LEAVEROUTINE;
+   }
+
+   LEAVEROUTINE:
+
+   // Remove the temp files
+   remove( UPDATE_PATH "/bootrom.sys" );
+   remove( UPDATE_PATH "/vxWorks" );
+   remove( UPDATE_PATH "/bootrom_ampro.sys" );
+   remove( UPDATE_PATH "/vxWorks_ampro" );
+   remove( UPDATE_PATH "/bootrom_versalogic.sys" );
+   remove( UPDATE_PATH "/vxWorks_versalogic" );
+   remove( UPDATE_PATH "/vxboot.taz" );
 
    // Write an install summary
    cerr << endl << "Install summary:" << endl;
