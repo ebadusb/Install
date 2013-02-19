@@ -666,11 +666,13 @@ int updateTrima()
        attrib( TEST_BUILD,"-R" );
        attrib( TELNET_ON,"-R" );
        attrib( PNAME_FTP_ALLOWED,"-R" );
+       attrib( PUMP_STROKE_LOGGING_ON,"-R" );
 
        remove( CLINICAL_BUILD );
        remove( TEST_BUILD );
        remove( TELNET_ON );
        remove( PNAME_FTP_ALLOWED );
+       remove( PUMP_STROKE_LOGGING_ON );
    }
 
    // Do the upgrading
@@ -688,6 +690,17 @@ int updateTrima()
    }
 
    LEAVEROUTINE:
+
+       // set the special files for writable
+       if ( development_only )
+       {
+           attrib( CLINICAL_BUILD,"-R" );
+           attrib( TEST_BUILD,"-R" );
+           attrib( TELNET_ON,"-R" );
+           attrib( PNAME_FTP_ALLOWED,"-R" );
+           attrib( PUMP_STROKE_LOGGING_ON,"-R" );
+       }
+    
 
    // Remove the temp files
    remove( UPDATE_PATH "/bootrom.sys" );
