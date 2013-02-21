@@ -179,6 +179,10 @@
    #define PNAME_FTP_ALLOWED CONFIG_PATH "/ftp_with_cassette_down"
 #endif
 
+#ifndef PUMP_STROKE_LOGGING_ON
+   #define PUMP_STROKE_LOGGING_ON CONFIG_PATH "/pump_stroke_logging"
+#endif
+
 // To fix a change in 6.0 that renames these file defines
 #ifndef PNAME_STRING_CRC
     #define PNAME_STRING_CRC PNAME_STRING_CRC_FILE
