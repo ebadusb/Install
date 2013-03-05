@@ -580,6 +580,8 @@ int updateTrima()
        }
    }
 
+//   goto LEAVEROUTINE;
+
    // Parse what we got
    if ( !parseRevision(revString, toTrimaVersion) )
    {

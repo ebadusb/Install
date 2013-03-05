@@ -13,6 +13,7 @@
 #include <map>
 
 #include "targzextract.c"
+#include "updatecassette_dat.h"
 
 using namespace std;
 
@@ -246,35 +247,22 @@ FileCallBackStatus updatetrimaBase :: update_file_set_rdonly(const char * fullPa
 
 const char * updatetrimaBase :: findSetting(const char * setting, FILE * fp)
 {
-//    printf("findSetting setting=%s\n", setting);
-
     char * result = NULL;
     if ( fp )
     {
         char    buffer[256];
         while ( !result && fgets(buffer, 256, fp) )
         {
-//            printf("findSetting buffer=%s\n", buffer);
-
             char * start = buffer + strspn(buffer, " \t");
             if ( strncmp(start, setting, strlen(setting)) == 0 )
             {
-//                printf("findSetting found %s\n", setting);
-//                printf("findSetting start =%s\n", start);
-//                printf("findSetting strlen %d\n", strlen(setting));
-
                 start += strlen(setting);
-//                printf("findSetting start =%s\n", start);
 
                 start[strcspn(start, "\n\r")] = '\0';
-//                printf("findSetting start =%s\n", start);
 
                 result = (char *)malloc(strlen(start)+1);
-//                printf("findSetting result =%s\n", result);
 
                 strcpy(result, start);
-//                printf("findSetting result =%s\n", result);
-
             }
         }
     }
@@ -286,8 +274,6 @@ const char * updatetrimaBase :: findSetting(const char * setting, const char * f
     const char * result = NULL;  
     FILE * fp = fopen(fileName, "r");
 
-//    printf("findSetting1 setting=%s\n", setting);
-
     if ( fp )
     {
         printf("opened %s\n", fileName);
@@ -295,15 +281,41 @@ const char * updatetrimaBase :: findSetting(const char * setting, const char * f
         result = findSetting( setting, fp );
         fclose(fp);
     }
-//    else
-//    {
-//        printf("couldn't open %s\n", fileName);
-//    }
-
-//    printf("findSetting1 result =%s\n", result);
 
     return result;
 }
+
+bool updatetrimaBase :: replaceCassette(const char *refStr, unsigned int tubingSetCode, const char *barcodeStr)
+{
+    bool retval = true;
+
+    AdminUpdateCassetteDat::read();
+
+    if ( AdminUpdateCassetteDat::fileOK() )
+    {
+        for (UPDATE_CASSETTE_VECTOR_ITERATOR iter = AdminUpdateCassetteDat::begin(); iter != AdminUpdateCassetteDat::end(); ++iter)
+        {
+            if (strcmp((*iter)->RefNum(), refStr) == 0 && (*iter)->AdminCode() != tubingSetCode)
+            {
+                AdminUpdateCassetteDat::erase(iter);
+                AdminUpdateCassetteDat::addCassette(refStr, tubingSetCode, barcodeStr);
+    
+                if (!AdminUpdateCassetteDat::updateCassetteFile())
+                {
+                    retval = false;
+                }
+                break;
+            }
+        }
+    }
+    else
+    {
+        retval = false;
+    }
+
+    return( retval );
+}
+
 
 bool updatetrimaBase :: updatePostCount(CDatFileReader& datfile)
 {
@@ -628,6 +640,17 @@ void updatetrimaBase :: updateSetConfig()
     else
     {
         printf("%s already exists ...\n", FILE_SETCONFIG_DAT);
+
+        // do maintenance on the setconfig.dat file
+        // replace 80537 with the new admin code
+        if ( replaceCassette("80537", 2370507, "010502058380537") )
+        {
+            printf("Completed maintenance update to setconfig.dat\n");
+        }
+        else
+        {
+            printf("Unable to make maintenance update to setconfig.dat\n");
+        }
     }
 }
 
@@ -1642,6 +1665,8 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
         return(-1);
     }
 
+    attrib( TEMP_PATH,"-R" );
+
     // Update the configuration files ...
     updateConfig(fromVersion);
     updateCal();
@@ -1653,6 +1678,9 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
     updateSounds();
     updateCassette();
     updateSetConfig();
+
+//goto LEAVEROUTINE;
+
     updateVista();
 
     updateTrap(fromVersion);
@@ -1664,6 +1692,10 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
     {
         return(-1);
     }
+
+LEAVEROUTINE:
+
+//    attrib( TEMP_PATH,"R" );
 
     printf("Trima software update complete.\n");
 
