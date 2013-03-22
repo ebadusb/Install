@@ -36,6 +36,11 @@ protected:
    bool updatePostCount(CDatFileReader& datfile);
 
 //
+// setconfig.dat update function
+//
+   virtual void updateSetConfig();
+
+//
 // Update the config file for the version being installed
 //
    virtual bool updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion);

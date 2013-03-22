@@ -35,6 +35,20 @@ void updatetrima630 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
+// This overrides the base class to force changes for 6.3 spiral 0
+void updatetrima630 :: updateSetConfig()
+{
+   if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
+   {
+      printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+      return;
+   }
+
+   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
+   fflush(stdout);
+}
+
+
 bool updatetrima630 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
