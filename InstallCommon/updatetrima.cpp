@@ -20,9 +20,12 @@
 
 using namespace std;
 
+extern int bootKeyboardAttached(void);
+
 // File pointer for development_only file
 FILE *development_only;
-
+//FILE *development_only_file;
+//bool development_only;
 
 // Map of versions to their objects
 static map< TrimaVersion, updatetrimaBase * > versionMap; 
@@ -55,7 +58,6 @@ int updateTrima();
 
 int tarExtract ( const char *file     /* archive file name */, 
                  const char *location /* location for extraction */ );
-
 #ifdef __cplusplus
 };
 #endif
@@ -516,6 +518,7 @@ bool extractTopLevelFiles()
 int updateTrima()
 {
     int retval = 0;
+    development_only = false;
 
    //
    // Make sure we don't interrupt anybody else who is running ...
@@ -528,6 +531,10 @@ int updateTrima()
       // Can't initialize
       return(-1);
    }
+
+   // the is a development install if a keyboard is attached or the development_only file is present
+//   development_only_file = fopen( "/machine/update/development_only", "r" );
+//   development_only = (bootKeyboardAttached() || development_only_file);
 
    // Look for the development_only file
    development_only = fopen( "/machine/update/development_only", "r" );
@@ -579,8 +586,6 @@ int updateTrima()
            return(-1);
        }
    }
-
-//   goto LEAVEROUTINE;
 
    // Parse what we got
    if ( !parseRevision(revString, toTrimaVersion) )
@@ -664,17 +669,11 @@ int updateTrima()
    // Delete the "special" files if it isn't a development install
    if ( !development_only )
    {
-       attrib( CLINICAL_BUILD,"-R" );
-       attrib( TEST_BUILD,"-R" );
-       attrib( TELNET_ON,"-R" );
-       attrib( PNAME_FTP_ALLOWED,"-R" );
-       attrib( PUMP_STROKE_LOGGING_ON,"-R" );
-
-       remove( CLINICAL_BUILD );
-       remove( TEST_BUILD );
-       remove( TELNET_ON );
-       remove( PNAME_FTP_ALLOWED );
-       remove( PUMP_STROKE_LOGGING_ON );
+       for ( int i = 0; i < numInstallSpecialFiles; i++ )
+       {
+          attrib( installSpecialFiles[i],"-R" );
+          remove( installSpecialFiles[i] );
+       }
    }
 
    // Do the upgrading
@@ -693,16 +692,14 @@ int updateTrima()
 
    LEAVEROUTINE:
 
-       // set the special files for writable
-       if ( development_only )
-       {
-           attrib( CLINICAL_BUILD,"-R" );
-           attrib( TEST_BUILD,"-R" );
-           attrib( TELNET_ON,"-R" );
-           attrib( PNAME_FTP_ALLOWED,"-R" );
-           attrib( PUMP_STROKE_LOGGING_ON,"-R" );
-       }
-    
+   // Set the special files to writeable if it is a development install
+   if ( development_only )
+   {
+      for ( int i = 0; i < numInstallSpecialFiles; i++ )
+      {
+         attrib( installSpecialFiles[i],"-R" );
+      }
+   }
 
    // Remove the temp files
    remove( UPDATE_PATH "/bootrom.sys" );

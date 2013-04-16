@@ -6,6 +6,9 @@
 #ifndef UPDATETRIMABASE_H
 #define UPDATETRIMABASE_H
 
+// This is to tell filenames.h to declare the installSpecialFiles variables
+#define INSTALL_BUILD
+
 #include "zlib.h"
 #include "filenames.h"
 #include "filesort.h"
@@ -162,7 +165,6 @@
 #endif
 
 // special files
-
 #ifndef CLINICAL_BUILD
    #define CLINICAL_BUILD CONFIG_PATH "/clinical_build"
 #endif
@@ -171,16 +173,9 @@
    #define TEST_BUILD CONFIG_PATH "/test_build"
 #endif
 
-#ifndef TELNET_ON
-   #define TELNET_ON CONFIG_PATH "/telnet"
-#endif
-
-#ifndef PNAME_FTP_ALLOWED
-   #define PNAME_FTP_ALLOWED CONFIG_PATH "/ftp_with_cassette_down"
-#endif
-
-#ifndef PUMP_STROKE_LOGGING_ON
-   #define PUMP_STROKE_LOGGING_ON CONFIG_PATH "/pump_stroke_logging"
+#ifndef INSTALL_SPECIAL_FILES
+const static char *installSpecialFiles[] = {CLINICAL_BUILD, TEST_BUILD};
+const static int numInstallSpecialFiles = (int)(sizeof(installSpecialFiles)/sizeof(installSpecialFiles[0]));
 #endif
 
 // To fix a change in 6.0 that renames these file defines
@@ -195,6 +190,7 @@
 #ifndef PNAME_DATA_CRC
     #define PNAME_DATA_CRC PNAME_DATA_CRC_FILE
 #endif
+
 
 // Enum of versions
 // I swear, when I started there were only 5!
