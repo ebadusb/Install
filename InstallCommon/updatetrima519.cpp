@@ -5,7 +5,7 @@
  */
 
 #include "updatetrima.h"
-#include "updatetrima518.h"
+#include "updatetrima519.h"
 
 #ifdef __cplusplus
 extern "C" { 
@@ -21,22 +21,22 @@ int tarExtract ( const char *file     /* archive file name */,
 using namespace std;
 
 // Default constructor
-updatetrima518 :: updatetrima518() :
+updatetrima519 :: updatetrima519() :
 updatetrima5X()
 {
 }
 
 // Copy constructor - private so nobody can use it
-updatetrima518 :: updatetrima518( const updatetrima518 &obj )
+updatetrima519 :: updatetrima519( const updatetrima519 &obj )
 {
 }
 
 // Default destructor
-updatetrima518 ::  ~updatetrima518()
+updatetrima519 ::  ~updatetrima519()
 {
 }
 
-void updatetrima518 :: updateTrap(TrimaVersion fromVersion)
+void updatetrima519 :: updateTrap(TrimaVersion fromVersion)
 {
    if ( fromVersion == V510 )
    {
@@ -46,7 +46,7 @@ void updatetrima518 :: updateTrap(TrimaVersion fromVersion)
    return;
 }
 
-bool updatetrima518 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
+bool updatetrima519 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion fromVersion)
 {
    bool retval = false;
 
@@ -102,7 +102,7 @@ bool updatetrima518 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
    return retval;
 }
 
-bool updatetrima518 :: extractUpdateFiles()
+bool updatetrima519 :: extractUpdateFiles()
 {
    // This is done by the extractTopLevelFiles in updatetrima.cpp
    /*
@@ -209,6 +209,40 @@ bool updatetrima518 :: extractUpdateFiles()
     }
 
     return true;
+
+}
+
+void updatetrima519 :: updateSW()
+{
+
+   // Replace sw.dat if the version number has changed
+   currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SW_DAT);
+   newVersion = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SW_DAT);
+
+   attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+
+   if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+   {
+       printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+
+       if ( cp( TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT ) == ERROR )
+       {
+           printf("copy of %s failed\n", FILE_SW_DAT);
+       }
+
+       fflush(stdout);
+   }
+
+   // Now, set the arm option to on
+   if ( !replaceDatfileLine(CONFIG_PATH "/" FILE_SW_DAT, "airout_mitigation", "1") )
+   {
+      printf("setting airout_mitigation to on failed for %s\n", FILE_SW_DAT);
+   }
+
+   printf("RKM:  Showing status\n");
+   taskDelay(sysClkRateGet() * 10);
+
+   attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
 
 }
 

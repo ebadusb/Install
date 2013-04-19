@@ -245,6 +245,123 @@ FileCallBackStatus updatetrimaBase :: update_file_set_rdonly(const char * fullPa
     return FILE_CALLBACK_CONTINUE;
 }
 
+bool updatetrimaBase :: replaceDatfileLine(const char *datFileName, const char *optionName, const char *newVal)
+{
+    bool retval = true;
+    bool madeChange = false;
+    char destDatFileName[256];
+    char oldDatFileName[256];
+
+    char inputBuffer[256];
+    char workingBuffer[256];
+    char baseNewlineBuf[256]; // buffer containing option with new value
+    char newlineBuf[256]; // buffer containing option with new value and CRC appended
+    char *outputLine = inputBuffer;
+
+    sprintf(destDatFileName, "%s.new", datFileName);
+    sprintf(oldDatFileName, "%s.old", datFileName);
+
+    FILE * fpSource = fopen(datFileName, "r");
+    FILE * fpDest = fopen(destDatFileName, "w");
+
+    // if either file didn't open, bail out
+    if ( !fpSource || !fpDest )
+    {
+        if (!fpSource) printf("fpSource %s failed to open\n", datFileName);
+        if (!fpDest) printf("fpDest %s failed to open\n", destDatFileName);
+
+        retval = false;
+        fclose(fpSource);
+        fclose(fpDest);
+        goto LEAVEROUTINE;
+    }
+
+    while ( fgets(inputBuffer, 256, fpSource) )
+    {
+        // make a copy to work on
+        strncpy(workingBuffer, inputBuffer, strlen(inputBuffer));
+
+        //printf("inputBuffer %s\n", inputBuffer);
+
+        char * start = workingBuffer + strspn(workingBuffer, " \t"); // get rid of leading white space
+
+        //printf("workingBuffer %s\n", workingBuffer);
+        //printf("start %s\n", start);
+
+        // did we find the option?
+        if ( strncmp(start, optionName, strlen(optionName)) == 0 )
+        {
+            // now look for the existing value
+            start += strlen(optionName);
+            start += strcspn(start, " ="); // pass any spaces and ='s
+            start[strcspn(start, ",\n\r")] = '\0'; // stop it at the comma in front of the crc & get rid of trailing cr/lf's
+            
+            // is the value not equal to the new value?
+            if ( strncmp(start, newVal, strlen(newVal)) != 0 )
+            {
+                unsigned long crcval = 0;
+                long buflen = 0;
+
+                // create the updated line
+                buflen = sprintf(baseNewlineBuf, "%s=%s", optionName, newVal);
+
+                // calc the crc for the line
+                crcgen32(&crcval, (const unsigned char *)baseNewlineBuf, buflen);
+
+                // add the crc to the line
+                buflen = sprintf(newlineBuf, "%s,%lx\n", baseNewlineBuf, crcval);
+
+                // set the new line to be the one written
+                outputLine = newlineBuf;
+
+                // set this so we know we've made a change
+                madeChange = true;
+            }
+        }
+
+        // write the line to the dest file
+        fprintf(fpDest, "%s", outputLine);
+
+        // reset the output pointer in case we changed it
+        outputLine = inputBuffer;
+    }
+
+    // close 'em up
+    fflush(fpDest);
+    fclose(fpSource);
+    fclose(fpDest);
+
+    // if we made a change then copy the new file over the old one, 
+    // otherwise throw away the new file since it should be the same as the old one
+    if ( madeChange )
+    {
+        if ( mv( datFileName, oldDatFileName ) == ERROR )
+        {
+            printf("move existing file failed\n");
+            // stop
+            retval = false;
+        }
+        else if ( mv( destDatFileName, datFileName ) == ERROR )
+        {
+            printf("move new file to existing file failed\n");
+            // try to put it back
+            mv( oldDatFileName, datFileName );
+            retval = false;
+        }
+    }
+    else
+    {
+        rm(destDatFileName);
+    }
+
+    LEAVEROUTINE: ; // this extra semicolon cleans up auto-indenting after the label
+
+    //printf("returning %d\n", retval);
+    return( retval);
+}
+
+
+
 const char * updatetrimaBase :: findSetting(const char * setting, FILE * fp)
 {
     char * result = NULL;
@@ -1678,8 +1795,6 @@ int updatetrimaBase :: upgrade(TrimaVersion fromVersion)
     updateSounds();
     updateCassette();
     updateSetConfig();
-
-//goto LEAVEROUTINE;
 
     updateVista();
 

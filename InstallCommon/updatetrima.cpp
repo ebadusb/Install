@@ -10,6 +10,7 @@
 #include "updatetrima514.h"
 #include "updatetrima517.h"
 #include "updatetrima518.h"
+#include "updatetrima519.h"
 #include "updatetrima520.h"
 #include "updatetrima600.h"
 #include "updatetrima602.h"
@@ -45,8 +46,8 @@ const char *newVersion;
 // The array of versions that support the Python Control Computer 
 // (true = can be installed on a Python)
 static const bool allowedPythonUpgrade[] = 
-    //V510  V512   V513   V514   V515   V516   V517   V518  V520   V521   V523   
-    {false, false, false, false, false, false, false, true, false, false, false, 
+    //V510  V512   V513   V514   V515   V516   V517   V518  V519  V520   V521   V523   
+    {false, false, false, false, false, false, false, true, true, false, false, false, 
     //V600 V602  V603  V610  V611  V612  V620  V630
      true, true, true, true, true, true, true, true};
 
@@ -105,6 +106,15 @@ bool init()
     if ( (tmpObjPtr = new updatetrima518) != NULL )
     {
         versionMap[V518] = tmpObjPtr;
+    }
+    else
+    {
+        return false;
+    }
+
+    if ( (tmpObjPtr = new updatetrima519) != NULL )
+    {
+        versionMap[V519] = tmpObjPtr;
     }
     else
     {
@@ -171,6 +181,7 @@ bool init()
     versionStringMap[V516] = "5.1.6";
     versionStringMap[V517] = "5.1.7";
     versionStringMap[V518] = "5.1.8";
+    versionStringMap[V519] = "5.1.9";
     versionStringMap[V520] = "5.2.0";
     versionStringMap[V521] = "5.2.1";
     versionStringMap[V522] = "5.2.2";
@@ -451,9 +462,13 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         {
             parsedVersion = V517;
         }
-        else if ( curBuild >= 648 )
+        else if ( curBuild == 648 )
         {
             parsedVersion = V518;
+        }
+        else if ( curBuild >= 704 )
+        {
+            parsedVersion = V519;
         }
         break;
     default:
@@ -518,7 +533,7 @@ bool extractTopLevelFiles()
 int updateTrima()
 {
     int retval = 0;
-    development_only = false;
+//    development_only = false;
 
    //
    // Make sure we don't interrupt anybody else who is running ...

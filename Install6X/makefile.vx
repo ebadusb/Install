@@ -50,7 +50,8 @@ APP_NAME := update
 update_dir  = bin
 update_map  = update.map
 update_cxx_files = updatetrima.cpp updatetrimaBase.cpp updatetrima5X.cpp updatetrima6X.cpp \
-                   updatetrima510.cpp updatetrima514.cpp updatetrima517.cpp updatetrima518.cpp updatetrima520.cpp \
+                   updatetrima510.cpp updatetrima514.cpp updatetrima517.cpp updatetrima518.cpp \
+		   updatetrima519.cpp updatetrima520.cpp \
 		   updatetrima600.cpp updatetrima602.cpp updatetrima610.cpp updatetrima630.cpp \
 		   updatecassette.cpp updatecassette_dat.cpp
 update_c_files = discover_hw.c
