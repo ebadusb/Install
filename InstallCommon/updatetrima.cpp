@@ -21,12 +21,10 @@
 
 using namespace std;
 
-extern int bootKeyboardAttached(void);
+extern "C" int bootKeyboardAttached(void);
 
-// File pointer for development_only file
-FILE *development_only;
-//FILE *development_only_file;
-//bool development_only;
+FILE *development_only_file;
+bool development_only;
 
 // Map of versions to their objects
 static map< TrimaVersion, updatetrimaBase * > versionMap; 
@@ -533,7 +531,6 @@ bool extractTopLevelFiles()
 int updateTrima()
 {
     int retval = 0;
-//    development_only = false;
 
    //
    // Make sure we don't interrupt anybody else who is running ...
@@ -546,13 +543,11 @@ int updateTrima()
       // Can't initialize
       return(-1);
    }
+   development_only = false;
 
    // the is a development install if a keyboard is attached or the development_only file is present
-//   development_only_file = fopen( "/machine/update/development_only", "r" );
-//   development_only = (bootKeyboardAttached() || development_only_file);
-
-   // Look for the development_only file
-   development_only = fopen( "/machine/update/development_only", "r" );
+   development_only_file = fopen( "/machine/update/development_only", "r" );
+   development_only = (bootKeyboardAttached() || development_only_file);
 
    //
    // Find the software version of the updateTrima.taz file
