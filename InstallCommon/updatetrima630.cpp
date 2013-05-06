@@ -7,6 +7,8 @@
 #include "updatetrima.h"
 #include "updatetrima630.h"
 
+extern bool development_only;
+
 using namespace std;
 
 // Default constructor
@@ -38,14 +40,17 @@ void updatetrima630 :: updateTrap(TrimaVersion fromVersion)
 // This overrides the base class to force changes for 6.3 spiral 0
 void updatetrima630 :: updateSetConfig()
 {
-   if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
+   if ( !development_only )
    {
-      printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
-      return;
+      if ( cp( TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT ) == ERROR )
+      {
+         printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+         return;
+      }
+   
+      attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
+      fflush(stdout);
    }
-
-   attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
-   fflush(stdout);
 }
 
 
