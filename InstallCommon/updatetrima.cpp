@@ -21,7 +21,11 @@
 
 using namespace std;
 
+#ifndef __COMPILE_FOR_VX_54__  // if not compiled for VX 5.4
+
 extern "C" int bootKeyboardAttached(void);
+
+#endif // #ifdef __COMPILE_FOR_VX_54__
 
 FILE *development_only_file;
 bool development_only;
@@ -531,6 +535,20 @@ bool extractTopLevelFiles()
 int updateTrima()
 {
     int retval = 0;
+    //
+    // Find the software version of the updateTrima.taz file
+    //
+    bool topLevelFilesExtracted = false;
+    char revString[50];
+
+    //////////////////////////////////////
+    // version numbering test
+
+//    char vernum[80];
+//    strcpy(vernum, INSTALL_VERSION);
+//    cerr << "Veraion Number: " << vernum << endl;
+//    cerr << "Version Number: " << INSTALL_VERSION << endl;
+//    goto LEAVEROUTINE;
 
    //
    // Make sure we don't interrupt anybody else who is running ...
@@ -547,13 +565,12 @@ int updateTrima()
 
    // the is a development install if a keyboard is attached or the development_only file is present
    development_only_file = fopen( "/machine/update/development_only", "r" );
-   development_only = (bootKeyboardAttached() || development_only_file);
 
-   //
-   // Find the software version of the updateTrima.taz file
-   //
-   bool topLevelFilesExtracted = false;
-   char revString[50];
+#ifdef __COMPILE_FOR_VX_54__  // VX 5.4 systems don't have the keyboard check
+   development_only = development_only_file;
+#else
+   development_only = (bootKeyboardAttached() || development_only_file);
+#endif
 
    cerr << "Reading software revision string from updateTrima.taz file." << endl;
 
