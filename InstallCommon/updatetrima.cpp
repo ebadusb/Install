@@ -18,14 +18,9 @@
 #include "updatetrima630.h"
 #include <map>
 #include <fstream>
+#include <sysSymTbl.h>
 
 using namespace std;
-
-#ifndef __COMPILE_FOR_VX_54__  // if not compiled for VX 5.4
-
-extern "C" int bootKeyboardAttached(void);
-
-#endif // #ifdef __COMPILE_FOR_VX_54__
 
 FILE *development_only_file;
 bool development_only;
@@ -534,7 +529,11 @@ bool extractTopLevelFiles()
 //////////////////////////////////////////////////////////////////////////////////////
 int updateTrima()
 {
+    SYM_TYPE       symType;
+    int (*keyboardattachedFunc)(void);
+
     int retval = 0;
+
     //
     // Find the software version of the updateTrima.taz file
     //
@@ -561,16 +560,18 @@ int updateTrima()
       // Can't initialize
       return(-1);
    }
+
    development_only = false;
 
    // the is a development install if a keyboard is attached or the development_only file is present
    development_only_file = fopen( "/machine/update/development_only", "r" );
 
-#ifdef __COMPILE_FOR_VX_54__  // VX 5.4 systems don't have the keyboard check
-   development_only = development_only_file;
-#else
-   development_only = (bootKeyboardAttached() || development_only_file);
-#endif
+   development_only = (development_only_file? true : false);  // Don't hate the conditional operator
+
+   if (symFindByName(sysSymTbl, "bootKeyboardAttached", (char **)&keyboardattachedFunc, &symType) == OK)
+   {
+      development_only |= (*keyboardattachedFunc)();
+   }
 
    cerr << "Reading software revision string from updateTrima.taz file." << endl;
 
