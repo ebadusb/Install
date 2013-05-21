@@ -45,8 +45,8 @@ const char *newVersion;
 static const bool allowedPythonUpgrade[] = 
     //V510  V512   V513   V514   V515   V516   V517   V518  V519  V520   V521   V523   
     {false, false, false, false, false, false, false, true, true, false, false, false, 
-    //V600 V602  V603  V610  V611  V612  V620  V630
-     true, true, true, true, true, true, true, true};
+    //V600 V602  V603  V607  V610  V611  V612  V620  V630
+     true, true, true, true, true, true, true, true, true};
 
 #ifdef __cplusplus
 extern "C" { 
@@ -133,6 +133,7 @@ bool init()
     {
         versionMap[V600] = tmpObjPtr;
         versionMap[V603] = tmpObjPtr;
+        versionMap[V607] = tmpObjPtr;   // V607 is V603 under the hood
     }
     else
     {
@@ -185,6 +186,7 @@ bool init()
     versionStringMap[V600] = "6.0.0";
     versionStringMap[V602] = "6.0.2";
     versionStringMap[V603] = "6.0.3";
+    versionStringMap[V607] = "6.0.7";
     versionStringMap[V610] = "6.1.0";
     versionStringMap[V611] = "6.1.1";
     versionStringMap[V612] = "6.1.2";
@@ -399,7 +401,11 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
         }
         break;
     case 8:
-        if ( curMinorRev == 8 )  // Call V6.0.6 V6.0.3 for now
+        if ( curMinorRev == 9 )     // Giving V6.0.7 it's own number but it is essentially 6.0.3
+        {
+            parsedVersion = V607;
+        }
+        else if ( curMinorRev == 8 )  // Call V6.0.6 V6.0.3 for now
         {
             parsedVersion = V603;
         }
@@ -546,6 +552,9 @@ int updateTrima()
 //    char vernum[80];
 //    strcpy(vernum, INSTALL_VERSION);
 //    cerr << "Veraion Number: " << vernum << endl;
+//#ifndef INSTALL_VERSION
+//    #define INSTALL_VERSION "development build"
+//#endif
 //    cerr << "Version Number: " << INSTALL_VERSION << endl;
 //    goto LEAVEROUTINE;
 
