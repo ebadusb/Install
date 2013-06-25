@@ -63,6 +63,7 @@ bool updatetrima600 :: updateConfigVersion(CDatFileReader& datfile, TrimaVersion
          break;
       case V600:
       case V603:
+      case V607:
          // Do nothing
          break;
       case V602:
