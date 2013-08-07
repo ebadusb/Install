@@ -45,8 +45,8 @@ const char *newVersion;
 static const bool allowedPythonUpgrade[] = 
     //V510  V512   V513   V514   V515   V516   V517   V518  V519  V520   V521   V523   
     {false, false, false, false, false, false, false, true, true, false, false, false, 
-    //V600 V602  V603  V607  V610  V611  V612  V620  V630
-     true, true, true, true, true, true, true, true, true};
+    //V600 V602  V603  V607  V610  V611  V612  V620  V630  V640
+     true, true, true, true, true, true, true, true, true, true};
 
 #ifdef __cplusplus
 extern "C" { 
@@ -164,6 +164,7 @@ bool init()
     if ( (tmpObjPtr = new updatetrima630) != NULL )
     {
         versionMap[V630] = tmpObjPtr;
+        versionMap[V640] = tmpObjPtr;
     }
     else
     {
@@ -192,6 +193,7 @@ bool init()
     versionStringMap[V612] = "6.1.2";
     versionStringMap[V620] = "6.2.0";
     versionStringMap[V630] = "6.3.0";
+    versionStringMap[V640] = "6.4.0";
 
     return true;
 }
@@ -380,6 +382,9 @@ bool parseRevision(const char *revString, TrimaVersion &parsedVersion)
     // Figure out what version of the software based on the revision & build info
     switch ( curMajorRev )
     {
+    case 12:
+        parsedVersion = V640;
+        break;
     case 11:
         parsedVersion = V630;
         break;
