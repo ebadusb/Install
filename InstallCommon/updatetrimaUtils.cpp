@@ -8,6 +8,7 @@
 
 #include "updatetrima.h"
 #include "updatetrimaUtils.h"
+#include "updateTrimaDefines.h"
 
 #include "filenames.h"
 
@@ -308,7 +309,7 @@ void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, bool dev)
 void updatetrimaUtils::logger (unsigned long stuff, bool dev)
 {
    char tmpBuff[256];
-   sprintf(tmpBuff, "%dl", stuff);
+   sprintf(tmpBuff, "%lu", stuff);
    updatetrimaUtils::logger(tmpBuff, dev);
 }
 
