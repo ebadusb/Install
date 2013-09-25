@@ -116,7 +116,7 @@ protected:
 //
    virtual bool updateConfigGeneric ();
 
-   virtual bool rangeCheckConfig (int buildRef);
+   virtual bool checkRange(const char *section, const char *key, const char * value);
 
 //
 // Main config file update function, calls the others
@@ -171,6 +171,7 @@ protected:
 
    const char* currVersion;
    const char* newVersion;
+   buildDataStruct newBuildData;
 
 };
 #endif // INSTALLER_H

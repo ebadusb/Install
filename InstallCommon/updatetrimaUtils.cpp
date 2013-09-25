@@ -40,9 +40,10 @@ extern "C" STATUS xdelete (const char* fileName);
 
 extern bool development_only;
 
-bool        updatetrimaUtils::loggingEnabled = false;
-bool        updatetrimaUtils::logToScreen    = false;
-FILE*       updatetrimaUtils::logFile        = NULL;
+bool        updatetrimaUtils::loggingEnabled       = false;
+bool        updatetrimaUtils::logToScreen          = false;
+bool        updatetrimaUtils::development_install  = false;
+FILE*       updatetrimaUtils::logFile              = NULL;
 
 
 // Default constructor
@@ -292,61 +293,69 @@ bool updatetrimaUtils::parseRevision (const char* revString, int& curMajorRev, i
 }
 
 
-void updatetrimaUtils::logger (const char* stuff1, int stuff2, bool dev)
+void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4)
+{
+   char tmpBuff[256];
+   sprintf(tmpBuff, "%s%s%s%s", stuff1, stuff2, stuff3, stuff4);
+   updatetrimaUtils::logger(tmpBuff);
+}
+
+void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, const char* stuff3)
+{
+   char tmpBuff[256];
+   sprintf(tmpBuff, "%s%s%s", stuff1, stuff2, stuff3);
+   updatetrimaUtils::logger(tmpBuff);
+}
+
+void updatetrimaUtils::logger (const char* stuff1, int stuff2)
 {
    char tmpBuff[256];
    sprintf(tmpBuff, "%s%d", stuff1, stuff2);
-   updatetrimaUtils::logger(tmpBuff, dev);
+   updatetrimaUtils::logger(tmpBuff);
 }
 
-void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, bool dev)
+void updatetrimaUtils::logger (const char* stuff1, const char* stuff2)
 {
    char tmpBuff[256];
    sprintf(tmpBuff, "%s%s", stuff1, stuff2);
-   updatetrimaUtils::logger(tmpBuff, dev);
+   updatetrimaUtils::logger(tmpBuff);
 }
 
-void updatetrimaUtils::logger (unsigned long stuff, bool dev)
+void updatetrimaUtils::logger (unsigned long stuff)
 {
    char tmpBuff[256];
    sprintf(tmpBuff, "%lu", stuff);
-   updatetrimaUtils::logger(tmpBuff, dev);
+   updatetrimaUtils::logger(tmpBuff);
 }
 
-void updatetrimaUtils::logger (int stuff, bool dev)
+void updatetrimaUtils::logger (int stuff)
 {
    char tmpBuff[256];
    sprintf(tmpBuff, "%d", stuff);
-   updatetrimaUtils::logger(tmpBuff, dev);
+   updatetrimaUtils::logger(tmpBuff);
 }
 
-void updatetrimaUtils::logger (float stuff, bool dev)
+void updatetrimaUtils::logger (float stuff)
 {
    char tmpBuff[256];
    sprintf(tmpBuff, "%f", stuff);
-   updatetrimaUtils::logger(tmpBuff, dev);
+   updatetrimaUtils::logger(tmpBuff);
 }
 
-void updatetrimaUtils::logger (const char* stuff, bool dev)
+void updatetrimaUtils::logger (const char* stuff)
 {
-   if ( !dev || (dev && development_only) )
-   {
-      if ( updatetrimaUtils::logToScreen )
-      {
-         cerr << stuff;
-         //        printf("%s\n", stuff);
-      }
+    if ( updatetrimaUtils::logToScreen ) {
+        cerr << stuff;
+        //        printf("%s\n", stuff);
+    }
 
-      if ( updatetrimaUtils::loggingEnabled )
-      {
-         //        logStream << stuff;
-         if ( updatetrimaUtils::logFile )
-         {
+    if ( updatetrimaUtils::loggingEnabled ) {
+        //        logStream << stuff;
+        if ( updatetrimaUtils::logFile ) {
             fprintf(updatetrimaUtils::logFile, "%s", stuff);
             fflush(updatetrimaUtils::logFile);
-         }
-      }
-   }
+        }
+    }
 
 }
 

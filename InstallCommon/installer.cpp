@@ -68,10 +68,10 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
    // if either file didn't open, bail out
    if ( !fpSource || !fpDest )
    {
-      if (!fpSource) printf("fpSource %s failed to open\n", datFileName);
-//        if (!fpSource) logStream << "fpSource " << datFileName << " failed to open" << endl;
-      if (!fpDest) printf("fpDest %s failed to open\n", destDatFileName);
-//        if (!fpDest) logStream << "fpDest " << destDatFileName << " failed to open" << endl;
+      if (!fpSource) updatetrimaUtils::logger("fpSource ", datFileName, " failed to open\n");
+//      if (!fpSource) printf("fpSource %s failed to open\n", datFileName);
+      if (!fpSource) updatetrimaUtils::logger("fpDest ", destDatFileName, " failed to open\n");
+//      if (!fpDest) printf("fpDest %s failed to open\n", destDatFileName);
 
       retval = false;
       fclose(fpSource);
@@ -247,7 +247,8 @@ bool installer::updatePostCount ()
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
    {
-      cerr << "Config file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Config file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return bUpdate;
    }
 
@@ -257,7 +258,8 @@ bool installer::updatePostCount ()
    {
       datfile.RemoveLine("PROCEDURE_CONFIG", "key_post_plat");
       datfile.AddLine("PROCEDURE_CONFIG", "key_post_plat", "100000");
-      cerr << "Changed donor post count from " << postCount << " to 100000" << endl;
+      updatetrimaUtils::logger("Changed donor post count from ", postCount);
+      updatetrimaUtils::logger(" to 100000\n");
       bUpdate = true;
    }
 
@@ -276,7 +278,7 @@ void installer::updateRBC ()
    if ( cp(TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT) == ERROR )
    {
 //        printf("copy of rbc.dat failed\n");
-      // logStream << "copy of rbc.dat failed" << endl;
+      updatetrimaUtils::logger("copy of rbc.dat failed\n");
       return;
    }
    attrib(CONFIG_PATH "/" FILE_RBC_DAT, "+R");
@@ -289,17 +291,19 @@ void installer::updateGlobVars ()
    CDatFileReader datfile(GLOBVARS_FILE, false, true);
    if ( datfile.Error() )
    {
-      cerr << GLOBVARS_FILE << " file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger(GLOBVARS_FILE, " file read error : ");
+      updatetrimaUtils::logger(datfile.Error());
+      updatetrimaUtils::logger("\n");
       return;
    }
 
    if ( !datfile.Find("EXTERNALIP") )
    {
-      cerr << "pre-v5.1 globvars file found Unable to Convert... ending" << endl;
+      updatetrimaUtils::logger("pre-v5.1 globvars file found Unable to Convert... ending\n");
       return;
    }
 
-   cerr << "v5.2 globvars file found.  No conversion needed" << endl;
+   updatetrimaUtils::logger("v5.2 globvars file found.  No conversion needed\n");
 }
 
 void installer::updateHW ()
@@ -319,7 +323,7 @@ void installer::updateHW ()
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
 //        printf("Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
-      // logStream << "Updating hw.dat to new version " << newVersion << "from existing version" << currVersion << endl;
+      updatetrimaUtils::logger("Updating hw.dat to new version ", newVersion, " from existing version ", currVersion);
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
 
@@ -328,7 +332,7 @@ void installer::updateHW ()
          if ( cp(TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
 //                printf("copy of hw_ampro.dat failed\n");
-            // logStream << "copy of hw_ampro.dat failed" << endl;
+            updatetrimaUtils::logger("copy of hw_ampro.dat failed");
             return;
          }
       }
@@ -337,7 +341,7 @@ void installer::updateHW ()
          if ( cp(TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
 //                printf("copy of hw_versalogic.dat failed\n");
-            // logStream << "copy of hw_versalogic.dat failed" << endl;
+            updatetrimaUtils::logger("copy of hw_versalogic.dat failed");
             return;
          }
       }
@@ -398,7 +402,7 @@ void installer::updateSW ()
 
             if ( machineName )
             {
-               printf("machine name = %s\n", machineName);
+               updatetrimaUtils::logger("machine name = ", machineName);
 
                unsigned long crcval = 0;
                long          buflen = 0;
@@ -428,7 +432,7 @@ void installer::updateSW ()
                if (updatetrimaUtils::zipFile(TEMPLATES_PATH "/features.temp", TEMPLATES_PATH "/" FILE_FEATURES) == 0)
                {
                   // zip failed
-                  printf("zip of features.bin failed\n");
+                  updatetrimaUtils::logger("zip of features.bin failed\n");
                   goto LEAVEROUTINE;
                }
 
@@ -439,12 +443,14 @@ void installer::updateSW ()
                attrib(PNAME_FEATURES, "-R");
                if ( cp(TEMPLATES_PATH "/" FILE_FEATURES, PNAME_FEATURES) == ERROR )
                {
-                  printf("copy of %s failed\n", FILE_FEATURES);
+//                  printf("copy of %s failed\n", FILE_FEATURES);
+                  updatetrimaUtils::logger("copy of ", FILE_FEATURES, " failed\n");
                   goto LEAVEROUTINE;
                }
                if (attrib(PNAME_FEATURES, "+R") == ERROR)
                {
-                  printf("copy of %s to config failed\n", FILE_FEATURES);
+//                  printf("copy of %s to config failed\n", FILE_FEATURES);
+                  updatetrimaUtils::logger("copy of ", FILE_FEATURES, " to config failed\n");
                   goto LEAVEROUTINE;
                }
 
@@ -457,21 +463,21 @@ void installer::updateSW ()
                fclose(fp);
 
                // machine name not defined
-               printf("machine name not defined\n");
+               updatetrimaUtils::logger("machine name not defined\n");
                goto LEAVEROUTINE;
             }
          }
          else
          {
             // can't open the temp file
-            printf("can't open the features.bin temp file\n");
+            updatetrimaUtils::logger("can't open the features.bin temp file\n");
             goto LEAVEROUTINE;
          }
       }
       else
       {
          // unzip failed
-         printf("unzip of features.bin failed\n");
+         updatetrimaUtils::logger("unzip of features.bin failed\n");
          goto LEAVEROUTINE;
       }
 
@@ -499,12 +505,15 @@ void installer::updateSW ()
 
       if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
       {
-         printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
-         attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+//         printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+         updatetrimaUtils::logger("Updating sw.dat to new version ", newVersion, " from existing version ", newVersion);
+         updatetrimaUtils::logger("\n");
+            attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
 
          if ( cp(TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT) == ERROR )
          {
-            printf("copy of %s failed\n", FILE_SW_DAT);
+//            printf("copy of %s failed\n", FILE_SW_DAT);
+            updatetrimaUtils::logger("copy of ", FILE_SW_DAT, " failed\n");
             goto LEAVEROUTINE;
          }
 
@@ -527,12 +536,14 @@ void installer::updateTerror ()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      printf("Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+//      printf("Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
+      updatetrimaUtils::logger("Updating terror_config.dat to new version ", newVersion, " from existing version ", newVersion);
+      updatetrimaUtils::logger("\n");
       attrib(TERROR_CONFIG_FILE, "-R");
 
       if ( cp(TEMPLATES_PATH "/terror_config.dat", CONFIG_PATH "/terror_config.dat") == ERROR )
       {
-         printf("copy of terror_config.dat failed\n");
+         updatetrimaUtils::logger("copy of terror_config.dat failed\n");
          return;
       }
 
@@ -543,12 +554,12 @@ void installer::updateTerror ()
 
 void installer::updateSounds ()
 {
-   printf("Updating sounds.dat...\n");
+   updatetrimaUtils::logger("Updating sounds.dat...\n");
    attrib(PNAME_SOUNDSDAT, "-R");
 
    if ( cp(TEMPLATES_PATH "/" FILE_SOUNDS_DAT, PNAME_SOUNDSDAT) == ERROR )
    {
-      printf("copy of sounds.dat failed\n");
+      updatetrimaUtils::logger("copy of sounds.dat failed\n");
       return;
    }
 
@@ -564,13 +575,17 @@ void installer::updateCassette ()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      printf("Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+//      printf("Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+      updatetrimaUtils::logger("Updating ", FILE_CASSETTE_DAT, " to new version ");
+      updatetrimaUtils::logger(newVersion, " from existing version ", currVersion);
+      updatetrimaUtils::logger("\n");
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "-R");
 
       if ( cp(TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT) == ERROR )
       {
-         printf("copy of %s failed\n", FILE_CASSETTE_DAT);
-         return;
+//         printf("copy of %s failed\n", FILE_CASSETTE_DAT);
+         updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " failed\n");
+            return;
       }
 
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
@@ -587,11 +602,13 @@ void installer::updateSetConfig ()
    if (currVersion == NULL && newVersion != NULL)
    {
       // if the file isnt there....
-      printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
-
+//      printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
+      updatetrimaUtils::logger("Adding ", FILE_SETCONFIG_DAT, "\n");
+      
       if ( cp(TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT) == ERROR )
       {
-         printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+//         printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+         updatetrimaUtils::logger("copy of ", FILE_SETCONFIG_DAT, " failed\n");
          return;
       }
 
@@ -600,21 +617,23 @@ void installer::updateSetConfig ()
    }
    else if (currVersion == NULL && newVersion == NULL)
    {
-      printf("copy of %s failed, no template file found\n", FILE_SETCONFIG_DAT);
+//      printf("copy of %s failed, no template file found\n", FILE_SETCONFIG_DAT);
+      updatetrimaUtils::logger("copy of ", FILE_SETCONFIG_DAT, " failed, no template file found\n");
    }
    else
    {
-      printf("%s already exists ...\n", FILE_SETCONFIG_DAT);
+//      printf("%s already exists ...\n", FILE_SETCONFIG_DAT);
+      updatetrimaUtils::logger(FILE_SETCONFIG_DAT, " already exists ...\n");
 
       // do maintenance on the setconfig.dat file
       // replace 80537 with the new admin code
       if ( replaceCassette("80537", 2370507, "010502058380537") )
       {
-         printf("Completed maintenance update to setconfig.dat\n");
+         updatetrimaUtils::logger("Completed maintenance update to setconfig.dat\n");
       }
       else
       {
-         printf("Unable to make maintenance update to setconfig.dat\n");
+         updatetrimaUtils::logger("Unable to make maintenance update to setconfig.dat\n");
       }
    }
 }
@@ -633,11 +652,13 @@ void installer::updateVista ()
       {
          if ( cp(vistaipTmpl.c_str(), PNAME_VISTIPDAT) == ERROR )
          {
-            cerr << "copy of " << vistaipTmpl << " to " << PNAME_VISTIPDAT  << " failed" << endl;
+            updatetrimaUtils::logger("copy of ", vistaipTmpl.c_str()," to ");
+            updatetrimaUtils::logger(PNAME_VISTIPDAT, " failed\n");
          }
          else
          {
-            cerr << "copied" << vistaipTmpl << " to " << PNAME_VISTIPDAT  << " successfully" << endl;
+            updatetrimaUtils::logger("copied ", vistaipTmpl.c_str(), " to ");
+            updatetrimaUtils::logger(PNAME_VISTIPDAT, " successfully\n");
          }
       }
       else    // the config already exists so see if we need to update it
@@ -659,12 +680,12 @@ void installer::updateVista ()
                vistaipConfigFile.SetValue("VISTA", "VISTA_DIRECT_SEND_PORT", vistaipTemplFile.GetString("VISTA", "VISTA_DIRECT_SEND_PORT").c_str());
                vistaipConfigFile.Write(PNAME_VISTIPDAT);
 
-               cerr << PNAME_VISTIPDAT << " file updated." << endl;
+               updatetrimaUtils::logger(PNAME_VISTIPDAT, " file updated.\n");
             }
          }
          else
          {
-            cerr << FILE_VISTIP_DAT << " file reader creation error" << endl;
+            updatetrimaUtils::logger(FILE_VISTIP_DAT, " file reader creation error\n");
          }
       }
    }
@@ -678,6 +699,8 @@ int installer::verifyCrc (const char* commandLine)
    if (crcReturnVal != 0)
    {
       printf("CRC ERROR %d on command line \"%s\"\n", crcReturnVal, commandLine);
+      updatetrimaUtils::logger("CRC ERROR ", crcReturnVal);
+      updatetrimaUtils::logger(" on command line <", commandLine, ">\n");
    }
 
    return crcReturnVal;
@@ -690,7 +713,7 @@ void installer::copyTrapFiles ()
 
    if (cp(TEMPLATES_PATH "/trap_default.dat", TRAP_DEFAULTS_FILE) == ERROR)
    {
-      printf("copy of trap_default.dat\n");
+      updatetrimaUtils::logger("copy of trap_default.dat\n");
       return;
    }
    attrib(TRAP_DEFAULTS_FILE, "+R");
@@ -699,7 +722,7 @@ void installer::copyTrapFiles ()
 
    if (cp(TEMPLATES_PATH "/trap_override.dat", TRAP_OVERRIDE_FILE) == ERROR)
    {
-      printf("copy of trap_override.dat\n");
+      updatetrimaUtils::logger("copy of trap_override.dat\n");
       return;
    }
    attrib(TRAP_OVERRIDE_FILE, "+R");
@@ -714,7 +737,8 @@ void installer::updateCal5 ()
    CDatFileReader datfile(PNAME_CALDAT);
    if ( datfile.Error() )
    {
-      cerr << "Calibration file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Calibration file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return;
    }
    const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge",
@@ -735,14 +759,15 @@ void installer::updateCal5 ()
 
       if ( remove(PNAME_TCHSCRNDAT) == ERROR )
       {
-         printf("Removal of %s file failed\n", PNAME_TCHSCRNDAT);
+//         printf("Removal of %s file failed\n", PNAME_TCHSCRNDAT);
+         updatetrimaUtils::logger("Removal of ", PNAME_TCHSCRNDAT, " file failed\n");
       }
       return;
    }
 
    else if ( !datfile.Find("TOUCHSCREEN", "screen_horizontal_size") )
    {
-      cerr << "pre-v5.1 cal.dat file found.  Conversion needed" << endl;
+      updatetrimaUtils::logger("pre-v5.1 cal.dat file found.  Conversion needed\n");
 
       FILE* fp;
       fp = fopen("/config/absf.2", "r");
@@ -777,7 +802,7 @@ void installer::updateCal5 ()
          attrib("/config/absf.2", "-R");
          if ( remove("/config/absf.2") == ERROR )
          {
-            printf("Removal of absf.2 file failed\n");
+            updatetrimaUtils::logger("Removal of absf.2 file failed\n");
          }
 
       }
@@ -815,12 +840,12 @@ void installer::updateCal5 ()
 
       datfile.Write(PNAME_CALDAT);
 
-      cerr << "cal.dat file converted." << endl;
+      updatetrimaUtils::logger("cal.dat file converted.\n");
 
       return;
    }
 
-   cerr << "v5.1 cal.dat file found.  No conversion needed" << endl;
+   updatetrimaUtils::logger("v5.1 cal.dat file found.  No conversion needed\n");
 
 }
 
@@ -832,7 +857,8 @@ void installer::updateCal6 ()
    CDatFileReader datfile(PNAME_CALDAT);
    if ( datfile.Error() )
    {
-      cerr << "Calibration file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Calibration file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return;
    }
 
@@ -845,11 +871,13 @@ void installer::updateCal6 ()
       {
          if ( cp(tsTmpl.c_str(), PNAME_TCHSCRNDAT) == ERROR )
          {
-            cerr << "copy of " << tsTmpl << " to " << PNAME_TCHSCRNDAT  << " failed" << endl;
+            updatetrimaUtils::logger("copy of ", tsTmpl.c_str());
+            updatetrimaUtils::logger(" to ", PNAME_TCHSCRNDAT, " failed\n");
          }
          else
          {
-            cerr << "copied" << tsTmpl << " to " << PNAME_TCHSCRNDAT  << " successfully" << endl;
+            updatetrimaUtils::logger("copied ", tsTmpl.c_str());
+            updatetrimaUtils::logger(" to ", PNAME_TCHSCRNDAT, " successfully\n");
          }
       }
    }
@@ -858,7 +886,8 @@ void installer::updateCal6 ()
    CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
    if ( tscrnFile.Error() )
    {
-      cerr << "Calibration file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Calibration file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return;
    }
 
@@ -870,7 +899,7 @@ void installer::updateCal6 ()
    // Is it an old 6.0 install (5.8)
    if ( datfile.Find(tsHeader, "a") )
    {
-      cerr << "v6.0 " << FILE_CAL_DAT << " old 6.0 cal file found.  Conversion needed" << endl;
+      updatetrimaUtils::logger("v6.0 ", FILE_CAL_DAT, " old 6.0 cal file found. Conversion needed\n");
       // Move all TOUCHSCREEN related data to touch_screen.dat
 
       // Transfer values from cal.dat to touch_screen.dat
@@ -900,7 +929,7 @@ void installer::updateCal6 ()
    }
    else if ( datfile.Find(tsHeader) )
    {
-      cerr << "Pre-v6.0 " << FILE_CAL_DAT << " file found.  Conversion needed" << endl;
+      updatetrimaUtils::logger("Pre-v6.0 ", FILE_CAL_DAT, " file found.  Conversion needed\n");
       //////////////////////////////////////////////////////////////////////////////////
       //                 5.1/P-->6.0 changes
       //////////////////////////////////////////////////////////////////////////////////
@@ -934,11 +963,12 @@ void installer::updateCal6 ()
       struct stat fileStat;
       if ( stat((char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
       {
-         cerr << "File " << FILE_TCHSCRN_DAT << " present with and up to date " << FILE_CAL_DAT << ". No conversion needed" << endl;
+         updatetrimaUtils::logger("File ",FILE_TCHSCRN_DAT);
+         updatetrimaUtils::logger(" present with and up to date ", FILE_CAL_DAT, ". No conversion needed\n");
       }
       else
       {
-         cerr << " ... pre-v5.1 " << FILE_CAL_DAT << " file found.  Unable to Convert!  ending..." << endl;
+         updatetrimaUtils::logger(" ... pre-v5.1 ", FILE_CAL_DAT, " file found. Unable to Convert! ending...\n");
       }
       return;
    }
@@ -946,7 +976,7 @@ void installer::updateCal6 ()
    tscrnFile.Write(PNAME_TCHSCRNDAT);
    datfile.Write(PNAME_CALDAT);
 
-   cerr << FILE_CAL_DAT << " file converted." << endl;
+   updatetrimaUtils::logger(FILE_CAL_DAT, " file converted.\n");
 }
 
 bool installer::extractUpdateFiles5 ()
@@ -955,10 +985,10 @@ bool installer::extractUpdateFiles5 ()
    /*
    //
    // Extract the update files
-   printf("Extracting updateTrima ...\n" );
+   updatetrimaUtils::logger("Extracting updateTrima ...\n" );
    if ( tarExtract( "/machine/update/updateTrima.taz", "/machine/update" ) == ERROR )
    {
-       printf("Extraction of update files failed\n" );
+       updatetrimaUtils::logger("Extraction of update files failed\n" );
        return false;
    }
 */
@@ -976,20 +1006,21 @@ bool installer::extractUpdateFiles5 ()
    {
       //
       // Save off the old vxWorks image in case of failure ...
-      printf("Saving the old OS image...");
+      updatetrimaUtils::logger("Saving the old OS image...");
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
       if ( cp(VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old") == ERROR )
       {
-         printf("Archive of old OS image failed\n");
+         updatetrimaUtils::logger("Archive of old OS image failed\n");
+         return false;
       }
    }
 
    //
    // Store the new files in the proper position
-   printf("Extracting the OS image...\n");
+   updatetrimaUtils::logger("Extracting the OS image...\n");
    if ( tarExtract(UPDATE_PATH "/vxboot.taz", UPDATE_PATH) == ERROR )
    {
-      printf("Extraction of OS image failed\n");
+      updatetrimaUtils::logger("Extraction of OS image failed\n");
       return false;
    }
 
@@ -997,43 +1028,86 @@ bool installer::extractUpdateFiles5 ()
    attrib(VXBOOT_PATH "/bootrom.sys", "-R");
    attrib(VXBOOT_PATH "/vxWorks", "-R");
 
-   if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
-        updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks", VXBOOT_PATH "/vxWorks") == ERROR )
+
+   // check if we're installing a python-capable 5.X version
+   struct stat fileStat;
+   if ( stat((char *)UPDATE_PATH "/vxWorks_python", &fileStat) == OK ||
+        stat((char *)UPDATE_PATH "/vxWorks_orig", &fileStat) == OK)
    {
-      printf("Install of OS image failed\n");
+       if (isVersalogicPython())
+       {
+          if ( updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
+               updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks"     ) == ERROR )
+          {
+             updatetrimaUtils::logger("Install of Python OS image failed\n" );
+             return false;
+          }
+       }
+       else
+       {
+          if ( updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
+               updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks"     ) == ERROR )
+          {
+             updatetrimaUtils::logger("Install of non-Python OS image failed\n" );
+             return false;
+          }
+       }
+
+       if ( remove(UPDATE_PATH "/bootrom.sys") == ERROR ||
+            remove(UPDATE_PATH "/vxWorks_orig") == ERROR ||
+            remove(UPDATE_PATH "/vxWorks_python") == ERROR ||
+            remove(UPDATE_PATH "/vxboot.taz") == ERROR )
+       {
+          updatetrimaUtils::logger("Removal of temporary OS image failed\n");
+       }
+   }
+   else if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
+             updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks", VXBOOT_PATH "/vxWorks") == ERROR )
+   {
+      updatetrimaUtils::logger("Install of OS image failed\n");
       return false;
+
+      if ( remove(UPDATE_PATH "/bootrom.sys") == ERROR ||
+           remove(UPDATE_PATH "/vxWorks") == ERROR ||
+           remove(UPDATE_PATH "/vxboot.taz") == ERROR )
+      {
+         updatetrimaUtils::logger("Removal of temporary OS image failed\n");
+      }
    }
 
+/*
    if ( remove(UPDATE_PATH "/bootrom.sys") == ERROR ||
         remove(UPDATE_PATH "/vxWorks") == ERROR ||
         remove(UPDATE_PATH "/vxboot.taz") == ERROR )
    {
-      printf("Removal of temporary OS image failed\n");
-      return false;
+      updatetrimaUtils::logger("Removal of temporary OS image failed\n");
+//      return false;
    }
+*/
 
    //
    // Remove existing Trima files
-   printf("Removing old Trima files...\n");
+   updatetrimaUtils::logger("Removing old Trima files...\n");
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
 
    //
    // Uncompress the update file
-   printf("Extracting the Trima software files...\n");
+   updatetrimaUtils::logger("Extracting the Trima software files...\n");
    if ( tarExtract("/machine/update/trima.taz", "/trima") == ERROR )
    {
-      printf("Extraction of the Trima software failed.\n");
+      updatetrimaUtils::logger("Extraction of the Trima software failed.\n");
       return false;
    }
    if ( remove("/machine/update/trima.taz") == ERROR )
    {
-      printf("Removal of Trima archive image failed\n");
+      updatetrimaUtils::logger("Removal of Trima archive image failed\n");
       return false;
    }
 
    return true;
+
 }
 
 bool installer::extractUpdateFiles6 ()
@@ -1042,10 +1116,10 @@ bool installer::extractUpdateFiles6 ()
    /*
    //
    // Extract the update files
-   printf("Extracting updateTrima ...\n");
+   updatetrimaUtils::logger("Extracting updateTrima ...\n");
    if ( tarExtract( UPDATE_PATH "/updateTrima.taz", UPDATE_PATH ) == ERROR )
    {
-       printf("Extraction of update files failed\n");
+       updatetrimaUtils::logger("Extraction of update files failed\n");
        return false;
    }
 */
@@ -1064,31 +1138,31 @@ bool installer::extractUpdateFiles6 ()
    {
       //
       // Save off the old vxWorks image in case of failure ...
-      printf("Saving the old OS image...\n");
+      updatetrimaUtils::logger("Saving the old OS image...\n");
       attrib(VXBOOT_PATH "/vxWorks.old", "-R");
 
       if ( cp(VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.old") == ERROR )
       {
-         printf("Archive of old OS image failed\n");
+         updatetrimaUtils::logger("Archive of old OS image failed\n");
       }
 
       // Save off backup vxWorks image in case of massive failure ...
-      printf("Saving the backup OS image...\n");
+      updatetrimaUtils::logger("Saving the backup OS image...\n");
       attrib(VXBOOT_PATH "/vxWorks.bak", "-R");
 
       if ( cp(VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.bak") == ERROR )
       {
-         printf("Archive of backup OS image failed\n");
+         updatetrimaUtils::logger("Archive of backup OS image failed\n");
       }
    }
 
-   //
+   // 
    // Store the new files in the proper position
-   printf("Extracting the OS image...\n");
+   updatetrimaUtils::logger("Extracting the OS image...\n");
 
    if ( tarExtract(UPDATE_PATH "/vxboot.taz", UPDATE_PATH) == ERROR )
    {
-      printf("Extraction of OS image failed\n");
+      updatetrimaUtils::logger("Extraction of OS image failed\n");
       return false;
    }
 
@@ -1108,23 +1182,23 @@ bool installer::extractUpdateFiles6 ()
 //    if ( IsVendor( "Ampro" ) )
    if ( isAmpro() )
    {
-      printf("Copying Control Ampro bootrom.sys and vxworks to %s\n", VXBOOT_PATH);
+      updatetrimaUtils::logger("Copying Control Ampro bootrom.sys and vxworks to ", VXBOOT_PATH);
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_ampro.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
            updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_ampro", VXBOOT_PATH "/vxWorks") == ERROR  )
       {
-         printf("Install of OS image failed\n");
+         updatetrimaUtils::logger("Install of OS image failed\n");
          return false;
       }
    }
    else
    {
-      printf("Copying Control Versalogic bootrom.sys and vxworks to %s\n", VXBOOT_PATH);
+      updatetrimaUtils::logger("Copying Control Versalogic bootrom.sys and vxworks to ", VXBOOT_PATH);
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_versalogic.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
            updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_versalogic", VXBOOT_PATH "/vxWorks") == ERROR  )
       {
-         printf("Install of OS image failed\n");
+         updatetrimaUtils::logger("Install of OS image failed\n");
          return false;
       }
    }
@@ -1149,13 +1223,13 @@ bool installer::extractUpdateFiles6 ()
         attrib(UPDATE_PATH "/vxWorks_versalogic", "-R") != ERROR ||
         attrib(UPDATE_PATH "/vxboot.taz", "-R") != ERROR )
    {
-      printf("Removal of temporary OS image failed\n");
+      updatetrimaUtils::logger("Removal of temporary OS image failed\n");
       return false;
    }
 
    //
    // Remove existing Trima files
-   printf("Removing old Trima files...\n");
+   updatetrimaUtils::logger("Removing old Trima files...\n");
    fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(SAVEDATA_PATH,   FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(TOOLS_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
@@ -1164,81 +1238,81 @@ bool installer::extractUpdateFiles6 ()
 
    //
    // Uncompress the update file
-   printf("Extracting the Trima software files...\n");
+   updatetrimaUtils::logger("Extracting the Trima software files...\n");
 
    if ( tarExtract(UPDATE_PATH "/trima.taz", TRIMA_PATH) == ERROR )
    {
-      printf("Extraction of the Trima software failed.\n");
+      updatetrimaUtils::logger("Extraction of the Trima software failed.\n");
       return false;
    }
 
    if ( remove(UPDATE_PATH "/trima.taz") == ERROR )
    {
-      printf("Removal of Trima archive image failed\n");
+      updatetrimaUtils::logger("Removal of Trima archive image failed\n");
       return false;
    }
 
    //
    // Uncompress the update file
-   printf("Extracting the string.info files...\n");
+   updatetrimaUtils::logger("Extracting the string.info files...\n");
 
    if ( tarExtract(UPDATE_PATH "/strings.taz", STRING_DIRECTORY) == ERROR )
    {
-      printf("Extraction of the string.info files failed.\n");
+      updatetrimaUtils::logger("Extraction of the string.info files failed.\n");
       return false;
    }
 
    if ( remove(UPDATE_PATH "/strings.taz") == ERROR )
    {
-      printf("Removal of string archive image failed\n");
+      updatetrimaUtils::logger("Removal of string archive image failed\n");
       return false;
    }
 
    //
    // Uncompress the update file
-   printf("Extracting the font files...\n");
+   updatetrimaUtils::logger("Extracting the font files...\n");
 
    if ( tarExtract(UPDATE_PATH "/fonts.taz", DROP_IN_FONTS_DIR) == ERROR )
    {
-      printf("Extraction of the font files failed.\n");
+      updatetrimaUtils::logger("Extraction of the font files failed.\n");
       return false;
    }
 
    if ( remove(UPDATE_PATH "/fonts.taz") == ERROR )
    {
-      printf("Removal of font archive image failed\n");
+      updatetrimaUtils::logger("Removal of font archive image failed\n");
       return false;
    }
 
    //
    // Uncompress the update file
-   printf("Extracting the data files...\n");
+   updatetrimaUtils::logger("Extracting the data files...\n");
 
    if ( tarExtract(UPDATE_PATH "/data.taz", DATA_DIRECTORY) == ERROR )
    {
-      printf("Extraction of the data files failed.\n");
+      updatetrimaUtils::logger("Extraction of the data files failed.\n");
       return false;
    }
 
    if ( remove(UPDATE_PATH "/data.taz") == ERROR )
    {
-      printf("Removal of data archive image failed\n");
+      updatetrimaUtils::logger("Removal of data archive image failed\n");
       return false;
    }
 
    //
    // Uncompress the update file
-   printf("Extracting the graphics files...\n");
+   updatetrimaUtils::logger("Extracting the graphics files...\n");
 
    if ( tarExtract(UPDATE_PATH "/graphics.taz", GRAPHICS_PATH) == ERROR )
    {
-      printf("Extraction of the graphics files failed.\n");
+      updatetrimaUtils::logger("Extraction of the graphics files failed.\n");
       return false;
    }
 
    if ( remove(UPDATE_PATH "/graphics.taz") == ERROR )
    {
-      printf("Removal of graphics archive image failed\n");
+      updatetrimaUtils::logger("Removal of graphics archive image failed\n");
       return false;
    }
 
@@ -1248,25 +1322,25 @@ bool installer::extractUpdateFiles6 ()
 //    if ( IsVendor( "Ampro" ) )
    if ( isAmpro() )
    {
-      printf("Copying Safety Ampro bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
+      updatetrimaUtils::logger("Copying Safety Ampro bootrom.sys and vxworks to ", SAFETY_BOOT_PATH);
 
       if ( cp(SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE)    == ERROR ||
            cp(SAFETY_BOOT_PATH "/vxWorks_ampro", SAFETY_VXWORKS_IMAGE)    == ERROR )
       {
-         printf("Install of OS image failed\n");
+         updatetrimaUtils::logger("Install of OS image failed\n");
          return false;
       }
    }
    else
    {
-      printf("Copying Safety Versalogic bootrom.sys and vxworks to %s\n", SAFETY_BOOT_PATH);
+      updatetrimaUtils::logger("Copying Safety Versalogic bootrom.sys and vxworks to ", SAFETY_BOOT_PATH);
 
       if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic", SAFETY_VXWORKS_IMAGE)     == ERROR ||
            cp(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", SAFETY_BOOTROM_IMAGE)     == ERROR ||
            cp(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_VXWORKS_PXE_IMAGE) == ERROR ||
            cp(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", SAFETY_BOOTROM_PXE_IMAGE) == ERROR )
       {
-         printf("Install of OS image failed\n");
+         updatetrimaUtils::logger("Install of OS image failed\n");
          return false;
       }
    }
@@ -1290,7 +1364,7 @@ bool installer::extractUpdateFiles6 ()
         attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR ||
         attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", "-R") != ERROR )
    {
-      printf("removal of temporary OS image failed\n");
+      updatetrimaUtils::logger("removal of temporary OS image failed\n");
       return false;
    }
 
@@ -1300,16 +1374,16 @@ bool installer::extractUpdateFiles6 ()
 
    if ( stat((char*)UPDATE_PATH "/engr_tools.taz", &fileStat) == OK )
    {
-      printf("Extracting the engr tools files...\n");
+      updatetrimaUtils::logger("Extracting the engr tools files...\n");
 
       if (tarExtract(UPDATE_PATH "/engr_tools.taz", ROOT "/machine/tools") == ERROR)
       {
-         printf("Extraction of the Tools files failed.\n");
+         updatetrimaUtils::logger("Extraction of the Tools files failed.\n");
       }
 
       if (remove(UPDATE_PATH "/engr_tools.taz") == ERROR )
       {
-         printf("Removal of Tools archive image failed\n");
+         updatetrimaUtils::logger("Removal of Tools archive image failed\n");
       }
    }
 
@@ -1343,7 +1417,7 @@ bool installer::checkCRC5 ()
         softcrc("-filelist " FILELISTS_PATH "/rbcdat.files -verify "    CONFIG_CRC_PATH "/rbcdat.crc") != 0 ||
         softcrc("-filelist " FILELISTS_PATH "/terrordat.files -verify " CONFIG_CRC_PATH "/terrordat.crc") != 0)
    {
-      printf("CRC check of installed software failed\n");
+      updatetrimaUtils::logger("CRC check of installed software failed\n");
       return false;
    }
 
@@ -1403,7 +1477,8 @@ bool installer::checkPasSettings ()
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
    {
-      cerr << "Config file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Config file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return false;
    }
 
@@ -1439,7 +1514,13 @@ bool installer::checkPasSettings ()
       // If one of these settings was 0, something's wierd, so try the next one.
       if (percentPlasma == 0.0f || collectVol == 0.0f)
       {
-         printf("Hmm... for PLT%d, percent plasma is %f, and collect vol is %f. Moving on...\n", prodNum + 1, percentPlasma, collectVol);
+//         printf("Hmm... for PLT%d, percent plasma is %f, and collect vol is %f. Moving on...\n", prodNum + 1, percentPlasma, collectVol);
+         updatetrimaUtils::logger("Hmm... for PLT", prodNum + 1);
+         updatetrimaUtils::logger(" percent plasma is ");
+         updatetrimaUtils::logger(percentPlasma);
+         updatetrimaUtils::logger(" and collect vol is ");
+         updatetrimaUtils::logger(collectVol);
+         updatetrimaUtils::logger(". Moving on...\n");
          continue;
       }
 
@@ -1448,7 +1529,14 @@ bool installer::checkPasSettings ()
 
       if (collectVol > collectVolMax)
       {
-         printf("PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum + 1, collectVol, collectVolMax);
+//         printf("PLT%d has collect vol %f greater than max %f. Adjusting accordingly.\n", prodNum + 1, collectVol, collectVolMax);
+         updatetrimaUtils::logger("PLT", prodNum + 1);
+         updatetrimaUtils::logger(" has collect vol ");
+         updatetrimaUtils::logger(collectVol);
+         updatetrimaUtils::logger(" greater than max ");
+         updatetrimaUtils::logger(collectVolMax);
+         updatetrimaUtils::logger(". Adjusting accordingly.\n");
+
          datfile.SetFloat("PRODUCT_TEMPLATES", pltVolVarNameStr, collectVolMax);
          returnVal = true;
       }
@@ -1472,7 +1560,8 @@ bool installer::checkRasSettings ()
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
    {
-      cerr << "Config file read error : " << datfile.Error() << endl;
+      updatetrimaUtils::logger("Config file read error : ", datfile.Error());
+      updatetrimaUtils::logger("\n");
       return false;
    }
 
@@ -1558,7 +1647,8 @@ void installer::forceSetConfig ()
 //   {
    if ( cp(TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT) == ERROR )
    {
-      printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+//      printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
+      updatetrimaUtils::logger("copy of ", FILE_SETCONFIG_DAT, " failed\n");
       return;
    }
 
@@ -1567,132 +1657,81 @@ void installer::forceSetConfig ()
 //   }
 }
 
-
-bool installer::rangeCheckConfig (int buildRef)
+bool installer::checkRange(const char *section, const char *key, const char * value)
 {
-   // logStream << "Checking config.dat ranges" << endl;
-
-   bool           madeChanges = false;
-   char           loggingBuff[256];
-
-   CDatFileReader datfile(PNAME_CONFIGDAT);
-   if ( datfile.Error() )
-   {
-      // logStream << "Config file read error : " << datfile.Error() << endl;
-      return false;
-   }
+   bool retval = true;
 
    int rngCtr = 0;
 
    while ( rangeData[rngCtr].rangeType != END )
    {
-      bool failCompare = false;
 
-      // Special stuff for Product Definitions
-      if ( strcmp(rangeData[rngCtr].section, "PRODUCT_DEFINITIONS") == 0, rangeData[rngCtr].dataKey[strlen(rangeData[rngCtr].dataKey) - 1] == '_' )
+      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType &&
+           strcmp(rangeData[rngCtr].section, section) == 0 &&
+           (strcmp(rangeData[rngCtr].dataKey, key) == 0 ||
+            (strncmp(rangeData[rngCtr].dataKey, key, sizeof(rangeData[rngCtr].dataKey)) == 0 && 
+             strcmp(section, "PRODUCT_DEFINITIONS") == 0)))
       {
-         int  value  = 0;
-         char keyBuf[256];
-         int  varPos = strlen(rangeData[rngCtr].dataKey);
-         strcpy(keyBuf, rangeData[rngCtr].dataKey);
-         keyBuf[varPos + 1] = 0;
-
-         for (keyBuf[varPos] = 'a'; keyBuf[varPos] <= 'o'; ++keyBuf[varPos])
-         {
-            if ( datfile.Find(rangeData[rngCtr].section, keyBuf) )
-            {
-               value = datfile.GetInt("PRODUCT_DEFINITIONS", keyBuf);
-
-               if (value < 0 || value > atoi(rangeData[rngCtr].value))
-               {
-                  datfile.SetValue("PRODUCT_DEFINITIONS", keyBuf, "0");
-                  sprintf(loggingBuff, "Config.dat value: %s failed range check, setting to 0\n", rangeData[rngCtr].dataKey);
-                  updatetrimaUtils::logger(loggingBuff);
-                  madeChanges = true;
-               }
-            }
-         }
-      }
-      else if ( rangeData[rngCtr].rangeType == buildData[buildRef].rangeType &&
-                datfile.Find(rangeData[rngCtr].section, rangeData[rngCtr].dataKey) )
-      {
-         const char* newVal = NULL;
-
          if ( rangeData[rngCtr].compareType == FORCE )
          {
-            failCompare = true;
-            newVal      = rangeData[rngCtr].value;
+            retval = false;
+            break;
          }
          else if ( rangeData[rngCtr].valType == INT )
          {
-            int value = datfile.GetInt(rangeData[rngCtr].section, rangeData[rngCtr].dataKey);
+            int intvalue = atoi(value);
 
             if ( rangeData[rngCtr].compareType == MIN )
             {
-               if ( value < atoi(rangeData[rngCtr].value) )
+               if ( intvalue < atoi(rangeData[rngCtr].value) )
                {
-                  failCompare = true;
-                  newVal      = rangeData[rngCtr].value;
+                  retval = false;
+                  break;
                }
             }
             else if ( rangeData[rngCtr].compareType == MAX )
             {
-               if ( value > atoi(rangeData[rngCtr].value) )
+               if ( intvalue > atoi(rangeData[rngCtr].value) )
                {
-                  failCompare = true;
-                  newVal      = rangeData[rngCtr].value;
+                  retval = false;
+                  break;
                }
             }
             else if ( rangeData[rngCtr].compareType == NOT )
             {
-               if ( value == atoi(rangeData[rngCtr].value) )
+               if ( intvalue == atoi(rangeData[rngCtr].value) )
                {
-                  failCompare = true;
-                  newVal      = "0";
+                  retval = false;
+                  break;
                }
             }
          }
          else    // it must be a float
          {
-            float value = datfile.GetFloat(rangeData[rngCtr].section, rangeData[rngCtr].dataKey);
+            float floatvalue = atof(value);
 
             if ( rangeData[rngCtr].compareType == MIN )
             {
-               if ( value < atof(rangeData[rngCtr].value) )
+               if ( floatvalue < atof(rangeData[rngCtr].value) )
                {
-                  failCompare = true;
-                  newVal      = rangeData[rngCtr].value;
+                  retval = false;
+                  break;
                }
             }
             else if ( rangeData[rngCtr].compareType == MAX )
             {
-               if ( value > atof(rangeData[rngCtr].value) )
+               if ( floatvalue > atof(rangeData[rngCtr].value) )
                {
-                  failCompare = true;
-                  newVal      = rangeData[rngCtr].value;
+                  retval = false;
+                  break;
                }
             }
          }
-
-         if ( failCompare )
-         {
-            datfile.SetValue(rangeData[rngCtr].section, rangeData[rngCtr].dataKey, newVal);
-            sprintf(loggingBuff, "Config.dat value: %s failed range check, setting to %s\n", rangeData[rngCtr].dataKey, newVal);
-            updatetrimaUtils::logger(loggingBuff);
-            madeChanges = true;
-         }
       }
-
-      failCompare = false;
       rngCtr++;
    }
 
-   if ( madeChanges )
-   {
-      datfile.WriteCfgFile(PNAME_CONFIGDAT);
-   }
-
-   return madeChanges;
+   return retval;
 }
 
 
@@ -1705,7 +1744,7 @@ bool installer::checkPlasmaRB ()
    // Get the rinseback setting from sw.dat
    swData = findSetting("allow_plasma_rinseback=", PNAME_SWDAT);
 
-   if (swData) cerr << "sw.dat allow_plasma_rinseback = " << swData << endl;
+//   if (swData) updatetrimaUtils::logger("sw.dat allow_plasma_rinseback = ", swData, "\n");
 
    // If rinseback is turned off in sw.dat make sure it is off in config.dat
    if ( swData != NULL && swData[0] == '0' )
@@ -1720,7 +1759,7 @@ bool installer::checkPlasmaRB ()
          CDatFileReader datfile(PNAME_CONFIGDAT);
          if ( datfile.Error() )
          {
-            cerr << "Can't open config.dat to modify key_plasma_rinseback" << endl;
+            updatetrimaUtils::logger("Can't open config.dat to modify key_plasma_rinseback\n");
          }
          else
          {
@@ -1752,12 +1791,12 @@ bool installer::allowedUpgrade (bool ampro, bool versalogic, bool python, bool o
 
    if ( isVersalogicPython() && !python )
    {
-      cerr << "This update path is not allowed on a VersaLogic Python Trima." << endl;
+      updatetrimaUtils::logger("This update path is not allowed on a VersaLogic Python Trima.\n");
       retval = false;
    }
    else
    {
-      cerr << "This update path is allowed." << endl;
+      updatetrimaUtils::logger("This update path is allowed.\n");
    }
 
    return retval;
@@ -1797,14 +1836,15 @@ bool installer::updateConfigGeneric ()
       newdatfile.Initialize(PNAME_CONFIGDAT ".new");
       if ( newdatfile.Error() )
       {
-         cerr << "Config file read error : " << newdatfile.Error() << endl;
+         updatetrimaUtils::logger("Config file read error : ", newdatfile.Error());
+         updatetrimaUtils::logger("\n");
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
    }
    else
    {
-      printf("copy of config.dat template failed\n");
+      updatetrimaUtils::logger("copy of config.dat template failed\n");
       retval = false;
       goto LEAVEupdateConfigGeneric;
    }
@@ -1839,8 +1879,8 @@ bool installer::updateConfigGeneric ()
          // get the value from the new config.dat
          strVal = newdatfile.GetString(section, cfLine.cpName());
 
-         // compare the values
-         if ( strVal.compare(newVal) != 0 )
+         // compare the values and check if the old value passes the range check for the new config.dat
+         if ( strVal.compare(newVal) != 0 && checkRange(section, cfLine.cpName(), strVal.c_str()))
          {
 //              cerr << "value different for " << cfLine.cpName() << endl;
             newdatfile.SetValue(section, cfLine.cpName(), newVal);
@@ -1860,13 +1900,13 @@ bool installer::updateConfigGeneric ()
       // write the modified config.dat.new
       if ( !newdatfile.WriteCfgFile(FILE_CONFIG_DAT ".new") )
       {
-         cerr << "config.dat.new write failed" << endl;
+         updatetrimaUtils::logger("config.dat.new write failed\n");
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
       else
       {
-         cerr << "config.dat.new write worked" << endl;
+         updatetrimaUtils::logger("config.dat.new write worked\n");
       }
 
       ///////////////////////////////////
@@ -1874,7 +1914,8 @@ bool installer::updateConfigGeneric ()
       attrib(PNAME_CONFIGDAT, "-R");
       if ( cp(PNAME_CONFIGDAT ".new", PNAME_CONFIGDAT) == ERROR )
       {
-         printf("copy of %s.new failed\n", PNAME_CONFIGDAT);
+//         printf("copy of %s.new failed\n", PNAME_CONFIGDAT);
+         updatetrimaUtils::logger("copy of ", PNAME_CONFIGDAT, ".new failed.\n");
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
@@ -1996,16 +2037,18 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
          {
             largestMinorRev = toMinorRev;
             buildRef        = cntr;
-            sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
-            updatetrimaUtils::logger(loggingBuff, true);
+//            sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
+//            updatetrimaUtils::logger(loggingBuff);
 
             if (toBuild > largestBuild && toVer.buildNum >= toBuild)
             {
-               sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
-               updatetrimaUtils::logger(loggingBuff, true);
+//               sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
+//               updatetrimaUtils::logger(loggingBuff);
                buildRef     = cntr;
                largestBuild = toBuild;
             }
+            sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
+            updatetrimaUtils::logger(loggingBuff);
          }
 
       }
@@ -2018,6 +2061,9 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       updatetrimaUtils::logger("Build info not found - aborting install\n");
       return(-1);
    }
+
+   // record it for later use
+   newBuildData = buildData[buildRef];
 
    sprintf(loggingBuff, "Build best match found for the version given: %s\n", buildData[buildRef].buildNum);
    updatetrimaUtils::logger(loggingBuff);
@@ -2095,12 +2141,14 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       return(-1);
    }
 
+/*
    // make sure any of the config.dat values are not out of range
    updatetrimaUtils::logger("Range checking config.dat for this version\n");
    if ( rangeCheckConfig(buildRef) )
    {
       updatetrimaUtils::logger("Made config.dat range adjustments\n");
    }
+*/
 
    // update cal files
    if ( buildData[buildRef].calFileType == 5 )
@@ -2195,12 +2243,12 @@ LEAVEROUTINE:
 //    attrib( TEMP_PATH,"R" );
 
    updatetrimaUtils::logger("Trima software update complete\n");
-//    printf("Trima software update complete.\n");
+//    updatetrimaUtils::logger("Trima software update complete.\n");
 
    // Delete the update script so that it doesn't run again on the subsequent boot if the GTS guy
    // is still holding down the buttons.
    updatetrimaUtils::logger("Removing update script\n");
-//    printf("Removing update script.\n");
+//    updatetrimaUtils::logger("Removing update script.\n");
    remove(UPDATE_PATH "/projectrevision");
    remove(UPDATE_PATH "/updatetrima");
    remove(UPDATE_PATH "/updatetrima.taz");

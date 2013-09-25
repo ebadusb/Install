@@ -7,19 +7,7 @@
 #define UPDATETRIMAUTILS_H
 
 #include <fstream>
-// #include <iostream>
-// #include "updateTrimaDefines.h"
-
-// #include "filenames.h"
 #include "filesort.h"
-// #include "targzextract.c"
-
-// #include "datfile.h"
-// #include "configdef.h"
-
-// #include "os/discover_hw.h"
-
-// #include "updateTrimaData.h"
 
 #define INSTALL_LOG_PATH  MACHINE_PATH "/install"
 
@@ -99,15 +87,18 @@ public:
 
    static bool loggingEnabled;
    static bool logToScreen;
+   static bool development_install;
 
 
-   static void logger (const char* stuff, bool dev = false);
-   static void logger (int stuff, bool dev = false);
-   static void logger (float stuff, bool dev = false);
-   static void logger (unsigned long stuff, bool dev = false);
-   static void logger (const char* stuff1, const char* stuff2, bool dev = false);
-   static void logger (const char* stuff1, int stuff2, bool dev = false);
-
+   static void logger (const char* stuff);
+   static void logger (int stuff);
+   static void logger (float stuff);
+   static void logger (unsigned long stuff);
+   static void logger (const char* stuff1, const char* stuff2);
+   static void logger (const char* stuff1, int stuff2);
+   static void logger (const char* stuff1, const char* stuff2, const char* stuff3);
+   static void logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4);
+   // I should really use va_args but I'm too lazy
 
    // have to init it before using it
    static bool initLogging ();
