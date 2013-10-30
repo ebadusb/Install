@@ -22,7 +22,6 @@ struct versionStruct
    int buildNum;
 };
 
-
 struct buildDataStruct
 {
    const char* buildNum;
@@ -48,6 +47,23 @@ struct rangeStruct
    RANGECOMPARETYPE  compareType;
    RANGEVARIABLETYPE valType;
    const char*       value;
+};
+
+
+class fourPartVersion
+{
+public:
+    fourPartVersion();
+    virtual ~fourPartVersion();
+    fourPartVersion(const fourPartVersion& obj);
+    fourPartVersion(const char *verString);
+    bool operator>(const fourPartVersion& other) const;
+    bool operator==(const fourPartVersion& other) const;
+
+   int first;
+   int second;
+   int third;
+   int fourth;
 };
 
 

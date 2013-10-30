@@ -46,6 +46,114 @@ bool        updatetrimaUtils::development_install  = false;
 FILE*       updatetrimaUtils::logFile              = NULL;
 
 
+
+
+fourPartVersion::fourPartVersion():
+   first(0),
+   second(0),
+   third(0),
+   fourth(0)
+{}
+
+fourPartVersion::~fourPartVersion()
+{}
+
+fourPartVersion::fourPartVersion(const fourPartVersion& obj):
+   first(obj.first),
+   second(obj.second),
+   third(obj.third),
+   fourth(obj.fourth)
+{}
+
+fourPartVersion::fourPartVersion(const char *verString):
+   first(0),
+   second(0),
+   third(0),
+   fourth(0)
+{
+   char* tokPtr = NULL;
+   char  tmpNum[50];
+
+   // Make a copy we can modify
+   strcpy(tmpNum, verString);
+
+   // Read the first
+   if ( (tokPtr = strtok(tmpNum, ".")) != NULL )
+   {
+      first = atoi(tokPtr);
+   }
+
+   // Read the second
+   if ( (tokPtr = strtok(NULL, ". ")) != NULL )
+   {
+      second = atoi(tokPtr);
+   }
+
+   // Read the third
+   if ( (tokPtr = strtok(NULL, ". ")) != NULL )
+   {
+      third = atoi(tokPtr);
+   }
+
+   // Read the fourth
+   if ( (tokPtr = strtok(NULL, ". ")) != NULL )
+   {
+      fourth = atoi(tokPtr);
+   }
+
+}
+
+bool fourPartVersion::operator>(const fourPartVersion& other) const
+{
+   if ( first > other.first )
+   {
+      return true;
+   }
+   else if ( first == other.first )
+   {
+      if ( second > other.second )
+      {
+         return true;
+      }
+      else if ( second == other.second )
+      {
+         if ( third > other.third )
+         {
+            return true;
+         }
+         else if ( third == other.third )
+         {
+            if ( fourth > other.fourth )
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+         else
+         {
+            return false;
+         }
+      }
+      else
+      {
+         return false;
+      }
+   }
+   else
+   {
+      return false;
+   }
+}
+
+bool fourPartVersion::operator==(const fourPartVersion& other) const
+{
+   return( first == other.first && second == other.second && third == other.third && fourth == other.fourth );
+}
+
+
 // Default constructor
 updatetrimaUtils::updatetrimaUtils()
 {}

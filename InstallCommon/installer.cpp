@@ -308,22 +308,45 @@ void installer::updateGlobVars ()
 
 void installer::updateHW ()
 {
+   bool hwdatFileName = false;  // is the versalogic file named hw.dat?
+
    // Replace hw.dat if the version number has changed
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_HW_DAT);
 
    if ( isAmpro() )
    {
       newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_ampro.dat");
+      if ( newVersion == NULL )
+      {
+         updatetrimaUtils::logger("Could not find hw_ampro.dat\n");
+         return;
+      }
    }
    else
    {
+      // look for versalogic_hw.dat first then try hw.dat if it isn't found
       newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_versalogic.dat");
+      if ( newVersion == NULL )
+      {
+         updatetrimaUtils::logger("Could not find hw_versalogic.dat, trying hw.dat\n");
+
+         newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw.dat");
+         if ( newVersion == NULL )
+         {
+            updatetrimaUtils::logger("Could not find hw.dat\n");
+            return;
+         }
+         else
+         {
+            hwdatFileName = true;         
+         }
+      }
    }
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-//        printf("Updating hw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
       updatetrimaUtils::logger("Updating hw.dat to new version ", newVersion, " from existing version ", currVersion);
+      updatetrimaUtils::logger("\n");
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
 
@@ -331,18 +354,27 @@ void installer::updateHW ()
       {
          if ( cp(TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
-//                printf("copy of hw_ampro.dat failed\n");
-            updatetrimaUtils::logger("copy of hw_ampro.dat failed");
+            updatetrimaUtils::logger("copy of hw_ampro.dat failed\n");
             return;
          }
       }
       else
       {
-         if ( cp(TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
+         if ( hwdatFileName )
          {
-//                printf("copy of hw_versalogic.dat failed\n");
-            updatetrimaUtils::logger("copy of hw_versalogic.dat failed");
-            return;
+            if ( cp(TEMPLATES_PATH "/hw.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
+            {
+               updatetrimaUtils::logger("copy of hw.dat failed\n");
+               return;
+            }
+         }
+         else
+         {
+            if ( cp(TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
+            {
+               updatetrimaUtils::logger("copy of hw_versalogic.dat failed\n");
+               return;
+            }
          }
       }
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "+R");
@@ -663,6 +695,9 @@ void installer::updateVista ()
       }
       else    // the config already exists so see if we need to update it
       {
+         std::string confFormatVerStr = "";
+         std::string templFormatVerStr = "";
+
          // create the file readers
          CDatFileReader vistaipConfigFile(PNAME_VISTIPDAT);
          CDatFileReader vistaipTemplFile(vistaipTmpl.c_str());
@@ -670,8 +705,11 @@ void installer::updateVista ()
          if ( !vistaipConfigFile.Error() && !vistaipTemplFile.Error() )
          {
             // get the format versions
-            float confFormatVer  = vistaipConfigFile.GetFloat("Version", "FormatVersion");
-            float templFormatVer = vistaipTemplFile.GetFloat("Version", "FormatVersion");
+            confFormatVerStr  = vistaipConfigFile.GetString("file_version");
+            templFormatVerStr = vistaipTemplFile.GetString("file_version");
+
+            fourPartVersion confFormatVer(confFormatVerStr.c_str());
+            fourPartVersion templFormatVer(templFormatVerStr.c_str());
 
             // the version of the template is newer, so update the config file
             if ( templFormatVer > confFormatVer )
