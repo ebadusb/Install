@@ -1371,7 +1371,7 @@ bool installer::extractUpdateFiles6 ()
    }
    else
    {
-      updatetrimaUtils::logger("Copying Safety Versalogic bootrom.sys and vxworks to ", SAFETY_BOOT_PATH);
+      updatetrimaUtils::logger("Copying Safety Versalogic bootrom.sys and vxworks to ", SAFETY_BOOT_PATH, "\n");
 
       if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic", SAFETY_VXWORKS_IMAGE)     == ERROR ||
            cp(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", SAFETY_BOOTROM_IMAGE)     == ERROR ||
@@ -1697,21 +1697,56 @@ void installer::forceSetConfig ()
 
 bool installer::checkRange(const char *section, const char *key, const char * value)
 {
+   updatetrimaUtils::logger("Checking range of: ", section, " ", key);
+   updatetrimaUtils::logger(" ", value, "\n");
+
    bool retval = true;
+   bool foundInRangeData = false;
 
    int rngCtr = 0;
 
    while ( rangeData[rngCtr].rangeType != END )
    {
+      /*
+      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType )
+      {
+         updatetrimaUtils::logger("rangeType = rangeType\n");
+      }
 
+      if ( strcmp(rangeData[rngCtr].section, section) == 0 )
+      {
+         updatetrimaUtils::logger("section = section\n");
+      }
+
+      if ( strcmp(rangeData[rngCtr].dataKey, key) == 0 )
+      {
+         updatetrimaUtils::logger("dataKey = key\n");
+      }
+
+      if ( strncmp(rangeData[rngCtr].dataKey, key, strlen(rangeData[rngCtr].dataKey)) == 0 )
+      {
+         updatetrimaUtils::logger("dataKey = sizeof key\n");
+      }
+
+      if ( strcmp(section, "PRODUCT_DEFINITIONS") == 0 )
+      {
+         updatetrimaUtils::logger("PRODUCT_DEFINITIONS = PRODUCT_DEFINITIONS\n");
+      }
+*/
       if ( rangeData[rngCtr].rangeType == newBuildData.rangeType &&
            strcmp(rangeData[rngCtr].section, section) == 0 &&
            (strcmp(rangeData[rngCtr].dataKey, key) == 0 ||
-            (strncmp(rangeData[rngCtr].dataKey, key, sizeof(rangeData[rngCtr].dataKey)) == 0 && 
+            (strncmp(rangeData[rngCtr].dataKey, key, strlen(rangeData[rngCtr].dataKey)) == 0 && 
              strcmp(section, "PRODUCT_DEFINITIONS") == 0)))
       {
+         foundInRangeData = true;
+
+//         updatetrimaUtils::logger("Found: ", section, " ", key);
+//         updatetrimaUtils::logger("\n");
+
          if ( rangeData[rngCtr].compareType == FORCE )
          {
+//            updatetrimaUtils::logger("Forcing update\n");
             retval = false;
             break;
          }
@@ -1719,29 +1754,43 @@ bool installer::checkRange(const char *section, const char *key, const char * va
          {
             int intvalue = atoi(value);
 
+//            updatetrimaUtils::logger("Comparing INT ", intvalue);
+
             if ( rangeData[rngCtr].compareType == MIN )
             {
+//               updatetrimaUtils::logger(" MIN vs ", rangeData[rngCtr].value);
+
                if ( intvalue < atoi(rangeData[rngCtr].value) )
                {
+//                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
                   break;
                }
+//               updatetrimaUtils::logger(" PASSED\n");
             }
             else if ( rangeData[rngCtr].compareType == MAX )
             {
+//               updatetrimaUtils::logger(" MAX vs ", rangeData[rngCtr].value);
+
                if ( intvalue > atoi(rangeData[rngCtr].value) )
                {
+//                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
                   break;
                }
+//               updatetrimaUtils::logger(" PASSED\n");
             }
             else if ( rangeData[rngCtr].compareType == NOT )
             {
+//               updatetrimaUtils::logger(" NOT vs ", rangeData[rngCtr].value);
+
                if ( intvalue == atoi(rangeData[rngCtr].value) )
                {
+//                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
                   break;
                }
+//               updatetrimaUtils::logger(" PASSED\n");
             }
          }
          else    // it must be a float
@@ -1767,6 +1816,15 @@ bool installer::checkRange(const char *section, const char *key, const char * va
          }
       }
       rngCtr++;
+   }
+
+   if ( foundInRangeData )
+   {
+      updatetrimaUtils::logger("Found in range data, ", (retval? "PASSED": "FAILED"), "\n");
+   }
+   else
+   {
+      updatetrimaUtils::logger("Not found in range data, PASSED by default\n");
    }
 
    return retval;
@@ -1914,14 +1972,29 @@ bool installer::updateConfigGeneric ()
       {
          strcpy(newVal, cfLine.cpValue());
 
+//         updatetrimaUtils::logger("Checking: ", section, " ", cfLine.cpName());
+//         updatetrimaUtils::logger(" ", newVal, "\n");
+
          // get the value from the new config.dat
          strVal = newdatfile.GetString(section, cfLine.cpName());
 
          // compare the values and check if the old value passes the range check for the new config.dat
-         if ( strVal.compare(newVal) != 0 && checkRange(section, cfLine.cpName(), strVal.c_str()))
+//         if ( strVal.compare(newVal) != 0 && checkRange(section, cfLine.cpName(), strVal.c_str()))
+         if ( strVal.compare(newVal) != 0 )
          {
-//              cerr << "value different for " << cfLine.cpName() << endl;
-            newdatfile.SetValue(section, cfLine.cpName(), newVal);
+            if ( checkRange(section, cfLine.cpName(), newVal) )
+            {
+               newdatfile.SetValue(section, cfLine.cpName(), newVal);
+               updatetrimaUtils::logger("Transferring setting for: ", section, " ", cfLine.cpName());
+               updatetrimaUtils::logger(", setting to: ", newVal, "\n");
+            }
+            else
+            {
+               updatetrimaUtils::logger("Range check failed for: ");
+               updatetrimaUtils::logger(section, " ", cfLine.cpName());
+               updatetrimaUtils::logger(" ", newVal);
+               updatetrimaUtils::logger(", Using default value of: ", strVal.c_str(), "\n");
+            }
          }
       }
 
