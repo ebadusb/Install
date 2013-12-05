@@ -338,7 +338,7 @@ void installer::updateHW ()
          }
          else
          {
-            hwdatFileName = true;         
+            hwdatFileName = true;
          }
       }
    }
@@ -540,7 +540,7 @@ void installer::updateSW ()
 //         printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
          updatetrimaUtils::logger("Updating sw.dat to new version ", newVersion, " from existing version ", newVersion);
          updatetrimaUtils::logger("\n");
-            attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
+         attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
 
          if ( cp(TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT) == ERROR )
          {
@@ -617,7 +617,7 @@ void installer::updateCassette ()
       {
 //         printf("copy of %s failed\n", FILE_CASSETTE_DAT);
          updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " failed\n");
-            return;
+         return;
       }
 
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
@@ -636,7 +636,7 @@ void installer::updateSetConfig ()
       // if the file isnt there....
 //      printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
       updatetrimaUtils::logger("Adding ", FILE_SETCONFIG_DAT, "\n");
-      
+
       if ( cp(TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT) == ERROR )
       {
 //         printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
@@ -672,7 +672,7 @@ void installer::updateSetConfig ()
 
 void installer::updateVista ()
 {
-   std::string vistaipTmpl(TEMPLATES_PATH "/" FILE_VISTIP_DAT);
+   std::string vistaipTmpl(TEMPLATES_PATH "/" FILE_VISTA_IP_DAT);
    struct stat vistaipTemplFileStat;
 
    // if there's a vista ip template file we have to make sure the config file is updated
@@ -680,26 +680,26 @@ void installer::updateVista ()
    {
       // For first time installs, copy the template file over to config
       struct stat vistaipFileStat;
-      if ( stat ((char*)PNAME_VISTIPDAT, &vistaipFileStat) == ERROR)
+      if ( stat ((char*)PNAME_VISTAIPDAT, &vistaipFileStat) == ERROR)
       {
-         if ( cp(vistaipTmpl.c_str(), PNAME_VISTIPDAT) == ERROR )
+         if ( cp(vistaipTmpl.c_str(), PNAME_VISTAIPDAT) == ERROR )
          {
-            updatetrimaUtils::logger("copy of ", vistaipTmpl.c_str()," to ");
-            updatetrimaUtils::logger(PNAME_VISTIPDAT, " failed\n");
+            updatetrimaUtils::logger("copy of ", vistaipTmpl.c_str(), " to ");
+            updatetrimaUtils::logger(PNAME_VISTAIPDAT, " failed\n");
          }
          else
          {
             updatetrimaUtils::logger("copied ", vistaipTmpl.c_str(), " to ");
-            updatetrimaUtils::logger(PNAME_VISTIPDAT, " successfully\n");
+            updatetrimaUtils::logger(PNAME_VISTAIPDAT, " successfully\n");
          }
       }
       else    // the config already exists so see if we need to update it
       {
-         std::string confFormatVerStr = "";
+         std::string confFormatVerStr  = "";
          std::string templFormatVerStr = "";
 
          // create the file readers
-         CDatFileReader vistaipConfigFile(PNAME_VISTIPDAT);
+         CDatFileReader vistaipConfigFile(PNAME_VISTAIPDAT);
          CDatFileReader vistaipTemplFile(vistaipTmpl.c_str());
 
          if ( !vistaipConfigFile.Error() && !vistaipTemplFile.Error() )
@@ -716,14 +716,14 @@ void installer::updateVista ()
             {
                vistaipConfigFile.SetValue("VISTA", "VISTA_DIRECT_SEND_IP", vistaipTemplFile.GetString("VISTA", "VISTA_DIRECT_SEND_IP").c_str());
                vistaipConfigFile.SetValue("VISTA", "VISTA_DIRECT_SEND_PORT", vistaipTemplFile.GetString("VISTA", "VISTA_DIRECT_SEND_PORT").c_str());
-               vistaipConfigFile.Write(PNAME_VISTIPDAT);
+               vistaipConfigFile.Write(PNAME_VISTAIPDAT);
 
-               updatetrimaUtils::logger(PNAME_VISTIPDAT, " file updated.\n");
+               updatetrimaUtils::logger(PNAME_VISTAIPDAT, " file updated.\n");
             }
          }
          else
          {
-            updatetrimaUtils::logger(FILE_VISTIP_DAT, " file reader creation error\n");
+            updatetrimaUtils::logger(FILE_VISTA_IP_DAT, " file reader creation error\n");
          }
       }
    }
@@ -1001,7 +1001,7 @@ void installer::updateCal6 ()
       struct stat fileStat;
       if ( stat((char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
       {
-         updatetrimaUtils::logger("File ",FILE_TCHSCRN_DAT);
+         updatetrimaUtils::logger("File ", FILE_TCHSCRN_DAT);
          updatetrimaUtils::logger(" present with and up to date ", FILE_CAL_DAT, ". No conversion needed\n");
       }
       else
@@ -1069,35 +1069,35 @@ bool installer::extractUpdateFiles5 ()
 
    // check if we're installing a python-capable 5.X version
    struct stat fileStat;
-   if ( stat((char *)UPDATE_PATH "/vxWorks_python", &fileStat) == OK ||
-        stat((char *)UPDATE_PATH "/vxWorks_orig", &fileStat) == OK)
+   if ( stat((char*)UPDATE_PATH "/vxWorks_python", &fileStat) == OK ||
+        stat((char*)UPDATE_PATH "/vxWorks_orig", &fileStat) == OK)
    {
-       if (isVersalogicPython())
-       {
-          if ( updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
-               updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks"     ) == ERROR )
-          {
-             updatetrimaUtils::logger("Install of Python OS image failed\n" );
-             return false;
-          }
-       }
-       else
-       {
-          if ( updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys" ) == ERROR ||
-               updatetrimaUtils::copyFileContiguous( UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks"     ) == ERROR )
-          {
-             updatetrimaUtils::logger("Install of non-Python OS image failed\n" );
-             return false;
-          }
-       }
+      if (isVersalogicPython())
+      {
+         if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys") == ERROR ||
+              updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_python", VXBOOT_PATH "/vxWorks") == ERROR )
+         {
+            updatetrimaUtils::logger("Install of Python OS image failed\n");
+            return false;
+         }
+      }
+      else
+      {
+         if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom.sys",  VXBOOT_PATH "/bootrom.sys") == ERROR ||
+              updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_orig", VXBOOT_PATH "/vxWorks") == ERROR )
+         {
+            updatetrimaUtils::logger("Install of non-Python OS image failed\n");
+            return false;
+         }
+      }
 
-       if ( remove(UPDATE_PATH "/bootrom.sys") == ERROR ||
-            remove(UPDATE_PATH "/vxWorks_orig") == ERROR ||
-            remove(UPDATE_PATH "/vxWorks_python") == ERROR ||
-            remove(UPDATE_PATH "/vxboot.taz") == ERROR )
-       {
-          updatetrimaUtils::logger("Removal of temporary OS image failed\n");
-       }
+      if ( remove(UPDATE_PATH "/bootrom.sys") == ERROR ||
+           remove(UPDATE_PATH "/vxWorks_orig") == ERROR ||
+           remove(UPDATE_PATH "/vxWorks_python") == ERROR ||
+           remove(UPDATE_PATH "/vxboot.taz") == ERROR )
+      {
+         updatetrimaUtils::logger("Removal of temporary OS image failed\n");
+      }
    }
    else if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
              updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks", VXBOOT_PATH "/vxWorks") == ERROR )
@@ -1194,7 +1194,7 @@ bool installer::extractUpdateFiles6 ()
       }
    }
 
-   // 
+   //
    // Store the new files in the proper position
    updatetrimaUtils::logger("Extracting the OS image...\n");
 
@@ -1695,60 +1695,72 @@ void installer::forceSetConfig ()
 //   }
 }
 
-bool installer::checkRange(const char *section, const char *key, const char * value)
+bool installer::checkRange (const char* section, const char* key, const char* value)
 {
-   updatetrimaUtils::logger("Checking range of: ", section, " ", key);
-   updatetrimaUtils::logger(" ", value, "\n");
+   char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "END"};
+   char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
+   char* rangeValTypeStr[] = {"INT", "FLOAT"};
 
-   bool retval = true;
+   updatetrimaUtils::logger("Checking range of: ", section, " ", key);
+   updatetrimaUtils::logger(" ", value);
+//   updatetrimaUtils::logger("\n");
+
+   bool retval           = true;
    bool foundInRangeData = false;
 
-   int rngCtr = 0;
+   int  rngCtr           = 0;
 
    while ( rangeData[rngCtr].rangeType != END )
    {
-      /*
-      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType )
+      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType)
       {
-         updatetrimaUtils::logger("rangeType = rangeType\n");
+         if (strcmp(rangeData[rngCtr].section, section) == 0 &&
+             strcmp(rangeData[rngCtr].dataKey, key) == 0)
+         {
+            updatetrimaUtils::logger(" Found exact match rangeData:");
+            updatetrimaUtils::logger(" ", rangeTypeStr[(int)(rangeData[rngCtr].rangeType)]);
+            updatetrimaUtils::logger(" ", rangeData[rngCtr].section);
+            updatetrimaUtils::logger(" ", rangeData[rngCtr].dataKey);
+//                updatetrimaUtils::logger("\n");
+            foundInRangeData = true;
+         }
+         else if (strlen(key) - 1 == strlen(rangeData[rngCtr].dataKey) &&
+                  strncmp(rangeData[rngCtr].dataKey, key, strlen(key) - 1) == 0 &&
+                  strcmp(section, "PRODUCT_DEFINITIONS") == 0)
+         {
+            updatetrimaUtils::logger(" Found partial match rangeData:");
+            updatetrimaUtils::logger(" ", rangeTypeStr[(int)(rangeData[rngCtr].rangeType)]);
+            updatetrimaUtils::logger(" ", rangeData[rngCtr].section);
+            updatetrimaUtils::logger(" ", rangeData[rngCtr].dataKey);
+//                updatetrimaUtils::logger("\n");
+//                updatetrimaUtils::logger("Found partial match rangeData: ", rangeData[rngCtr].section, " ", rangeData[rngCtr].dataKey);
+            foundInRangeData = true;
+         }
       }
-
-      if ( strcmp(rangeData[rngCtr].section, section) == 0 )
-      {
-         updatetrimaUtils::logger("section = section\n");
-      }
-
-      if ( strcmp(rangeData[rngCtr].dataKey, key) == 0 )
-      {
-         updatetrimaUtils::logger("dataKey = key\n");
-      }
-
-      if ( strncmp(rangeData[rngCtr].dataKey, key, strlen(rangeData[rngCtr].dataKey)) == 0 )
-      {
-         updatetrimaUtils::logger("dataKey = sizeof key\n");
-      }
-
-      if ( strcmp(section, "PRODUCT_DEFINITIONS") == 0 )
-      {
-         updatetrimaUtils::logger("PRODUCT_DEFINITIONS = PRODUCT_DEFINITIONS\n");
-      }
-*/
+/*
       if ( rangeData[rngCtr].rangeType == newBuildData.rangeType &&
            strcmp(rangeData[rngCtr].section, section) == 0 &&
            (strcmp(rangeData[rngCtr].dataKey, key) == 0 ||
-            (strncmp(rangeData[rngCtr].dataKey, key, strlen(rangeData[rngCtr].dataKey)) == 0 && 
+            (strlen(key)-1 == strlen(rangeData[rngCtr].dataKey) &&
+             strncmp(rangeData[rngCtr].dataKey, key, strlen(key)-1) == 0 &&
              strcmp(section, "PRODUCT_DEFINITIONS") == 0)))
+*/
+      if ( foundInRangeData )
       {
-         foundInRangeData = true;
-
-//         updatetrimaUtils::logger("Found: ", section, " ", key);
+         updatetrimaUtils::logger(" Compare data:");
+         updatetrimaUtils::logger(" compareType: ", compareTypeStr[(int)(rangeData[rngCtr].compareType)]);
+         updatetrimaUtils::logger(" valueType: ", rangeValTypeStr[(int)(rangeData[rngCtr].valType)]);
+         updatetrimaUtils::logger(" value: ");
+         updatetrimaUtils::logger(rangeData[rngCtr].value);
 //         updatetrimaUtils::logger("\n");
+
+//         foundInRangeData = true;
 
          if ( rangeData[rngCtr].compareType == FORCE )
          {
 //            updatetrimaUtils::logger("Forcing update\n");
             retval = false;
-            break;
+//            break;
          }
          else if ( rangeData[rngCtr].valType == INT )
          {
@@ -1764,7 +1776,7 @@ bool installer::checkRange(const char *section, const char *key, const char * va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-                  break;
+//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1776,7 +1788,7 @@ bool installer::checkRange(const char *section, const char *key, const char * va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-                  break;
+//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1788,7 +1800,7 @@ bool installer::checkRange(const char *section, const char *key, const char * va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-                  break;
+//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1802,7 +1814,7 @@ bool installer::checkRange(const char *section, const char *key, const char * va
                if ( floatvalue < atof(rangeData[rngCtr].value) )
                {
                   retval = false;
-                  break;
+//                  break;
                }
             }
             else if ( rangeData[rngCtr].compareType == MAX )
@@ -1810,21 +1822,22 @@ bool installer::checkRange(const char *section, const char *key, const char * va
                if ( floatvalue > atof(rangeData[rngCtr].value) )
                {
                   retval = false;
-                  break;
+//                  break;
                }
             }
          }
+         break;
       }
       rngCtr++;
    }
 
    if ( foundInRangeData )
    {
-      updatetrimaUtils::logger("Found in range data, ", (retval? "PASSED": "FAILED"), "\n");
+      updatetrimaUtils::logger(" Found in range data, ", (retval ? "PASSED" : "FAILED"), "\n");
    }
    else
    {
-      updatetrimaUtils::logger("Not found in range data, PASSED by default\n");
+      updatetrimaUtils::logger(" Not found in range data, PASSED by default\n");
    }
 
    return retval;
@@ -1923,7 +1936,21 @@ bool installer::updateConfigGeneric ()
    attrib(PNAME_CONFIGDAT ".new", "-R");
    remove(PNAME_CONFIGDAT ".new");
 
-   // copy the template config.dat to /config and make it writable
+////////////////////
+// #define JUST_LOOKING
+
+#ifdef JUST_LOOKING // open the template/config.dat and don't change anything
+   // open the template/config.dat
+   newdatfile.Initialize(TEMPLATES_PATH "/" FILE_CONFIG_DAT);
+   if ( newdatfile.Error() )
+   {
+      updatetrimaUtils::logger("Config file read error : ", templatedatfile.Error());
+      updatetrimaUtils::logger("\n");
+      retval = false;
+      goto LEAVEupdateConfigGeneric;
+   }
+#else // not JUST_LOOKING do the normal processing
+      // copy the template config.dat to /config and make it writable
    if ( cp(TEMPLATES_PATH "/" FILE_CONFIG_DAT, PNAME_CONFIGDAT ".new") != ERROR )
    {
       attrib(PNAME_CONFIGDAT ".new", "-R");
@@ -1944,10 +1971,7 @@ bool installer::updateConfigGeneric ()
       retval = false;
       goto LEAVEupdateConfigGeneric;
    }
-
-
-////////////////////////////////////////
-// make the changes
+#endif // JUST_LOOKING
 
    // open the old config.dat for reading as a normal file because CDatFileReader
    // doesn't support reading of every line without lookup
@@ -1983,6 +2007,19 @@ bool installer::updateConfigGeneric ()
          if ( strVal.compare(newVal) != 0 )
          {
             if ( checkRange(section, cfLine.cpName(), newVal) )
+#ifdef JUST_LOOKING
+            {
+//               updatetrimaUtils::logger("Config.dat setting: ", cfLine.cpName(), "=", newVal);
+//               updatetrimaUtils::logger(" differs from template config.dat & PASSES range check\n");
+               updatetrimaUtils::logger("Passed\n");
+            }
+            else
+            {
+//               updatetrimaUtils::logger("Config.dat setting: ", cfLine.cpName(), "=", newVal);
+//               updatetrimaUtils::logger(" differs from template config.dat & FAILS range check\n");
+               updatetrimaUtils::logger("Failed\n");
+            }
+#else       // not JUST_LOOKING
             {
                newdatfile.SetValue(section, cfLine.cpName(), newVal);
                updatetrimaUtils::logger("Transferring setting for: ", section, " ", cfLine.cpName());
@@ -1995,6 +2032,7 @@ bool installer::updateConfigGeneric ()
                updatetrimaUtils::logger(" ", newVal);
                updatetrimaUtils::logger(", Using default value of: ", strVal.c_str(), "\n");
             }
+#endif      // JUST_LOOKING
          }
       }
 
@@ -2005,6 +2043,7 @@ bool installer::updateConfigGeneric ()
 
 ////////////////////////////////////////
 
+#ifndef JUST_LOOKING
    // if it ended without error, write the data and copy it over the old config.dat
    if ( readState >= 0 )
    {
@@ -2044,6 +2083,7 @@ bool installer::updateConfigGeneric ()
       retval = false;
       goto LEAVEupdateConfigGeneric;
    }
+#endif // JUST_LOOKING
 
 LEAVEupdateConfigGeneric:
 
@@ -2375,4 +2415,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 563801c87dd8a816568b0c25865c0b23 */
+/* FORMAT HASH 99a83c15b22bd9d49b8b9d8ec5026ecf */

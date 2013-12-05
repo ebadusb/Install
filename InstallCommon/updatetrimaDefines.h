@@ -139,12 +139,12 @@
 #endif // #ifdef __COMPILE_FOR_VX_54__
 
 // Make sure these are defined for everybody
-#ifndef FILE_VISTIP_DAT
-   #define FILE_VISTIP_DAT   "vista_ip.dat"
+#ifndef FILE_VISTA_IP_DAT
+   #define FILE_VISTA_IP_DAT   "vista_ip.dat"
 #endif
 
-#ifndef PNAME_VISTIPDAT
-   #define PNAME_VISTIPDAT   CONFIG_PATH "/" FILE_VISTIP_DAT
+#ifndef PNAME_VISTAIPDAT
+   #define PNAME_VISTAIPDAT   CONFIG_PATH "/" FILE_VISTA_IP_DAT
 #endif
 
 #ifndef FILE_FEATURES
@@ -200,4 +200,4 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
 
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH d307d689875cc69a69adc4980f9bd180 */
+/* FORMAT HASH 474f36e32362a4d439d990a3777b58d0 */

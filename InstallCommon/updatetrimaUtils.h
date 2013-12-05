@@ -11,7 +11,7 @@
 
 #define INSTALL_LOG_PATH  MACHINE_PATH "/install"
 
-enum RANGETYPE {V510, V520, V600, V630, END};
+enum RANGETYPE {V510, V520, V600, V630, V640, END};
 enum RANGECOMPARETYPE {MIN, MAX, NOT, FORCE};
 enum RANGEVARIABLETYPE {INT, FLOAT};
 
@@ -53,12 +53,12 @@ struct rangeStruct
 class fourPartVersion
 {
 public:
-    fourPartVersion();
-    virtual ~fourPartVersion();
-    fourPartVersion(const fourPartVersion& obj);
-    fourPartVersion(const char *verString);
-    bool operator>(const fourPartVersion& other) const;
-    bool operator==(const fourPartVersion& other) const;
+   fourPartVersion();
+   virtual ~fourPartVersion();
+   fourPartVersion(const fourPartVersion& obj);
+   fourPartVersion(const char* verString);
+   bool operator > (const fourPartVersion& other) const;
+   bool operator == (const fourPartVersion& other) const;
 
    int first;
    int second;
@@ -129,4 +129,4 @@ protected:
 };
 #endif // UPDATETRIMAUTILS_H
 
-/* FORMAT HASH 967a98a94929d4a9df7dec8de6400196 */
+/* FORMAT HASH b334c551c5da346c55fc2b3a8a67535c */

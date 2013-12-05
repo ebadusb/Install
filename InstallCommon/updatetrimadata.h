@@ -37,6 +37,12 @@ struct rangeStruct {
 };
 */
 
+// This is a list of the various supported builds and the conversion flags for the installer to use for
+// determining what functions to run when installing that build.
+// If a build is installed that isn't listed, the closest build with a smaller build number is used.
+// (e.g if build 6.327 is installed, the flags for 6.301 will be used)
+// The last value is the rangeType which maps to the rangeData list (below) to determine
+// what config.dat vales to range check.
 buildDataStruct buildData[] =
 {
    {"6.301", 5, true, true, false, false, false, 5, true, false, false, V510},
@@ -77,10 +83,14 @@ buildDataStruct buildData[] =
    {"10.0.00037", 6, true, true, true, true, true, 6, true, true, false, V600},
    {"11.0.00368", 6, false, true, true, true, true, 6, true, true, true, V630},
    {"12.0.00001", 6, false, true, true, true, true, 6, true, true, false, V630},
-   {"12.1.00001", 6, false, true, true, true, true, 6, true, true, false, V630},
-   {"END", 6, false, true, true, true, true, 6, true, true, false, V630}
+   {"12.1.00001", 6, false, true, true, true, true, 6, true, true, false, V640},
+   {"END", 6, false, true, true, true, true, 6, true, true, false, V640}
 };
 
+// This is a list of range values for settings that have different ranges for different versions.
+// Settings that have the same ranges across all versions aren't included because the Trima software
+// will enforce ranges prior to installing a new version.
+// The rangeType member corresponds to the rangeType in the buildData data (above)
 rangeStruct rangeData[] =
 {
    {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4"},
@@ -89,12 +99,14 @@ rangeStruct rangeData[] =
    {V510, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
    {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V510, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "7"},
+   {V510, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
 
    {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
    {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V520, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "7"},
+   {V520, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
 
    {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15"},
    {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
@@ -104,6 +116,7 @@ rangeStruct rangeData[] =
    {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
    {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V600, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
+   {V600, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
 
    {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
    {V630, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
@@ -113,10 +126,21 @@ rangeStruct rangeData[] =
    {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
    {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
    {V630, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
+   {V630, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
+
+   {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
+   {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
+   {V640, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
+   {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},
 
    {END, "xxx", "xxx", MAX, INT, "0"}
 };
 
 #endif // UPDATETRIMADATA_H
 
-/* FORMAT HASH 82b65c404a6e5dbca940ae0971c4c694 */
+/* FORMAT HASH ae177d112aae43777b710e68354a014b */
