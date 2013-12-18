@@ -196,8 +196,11 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define PNAME_INSTALL_LOG INSTALL_LOG_PATH "/" FILE_INSTALL_LOG
 #endif
 
-
+// 6.4 removes terror from filenames.dat
+#ifndef TERROR_CONFIG_FILE
+    #define TERROR_CONFIG_FILE CONFIG_PATH       "/terror_config.dat"
+#endif
 
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH 474f36e32362a4d439d990a3777b58d0 */
+/* FORMAT HASH c518c0f10bd40156991e78fc5d5f5d8f */
