@@ -1472,7 +1472,6 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH  "/config.crc");
    softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH  "/hwdat.crc");
    softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH  "/rbcdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH  "/terrordat.crc");
    softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH  "/cassette.crc");
    softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH  "/setconfig.crc");
    softcrc("-filelist " FILELISTS_PATH "/graphics.files	-update "   PNAME_GUI_GRAPHICS_CRC);
@@ -1483,6 +1482,15 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH       "/trima.crc");
    softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "CONFIG_CRC_PATH"/machine.crc");
 
+   const int fileExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
+
+   // Seperate check for TERROR since the file may or may not exist
+   if (fileExists > 0)
+   {
+      close(fileExists);
+      softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH  "/terrordat.crc");
+   }
+
    // Set permissions in config directory
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
 
@@ -1491,7 +1499,6 @@ bool installer::checkCRC6 ()
        verifyCrc("-filelist " FILELISTS_PATH "/config.files	-verify "CONFIG_CRC_PATH"/config.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files		-verify "CONFIG_CRC_PATH"/hwdat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	-verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "CONFIG_CRC_PATH"/cassette.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "CONFIG_CRC_PATH"/setconfig.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "PNAME_GUI_GRAPHICS_CRC) ||
@@ -1501,6 +1508,12 @@ bool installer::checkCRC6 ()
        verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "TRIMA_PATH"/safety.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "TRIMA_PATH"/trima.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc"))
+   {
+      return false;
+   }
+
+   // Seperate check for TERROR since the file may or may not exist
+   if ( (fileExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") )
    {
       return false;
    }
@@ -2415,4 +2428,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 99a83c15b22bd9d49b8b9d8ec5026ecf */
+/* FORMAT HASH a11aaae5d4da3118def8e83535032278 */
