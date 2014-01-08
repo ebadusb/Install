@@ -91,22 +91,25 @@ buildDataStruct buildData[] =
 // Settings that have the same ranges across all versions aren't included because the Trima software
 // will enforce ranges prior to installing a new version.
 // The rangeType member corresponds to the rangeType in the buildData data (above)
+// look in cfg_vars.cpp and configdef.h for values
 rangeStruct rangeData[] =
 {
    {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4"},
    {V510, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
    {V510, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
    {V510, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
-   {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V510, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "7"},
    {V510, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
+   {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
+   {V510, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
    {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
-   {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V520, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "7"},
    {V520, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
+   {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
+   {V520, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
    {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15"},
    {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
@@ -114,9 +117,10 @@ rangeStruct rangeData[] =
    {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
    {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
    {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V600, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
    {V600, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
+   {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
+   {V600, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
    {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
    {V630, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
@@ -124,9 +128,10 @@ rangeStruct rangeData[] =
    {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
    {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
    {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
    {V630, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
    {V630, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
+   {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
+   {V630, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
    {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
    {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
@@ -134,13 +139,14 @@ rangeStruct rangeData[] =
    {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
    {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
    {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
-   {V640, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
-   {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},      // NUM_YIELD_VOLUME
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},  // MAX_KEY_PLT_AMAP
+   {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},         // MAX_KEY_PLASMA
+   {V640, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6"},            // NUM_CRIT_DOSE
 
    {END, "xxx", "xxx", MAX, INT, "0"}
 };
 
 #endif // UPDATETRIMADATA_H
 
-/* FORMAT HASH ae177d112aae43777b710e68354a014b */
+/* FORMAT HASH d9cba36d64795a32a6edb5f633c8a7fe */
