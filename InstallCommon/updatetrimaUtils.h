@@ -7,6 +7,7 @@
 #define UPDATETRIMAUTILS_H
 
 #include <fstream>
+#include <vector>
 #include "filesort.h"
 
 #define INSTALL_LOG_PATH  MACHINE_PATH "/install"
@@ -101,11 +102,17 @@ public:
 
    static bool parseRevision (const char* revString, int& curMajorRev, int& curMinorRev, int& curBuild);
 
-   static bool loggingEnabled;
-   static bool logToScreen;
+   static void logFileHeader (string& hdrStr);
+
    static bool development_install;
 
-
+   //////////////////////////////////////////////////
+   // The logger calls are all depricated - they are being replaced by the installLogStream
+   // They will be removed if/when I get the time to go through the code and switch
+   // all of the logging to use the stream class.
+   // The logger calls now all use the stream class behind the scenes to do the logging
+   static bool loggingEnabled;
+   static bool logToScreen;
    static void logger (const char* stuff);
    static void logger (int stuff);
    static void logger (float stuff);
@@ -114,12 +121,7 @@ public:
    static void logger (const char* stuff1, int stuff2);
    static void logger (const char* stuff1, const char* stuff2, const char* stuff3);
    static void logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4);
-   // I should really use va_args but I'm too lazy
-
-   // have to init it before using it
    static bool initLogging ();
-
-   // please close it when done
    static void closelogger ();
 
 protected:
@@ -127,6 +129,40 @@ protected:
    static FILE* logFile;
 
 };
+
+
+///////////////////////////////////////////////////////////////////
+// file log stream class
+class installLogStream
+{
+public:
+   installLogStream();
+   installLogStream(bool logToScrn);
+   virtual ~installLogStream();
+   bool                       open (const char* filename);
+   bool                       is_open ();
+   void                       close ();
+   installLogStream& operator << (const char* stuff);
+   installLogStream& operator << (const string& stuff);
+   installLogStream& operator << (const long stuff);
+   installLogStream& operator << (const int stuff);
+   installLogStream& operator << (const unsigned int stuff);
+   installLogStream& operator << (const float stuff);
+   installLogStream& operator << (const double stuff);
+//    installLogStream& operator << (ostream& stuff);
+
+   void LogToScreen (bool onOff) {logToScreen = onOff; }
+
+private:
+   installLogStream(const installLogStream& obj);
+
+public:
+
+protected:
+   bool              logToScreen;
+   vector<ofstream*> streamVect;
+};
+
 #endif // UPDATETRIMAUTILS_H
 
-/* FORMAT HASH b334c551c5da346c55fc2b3a8a67535c */
+/* FORMAT HASH d15128c933002c4fb1261d8f0a2fb052 */

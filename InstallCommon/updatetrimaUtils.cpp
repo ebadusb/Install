@@ -38,38 +38,40 @@ int softcrc (const char* options);
 
 extern "C" STATUS xdelete (const char* fileName);
 
-extern bool development_only;
+extern bool             development_only;
 
-bool        updatetrimaUtils::loggingEnabled       = false;
-bool        updatetrimaUtils::logToScreen          = false;
-bool        updatetrimaUtils::development_install  = false;
-FILE*       updatetrimaUtils::logFile              = NULL;
+extern installLogStream installLog;
+
+bool                    updatetrimaUtils::loggingEnabled      = false;
+bool                    updatetrimaUtils::logToScreen         = false;
+bool                    updatetrimaUtils::development_install = false;
+FILE*                   updatetrimaUtils::logFile             = NULL;
 
 
 
 
-fourPartVersion::fourPartVersion():
-   first(0),
-   second(0),
-   third(0),
-   fourth(0)
+fourPartVersion::fourPartVersion()
+   : first(0),
+     second(0),
+     third(0),
+     fourth(0)
 {}
 
 fourPartVersion::~fourPartVersion()
 {}
 
-fourPartVersion::fourPartVersion(const fourPartVersion& obj):
-   first(obj.first),
-   second(obj.second),
-   third(obj.third),
-   fourth(obj.fourth)
+fourPartVersion::fourPartVersion(const fourPartVersion& obj)
+   : first(obj.first),
+     second(obj.second),
+     third(obj.third),
+     fourth(obj.fourth)
 {}
 
-fourPartVersion::fourPartVersion(const char *verString):
-   first(0),
-   second(0),
-   third(0),
-   fourth(0)
+fourPartVersion::fourPartVersion(const char* verString)
+   : first(0),
+     second(0),
+     third(0),
+     fourth(0)
 {
    char* tokPtr = NULL;
    char  tmpNum[50];
@@ -103,7 +105,7 @@ fourPartVersion::fourPartVersion(const char *verString):
 
 }
 
-bool fourPartVersion::operator>(const fourPartVersion& other) const
+bool fourPartVersion::operator > (const fourPartVersion& other) const
 {
    if ( first > other.first )
    {
@@ -148,7 +150,7 @@ bool fourPartVersion::operator>(const fourPartVersion& other) const
    }
 }
 
-bool fourPartVersion::operator==(const fourPartVersion& other) const
+bool fourPartVersion::operator == (const fourPartVersion& other) const
 {
    return( first == other.first && second == other.second && third == other.third && fourth == other.fourth );
 }
@@ -452,6 +454,9 @@ void updatetrimaUtils::logger (float stuff)
 
 void updatetrimaUtils::logger (const char* stuff)
 {
+   // use the new stream class
+   installLog << stuff;
+/*
     if ( updatetrimaUtils::logToScreen ) {
         cerr << stuff;
         //        printf("%s\n", stuff);
@@ -464,42 +469,18 @@ void updatetrimaUtils::logger (const char* stuff)
             fflush(updatetrimaUtils::logFile);
         }
     }
-
+*/
 }
 
 
 bool updatetrimaUtils::initLogging ()
 {
-//    cerr << "initLogging" << endl;
-
-   // create an install log directory
-//    if ( !nameIsDir(INSTALL_LOG_PATH) )
-//    if ( !attrib(INSTALL_LOG_PATH, "-R") )
-//    {
    mkdir(INSTALL_LOG_PATH);
-//        attrib(INSTALL_LOG_PATH, "-R")
-//    }
 
    char   fileNameBuffer[256];
    fileNameBuffer[255] = 0;
    time_t _now = time(NULL);
-//    strftime(fileNameBuffer, sizeof(fileNameBuffer), TEMP_PATH "/trima_%Y%m%d_%H%M.txt", localtime(&_now));
-//    strftime(fileNameBuffer, sizeof(fileNameBuffer), INSTALL_LOG_PATH "/install_%Y%m%d_%H%M.txt", localtime(&_now));
    sprintf(fileNameBuffer, "%s", PNAME_INSTALL_LOG);
-
-   /*
-   logStream.open(fileNameBuffer, std::ofstream::out | std::ofstream::trunc);
-   if ( !logStream.is_open() )
-   {
-       cerr << "File not opened" << endl;
-       return false;
-   }
-
-   char outBuff[256];
-   strftime(outBuff, sizeof(outBuff), "Trima Install Log %Y-%m-%d %H:%M:%S", localtime(&_now));
-   logStream << outBuff << endl;
-   return true;
-*/
 
    updatetrimaUtils::logFile = fopen(fileNameBuffer, "w");
 
@@ -510,8 +491,6 @@ bool updatetrimaUtils::initLogging ()
    }
    else
    {
-//        cerr << "Log file opened" << endl;
-
       char outBuff[256];
       outBuff[255] = 0;
       strftime(outBuff, sizeof(outBuff), "Trima Install Log %Y-%m-%d %H:%M:%S", localtime(&_now));
@@ -524,9 +503,6 @@ bool updatetrimaUtils::initLogging ()
 
 void updatetrimaUtils::closelogger ()
 {
-//    logStream.flush();
-//    logStream.close();
-
    if ( updatetrimaUtils::logFile )
    {
       fflush(updatetrimaUtils::logFile);
@@ -535,4 +511,169 @@ void updatetrimaUtils::closelogger ()
    updatetrimaUtils::logFile = NULL;
 }
 
-/* FORMAT HASH 743cf7ad6889a7fa7ef6c1d479803f06 */
+
+void updatetrimaUtils::logFileHeader (string& hdrStr)
+{
+   time_t _now = time(NULL);
+
+   char   outBuff[256];
+   outBuff[255] = 0;
+   strftime(outBuff, sizeof(outBuff), "Trima Install Log %Y-%m-%d %H:%M:%S", localtime(&_now));
+
+   hdrStr = outBuff;
+}
+
+
+
+///////////////////////////////////////////////////////////////////
+// file log stream class
+// I didn't need to make it so it will open more than one file, but I just got carried away
+// I tested it with multiple files, so it works if it's ever needed
+
+installLogStream::installLogStream()
+   : logToScreen(true),
+     streamVect()
+{}
+
+installLogStream::installLogStream(bool logToScrn)
+   : logToScreen(logToScrn),
+     streamVect()
+{}
+
+installLogStream::~installLogStream()
+{
+   for ( vector<ofstream*>::iterator iter = streamVect.end(); iter != streamVect.begin(); iter-- )
+   {
+      (*iter)->close();
+      delete (*iter);
+   }
+}
+
+bool installLogStream::open (const char* filename)
+{
+   bool retval = false;
+
+   mkdir(INSTALL_LOG_PATH);
+
+//    printf("installLogStream::open filename: %s\n", filename);
+
+   ofstream* newStream = new ofstream(filename);
+   if ( newStream->is_open() )
+   {
+//       printf("installLogStream::open file opened\n");
+      string hdrString;
+      updatetrimaUtils::logFileHeader(hdrString);
+      *newStream << hdrString.c_str() << "\n\n";
+      newStream->flush();
+
+      streamVect.push_back(newStream);
+      retval = true;
+   }
+
+   return retval;
+}
+
+bool installLogStream::is_open ()
+{
+   bool retval = false;
+
+   if ( streamVect.size() > 0 )
+   {
+      retval = true;
+   }
+
+   return retval;
+}
+
+void installLogStream::close ()
+{
+   printf("installLogStream::close\n");
+
+   for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
+   {
+      if ( (*iter)->is_open() )
+      {
+         (*iter)->close();
+      }
+//      delete (*iter);
+   }
+
+}
+
+installLogStream& installLogStream::operator << (const char* stuff)
+{
+   if ( logToScreen )
+   {
+      cerr << stuff;
+   }
+
+   for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
+   {
+      *(*iter) << stuff;
+      (*iter)->flush();
+   }
+
+   return *this;
+}
+
+installLogStream& installLogStream::operator << (const string& stuff)
+{
+
+   return (installLog << stuff.c_str());
+}
+
+installLogStream& installLogStream::operator << (const long stuff)
+{
+   char writebuffer[64];
+
+   sprintf(writebuffer, "%ld", stuff);
+
+   return (installLog << writebuffer);
+
+}
+
+installLogStream& installLogStream::operator << (const int stuff)
+{
+
+   return (installLog << (long)stuff);
+}
+
+installLogStream& installLogStream::operator << (const unsigned int stuff)
+{
+
+   return (installLog << (long)stuff);
+}
+
+installLogStream& installLogStream::operator << (const float stuff)
+{
+   char writebuffer[64];
+
+   sprintf(writebuffer, "%.3f", stuff);
+
+   return (installLog << writebuffer);
+}
+
+installLogStream& installLogStream::operator << (const double stuff)
+{
+
+   return (installLog << (float)stuff);
+}
+
+/*
+installLogStream& installLogStream::operator << (ostream& stuff)
+{
+   if ( logToScreen )
+   {
+      cerr << stuff;
+   }
+
+   for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
+   {
+      *(*iter) << stuff;
+   }
+
+   return *this;
+}
+*/
+
+/* FORMAT HASH d34386e3baf2dfb4df1bcb5c6e97718f */

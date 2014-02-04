@@ -50,6 +50,8 @@ protected:
 
    bool replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal);
 
+   bool validateSetConfig ();
+
    // line by line dat file reader
    int readDatFileVals (CFileLine& cfLine, FILE* fp);
 
@@ -116,7 +118,7 @@ protected:
 //
    virtual bool updateConfigGeneric ();
 
-   virtual bool checkRange(const char *section, const char *key, const char * value);
+   virtual bool checkRange (const char* section, const char* key, const char* value);
 
 //
 // Main config file update function, calls the others
@@ -169,11 +171,11 @@ public:
 
 protected:
 
-   const char* currVersion;
-   const char* newVersion;
+   const char*     currVersion;
+   const char*     newVersion;
    buildDataStruct newBuildData;
 
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 64932a97968694a39f7ef50daf7136a9 */
+/* FORMAT HASH bfda0f008386e61c746c5979482dfb6a */

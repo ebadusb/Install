@@ -33,6 +33,7 @@ int softcrc (const char* options);
 
 extern "C" STATUS xdelete (const char* fileName);
 
+extern installLogStream installLog;
 
 // Default constructor
 installer::installer()
@@ -198,9 +199,6 @@ const char* installer::findSetting (const char* setting, const char* fileName)
 
    if ( fp )
    {
-//        printf("opened %s\n", fileName);
-      // logStream << "opened " << fileName << endl;
-
       result = findSetting(setting, fp);
       fclose(fp);
    }
@@ -212,7 +210,10 @@ bool installer::replaceCassette (const char* refStr, unsigned int tubingSetCode,
 {
    bool retval = true;
 
-   AdminUpdateCassetteDat::read();
+   if (!AdminUpdateCassetteDat::fileOK())
+   {
+      AdminUpdateCassetteDat::read();
+   }
 
    if ( AdminUpdateCassetteDat::fileOK() )
    {
@@ -233,8 +234,104 @@ bool installer::replaceCassette (const char* refStr, unsigned int tubingSetCode,
    }
    else
    {
+      updatetrimaUtils::logger("Couldn't read setconfig.dat so can't replace a line in it\n");
       retval = false;
    }
+
+   return( retval );
+}
+
+// This compares the set_config.dat vs the non-template cassette.dat so do it AFTER updateCassette() and updateSetConfig()
+bool installer::validateSetConfig ()
+{
+   bool retval      = true;
+   bool madeChanges = false;
+   bool deleteItem  = false;
+   char loggingBuff[256];
+
+   // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
+   struct stat fileStat;
+
+   if ( stat((char*)TEMPLATES_PATH "/" FILE_CASSETTE_DAT, &fileStat) != OK )
+   {
+      updatetrimaUtils::logger("Installing 5.1, ignoring cassette file validation\n");
+      goto LEAVEROUTINE;
+   }
+
+   if (!AdminUpdateCassetteDat::fileOK())
+   {
+      AdminUpdateCassetteDat::read();
+   }
+
+   if (!MasterUpdateCassetteDat::fileOK())
+   {
+      MasterUpdateCassetteDat::read();
+   }
+
+   if ( AdminUpdateCassetteDat::fileOK() && MasterUpdateCassetteDat::fileOK() )
+   {
+
+      UPDATE_CASSETTE_VECTOR_ITERATOR iter = AdminUpdateCassetteDat::begin();
+      while (iter != AdminUpdateCassetteDat::end())
+      {
+         UPDATE_CASSETTE_MAP_ITERATOR foundCassette = MasterUpdateCassetteDat::find((*iter)->RefNum());
+
+         if (foundCassette == MasterUpdateCassetteDat::end())
+         {
+            // didn't find the cassette from set_config.dat in cassette.dat so delete it
+            installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat - removed\n";
+//            updatetrimaUtils::logger("Cassette ref #: ", (*iter)->RefNum(), " not found in cassette.dat - removed\n" );
+            deleteItem = true;
+         }
+         else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
+                   strcmp(foundCassette->second->BarcodeNum(), (*iter)->BarcodeNum()) != 0 )
+         {
+            installLog << "cassette ref #: " << (int)((*iter)->RefNum()) << " has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) ;
+//            sprintf(loggingBuff, "cassette ref #: %d has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) );
+//            updatetrimaUtils::logger(loggingBuff);
+//            sprintf(loggingBuff, "cassette.dat admin code: %d barcode: %s  setconfig.dat admin code: %d barcode: %s\n", (int)(foundCassette->second->AdminCode()), foundCassette->second->BarcodeNum(), (int)((*iter)->AdminCode()), (*iter)->BarcodeNum() );
+//            updatetrimaUtils::logger(loggingBuff);
+            installLog << "cassette.dat admin code: " << (int)(foundCassette->second->AdminCode())
+                       << " barcode: " << foundCassette->second->BarcodeNum()
+                       << " setconfig.dat admin code: " << (int)((*iter)->AdminCode())
+                       << " barcode: " << (*iter)->BarcodeNum() << "\n";
+            deleteItem = true;
+         }
+         else
+         {
+//            sprintf(loggingBuff, "Found cassette ref #: %d admin code: %d barcode: %s\n", (int)((*iter)->RefNum()), (int)((*iter)->AdminCode()), (*iter)->BarcodeNum() );
+//            updatetrimaUtils::logger(loggingBuff);
+         }
+
+         if (deleteItem)
+         {
+            AdminUpdateCassetteDat::erase(iter);
+            madeChanges = true;
+
+            // write the file and start over
+//            updatetrimaUtils::logger("Removed line, restarting scan from the begining\n" );
+
+            AdminUpdateCassetteDat::updateCassetteFile();
+            iter       = AdminUpdateCassetteDat::begin();
+            deleteItem = false;
+            continue;
+         }
+
+         iter++;
+      }
+   }
+   else
+   {
+      installLog << "Couldn't read cassette.dat or setconfig.dat so nothing to validate\n";
+      retval = false;
+   }
+
+   if ( !madeChanges )
+   {
+      installLog << "All cassettes in setconfig.dat passed validation with cassette.dat\n";
+   }
+
+LEAVEROUTINE: ;
 
    return( retval );
 }
@@ -434,7 +531,7 @@ void installer::updateSW ()
 
             if ( machineName )
             {
-               updatetrimaUtils::logger("machine name = ", machineName);
+               updatetrimaUtils::logger("machine name = ", machineName, "\n");
 
                unsigned long crcval = 0;
                long          buflen = 0;
@@ -605,9 +702,13 @@ void installer::updateCassette ()
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_CASSETTE_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_CASSETTE_DAT);
 
-   if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+   // if the new version is from before we used cassette.dat, remove it from /config
+   if (newVersion == NULL)
    {
-//      printf("Updating %s to new version %s from existing version %s...\n", FILE_CASSETTE_DAT, newVersion, currVersion);
+      updatetrimaUtils::logger("Installing 5.1, ignoring cassette.dat\n");
+   }
+   else if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
+   {
       updatetrimaUtils::logger("Updating ", FILE_CASSETTE_DAT, " to new version ");
       updatetrimaUtils::logger(newVersion, " from existing version ", currVersion);
       updatetrimaUtils::logger("\n");
@@ -615,7 +716,6 @@ void installer::updateCassette ()
 
       if ( cp(TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT) == ERROR )
       {
-//         printf("copy of %s failed\n", FILE_CASSETTE_DAT);
          updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " failed\n");
          return;
       }
@@ -631,15 +731,18 @@ void installer::updateSetConfig ()
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
 
-   if (currVersion == NULL && newVersion != NULL)
+   // if the new version is from before we used setconfig.dat, remove it from /config
+   if ( newVersion == NULL)
+   {
+      updatetrimaUtils::logger("Installing 5.1, ignoring setconfig.dat\n");
+   }
+   else if ( currVersion == NULL )
    {
       // if the file isnt there....
-//      printf("Adding %s ...\n", FILE_SETCONFIG_DAT);
       updatetrimaUtils::logger("Adding ", FILE_SETCONFIG_DAT, "\n");
 
       if ( cp(TEMPLATES_PATH "/" FILE_SETCONFIG_DAT, CONFIG_PATH "/" FILE_SETCONFIG_DAT) == ERROR )
       {
-//         printf("copy of %s failed\n", FILE_SETCONFIG_DAT);
          updatetrimaUtils::logger("copy of ", FILE_SETCONFIG_DAT, " failed\n");
          return;
       }
@@ -647,15 +750,9 @@ void installer::updateSetConfig ()
       attrib(CONFIG_PATH "/" FILE_SETCONFIG_DAT, "+R");
       fflush(stdout);
    }
-   else if (currVersion == NULL && newVersion == NULL)
-   {
-//      printf("copy of %s failed, no template file found\n", FILE_SETCONFIG_DAT);
-      updatetrimaUtils::logger("copy of ", FILE_SETCONFIG_DAT, " failed, no template file found\n");
-   }
    else
    {
-//      printf("%s already exists ...\n", FILE_SETCONFIG_DAT);
-      updatetrimaUtils::logger(FILE_SETCONFIG_DAT, " already exists ...\n");
+      updatetrimaUtils::logger(FILE_SETCONFIG_DAT, " already exists, not copying a new one.\n");
 
       // do maintenance on the setconfig.dat file
       // replace 80537 with the new admin code
@@ -2211,7 +2308,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
                buildRef     = cntr;
                largestBuild = toBuild;
             }
-            sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
+            sprintf(loggingBuff, "Build info best match so far: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
             updatetrimaUtils::logger(loggingBuff);
          }
 
@@ -2253,7 +2350,6 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       perror(VXBOOT_PATH);
       return(-1);
    }
-
    cbioModeSet(pVolDesc->pCbio, O_RDWR);
 
    char* trima = TRIMA_PATH;
@@ -2263,7 +2359,15 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       perror(TRIMA_PATH);
       return(-1);
    }
+   cbioModeSet(pVolDesc->pCbio, O_RDWR);
 
+   char* config = CONFIG_PATH;
+   pVolDesc = dosFsVolDescGet((void*)config, NULL);
+   if ( !pVolDesc )
+   {
+      perror(CONFIG_PATH);
+      return(-1);
+   }
    cbioModeSet(pVolDesc->pCbio, O_RDWR);
 
    // Remove any old copy of features.bin in templates
@@ -2357,6 +2461,10 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       updateSetConfig();
    }
 
+   // validate the cassettes in setconfig.dat vs cassette.dat
+   updatetrimaUtils::logger("validating the setconfig file\n");
+   validateSetConfig();
+
    // if coming from 5.1.0-3 update trap files if called for
    if ( buildData[buildRef].updateTrapFiles && fromVer.majorRev == 6 )
    {
@@ -2428,4 +2536,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH a11aaae5d4da3118def8e83535032278 */
+/* FORMAT HASH 94a537d9ac48009e06bf95d3e3d35153 */
