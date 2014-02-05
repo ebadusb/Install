@@ -94,7 +94,8 @@ buildDataStruct buildData[] =
 // look in cfg_vars.cpp and configdef.h for values
 rangeStruct rangeData[] =
 {
-   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4"},
+//   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4"},
+   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
    {V510, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
    {V510, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
    {V510, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
@@ -103,6 +104,7 @@ rangeStruct rangeData[] =
    {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V510, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
+   {V520, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
    {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
    {V520, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
@@ -111,6 +113,7 @@ rangeStruct rangeData[] =
    {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V520, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
+   {V600, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
    {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15"},
    {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
    {V600, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
@@ -122,6 +125,7 @@ rangeStruct rangeData[] =
    {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
    {V600, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
+   {V630, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
    {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
    {V630, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
    {V630, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
@@ -133,6 +137,7 @@ rangeStruct rangeData[] =
    {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
    {V630, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
 
+   {V640, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
    {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
    {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
    {V640, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
@@ -149,4 +154,4 @@ rangeStruct rangeData[] =
 
 #endif // UPDATETRIMADATA_H
 
-/* FORMAT HASH d9cba36d64795a32a6edb5f633c8a7fe */
+/* FORMAT HASH 7b2013258dc62416b0e21909079581bc */
