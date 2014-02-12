@@ -1578,6 +1578,7 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "TRIMA_PATH"/safety.crc");
    softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH       "/trima.crc");
    softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "CONFIG_CRC_PATH"/machine.crc");
+   softcrc("-filelist " FILELISTS_PATH "/features.files		-update "CONFIG_CRC_PATH"/features.crc");
 
    const int fileExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
 
@@ -1604,7 +1605,8 @@ bool installer::checkCRC6 ()
        verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "   PNAME_DATA_CRC) ||
        verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "TRIMA_PATH"/safety.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "TRIMA_PATH"/trima.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc"))
+       verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc"))
    {
       return false;
    }
@@ -2536,4 +2538,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 94a537d9ac48009e06bf95d3e3d35153 */
+/* FORMAT HASH 4c09b23be8b7a2f1d50eb9da20c4bdd5 */
