@@ -1531,6 +1531,20 @@ bool installer::checkCRC5 ()
    // Set permissions in config directory
    fileSort(CONFIG_PATH, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_file_set_rdwrite);
 
+
+   // Remove FEATURES files since it doesn't exist in 5.X
+   struct stat featuresFileStat;
+   if ( stat((char*)FILELISTS_PATH "/features.files", &featuresFileStat) == OK )
+   {
+      remove(FILELISTS_PATH "/features.files");
+   }
+
+   struct stat featurescrcFileStat;
+   if ( stat((char*)CONFIG_CRC_PATH "/features.crc", &featurescrcFileStat) == OK )
+   {
+      remove(CONFIG_CRC_PATH  "/features.crc");
+   }
+
    //
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
@@ -1578,16 +1592,25 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "TRIMA_PATH"/safety.crc");
    softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH       "/trima.crc");
    softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "CONFIG_CRC_PATH"/machine.crc");
-   softcrc("-filelist " FILELISTS_PATH "/features.files		-update "CONFIG_CRC_PATH"/features.crc");
 
-   const int fileExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
+   // Separate check for TERROR since the file may or may not exist
+   const int terrorExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
 
-   // Seperate check for TERROR since the file may or may not exist
-   if (fileExists > 0)
+   if (terrorExists > 0)
    {
-      close(fileExists);
+      close(terrorExists);
       softcrc("-filelist " FILELISTS_PATH "/terrordat.files -update " CONFIG_CRC_PATH  "/terrordat.crc");
    }
+
+   // Separate check for FEATURES since the file may or may not exist
+   const int featuresExists = open(FILELISTS_PATH "/features.files",  O_RDONLY, DEFAULT_FILE_PERM);
+
+   if (featuresExists > 0)
+   {
+      close(featuresExists);
+      softcrc("-filelist " FILELISTS_PATH "/features.files -update " CONFIG_CRC_PATH  "/features.crc");
+   }
+
 
    // Set permissions in config directory
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
@@ -1605,14 +1628,19 @@ bool installer::checkCRC6 ()
        verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "   PNAME_DATA_CRC) ||
        verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "TRIMA_PATH"/safety.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "TRIMA_PATH"/trima.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc"))
+       verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc"))
    {
       return false;
    }
 
-   // Seperate check for TERROR since the file may or may not exist
-   if ( (fileExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") )
+   // Separate check for TERROR since the file may or may not exist
+   if ( (terrorExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") )
+   {
+      return false;
+   }
+
+   // Separate check for FEATURES since the file may or may not exist
+   if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc") )
    {
       return false;
    }
