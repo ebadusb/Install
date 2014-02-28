@@ -232,14 +232,15 @@ void MasterUpdateCassetteDat::read ()
 
    updatetrimaUtils::logger("Reading cassette.dat\n");
 
+   // This causes problems for Install so remove it
    // Match the CRC calculated from cassette.dat with the CRC value stored in cassette.crc.
-   if (!checkFile(PNAME_CASSETTEDAT, PNAME_CASSETTEDAT_CRC, PNAME_CASSETTEDAT_BK, PNAME_CASSETTEDAT_CRC_BK))
+/*   if (!checkFile(PNAME_CASSETTEDAT, PNAME_CASSETTEDAT_CRC, PNAME_CASSETTEDAT_BK, PNAME_CASSETTEDAT_CRC_BK))
    {
       updatetrimaUtils::logger("MasterUpdateCassetteDat::read Error matching cassette file CRC\n");
       _fileOK = false;
       return;
    }
-
+*/
    ifstream inFile;
    inFile.open(PNAME_CASSETTEDAT, ios::in | ios::binary);
 
@@ -464,14 +465,15 @@ void AdminUpdateCassetteDat::read ()
    char         barcodeString[100] = "";
    unsigned int catNum             = 0, adminCode = 0;
 
+   // This causes problems for Install so remove it
    // Match up the CRCs
-   if (!checkFile(PNAME_SETCONFIGDAT, PNAME_SETCONFIG_CRC, PNAME_SETCONFIGDAT_BK, PNAME_SETCONFIG_CRC_BK))
+/*   if (!checkFile(PNAME_SETCONFIGDAT, PNAME_SETCONFIG_CRC, PNAME_SETCONFIGDAT_BK, PNAME_SETCONFIG_CRC_BK))
    {
       updatetrimaUtils::logger("AdminUpdateCassetteDat::read Error matching cassette file CRC\n");
       _fileOK = false;
       return;
    }
-
+*/
    inFile.open(PNAME_SETCONFIGDAT, ios::in | ios::binary);
 
    if (!inFile.good())
@@ -725,4 +727,4 @@ int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* 
    return 0;
 }
 
-/* FORMAT HASH 714909f91dadcf648f2cf593a94ea4bf */
+/* FORMAT HASH 6154dd2b7d9c89158f475e1ea43c01b1 */

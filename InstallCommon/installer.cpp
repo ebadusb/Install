@@ -258,11 +258,13 @@ bool installer::validateSetConfig ()
       goto LEAVEROUTINE;
    }
 
+   // Admin is /config/setconfig.dat
    if (!AdminUpdateCassetteDat::fileOK())
    {
       AdminUpdateCassetteDat::read();
    }
 
+   // Master is /config/cassette.dat
    if (!MasterUpdateCassetteDat::fileOK())
    {
       MasterUpdateCassetteDat::read();
@@ -286,7 +288,7 @@ bool installer::validateSetConfig ()
          else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
                    strcmp(foundCassette->second->BarcodeNum(), (*iter)->BarcodeNum()) != 0 )
          {
-            installLog << "cassette ref #: " << (int)((*iter)->RefNum()) << " has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) ;
+            installLog << "cassette ref #: " << (*iter)->RefNum() << " has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) ;
 //            sprintf(loggingBuff, "cassette ref #: %d has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) );
 //            updatetrimaUtils::logger(loggingBuff);
 //            sprintf(loggingBuff, "cassette.dat admin code: %d barcode: %s  setconfig.dat admin code: %d barcode: %s\n", (int)(foundCassette->second->AdminCode()), foundCassette->second->BarcodeNum(), (int)((*iter)->AdminCode()), (*iter)->BarcodeNum() );
@@ -717,7 +719,10 @@ void installer::updateCassette ()
       if ( cp(TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT) == ERROR )
       {
          updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " failed\n");
-         return;
+      }
+      else
+      {
+         updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " succeeded\n");
       }
 
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
@@ -2566,4 +2571,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 4c09b23be8b7a2f1d50eb9da20c4bdd5 */
+/* FORMAT HASH 38adcd6ef30f9ec434659411961039d7 */
