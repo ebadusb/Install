@@ -166,6 +166,21 @@ protected:
 //
    virtual bool checkRasSettings ();
 
+//
+// Installs a default machine.id file if one is present in the taz file but there
+// isn't already one on the machine
+//
+   virtual void installMachineId ();
+
+//
+// Appends a CRC'd serial number line to a given zipped file
+// It doesn't check if the file already has a serial number in it
+// It unzips, appends, and rezips the given filename (must include path)
+// Set sectionHdr to true to write the [MACHINE_ID] line before the serial number
+//
+   virtual bool appendSerialNumToZipFile (const char* filename, bool sectionHdr = false);
+
+
 public:
    enum { MaxIDStringLength = 256 };
 
@@ -178,4 +193,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH bfda0f008386e61c746c5979482dfb6a */
+/* FORMAT HASH b319d6faaf5a3e3741e391b3c250f389 */

@@ -282,17 +282,12 @@ bool installer::validateSetConfig ()
          {
             // didn't find the cassette from set_config.dat in cassette.dat so delete it
             installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat - removed\n";
-//            updatetrimaUtils::logger("Cassette ref #: ", (*iter)->RefNum(), " not found in cassette.dat - removed\n" );
             deleteItem = true;
          }
          else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
                    strcmp(foundCassette->second->BarcodeNum(), (*iter)->BarcodeNum()) != 0 )
          {
             installLog << "cassette ref #: " << (*iter)->RefNum() << " has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) ;
-//            sprintf(loggingBuff, "cassette ref #: %d has different admin or barcode, deleting\n", (int)((*iter)->RefNum()) );
-//            updatetrimaUtils::logger(loggingBuff);
-//            sprintf(loggingBuff, "cassette.dat admin code: %d barcode: %s  setconfig.dat admin code: %d barcode: %s\n", (int)(foundCassette->second->AdminCode()), foundCassette->second->BarcodeNum(), (int)((*iter)->AdminCode()), (*iter)->BarcodeNum() );
-//            updatetrimaUtils::logger(loggingBuff);
             installLog << "cassette.dat admin code: " << (int)(foundCassette->second->AdminCode())
                        << " barcode: " << foundCassette->second->BarcodeNum()
                        << " setconfig.dat admin code: " << (int)((*iter)->AdminCode())
@@ -482,62 +477,45 @@ void installer::updateHW ()
 
 }
 
-void installer::updateSW ()
+bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 {
-   // Look if there is a features.bin and use it instead of sw.dat
-   struct stat featuresFileStat;
+   bool retval = false;  // assume it didn't work
 
-   if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+   installLog << "Appending serial number to " << filename << "\n";
+
+   std::string tempFile = filename;
+   tempFile += ".temp";
+
+   std::string bakFile = filename;
+   bakFile += ".bak";
+
+   struct stat fileStat;
+
+   if ( stat((char*)filename, &fileStat) == OK )
    {
-//        printf("features.bin exists\n");
-      // logStream << "features.bin exists" << endl;
-
-      // update features.bin with the machine ID
-
       // delete any existing temp file
-      if ( stat((char*)TEMPLATES_PATH "/features.temp", &featuresFileStat) == OK )
+      if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
       {
-         remove(TEMPLATES_PATH "/features.temp");
+         remove(tempFile.c_str());
       }
 
-      // unzip features.bin to a temp file
-      if ( updatetrimaUtils::unzipFile(TEMPLATES_PATH "/" FILE_FEATURES, TEMPLATES_PATH "/features.temp") )
+      // unzip the file to a temp file
+      if ( updatetrimaUtils::unzipFile(filename, tempFile.c_str()) )
       {
-//            printf("unzipped features.temp\n");
-         // logStream << "unzipped features.temp" << endl;
-
          // open the temp file for appending
-         FILE* fp = fopen(TEMPLATES_PATH "/features.temp", "a");
-         if ( fp )
+         FILE* tempfp = fopen(tempFile.c_str(), "a");
+         if ( tempfp )
          {
-//                printf("opened features.temp\n");
-            // logStream << "opened features.temp" << endl;
-
-            // get the machine name
-            FILE* fp2 = fopen(CONFIG_PATH "/globvars", "r");
-
-            if ( fp2 )
-            {
-//                    printf("opened globvars\n");
-               // logStream << "opened globvars" << endl;
-            }
-            else
-            {
-//                    printf("couldn't open globvars\n");
-               // logStream << "couldn't open globvars" << endl;
-            }
-            fclose(fp2);
-
+            // get the machine name from globvars
             const char* machineName = NULL;
             machineName = findSetting("MACHINE=", CONFIG_PATH "/globvars");
 
             if ( machineName )
             {
-               updatetrimaUtils::logger("machine name = ", machineName, "\n");
-
                unsigned long crcval = 0;
                long          buflen = 0;
                char          serialnumBuf[256];
+               char          serialnumBufLine[256];
 
                // create the base serial number line
                buflen = sprintf(serialnumBuf, "serial_number=%s", machineName);
@@ -546,70 +524,94 @@ void installer::updateSW ()
                crcgen32(&crcval, (const unsigned char*)serialnumBuf, buflen);
 
                // add the crc to the line
-               char serialnumBufLine[256];
                buflen = sprintf(serialnumBufLine, "%s,%lx", serialnumBuf, crcval);
 
+               // write the section header to the file, if requested
+               if (sectionHdr)
+               {
+                  fprintf(tempfp, "\n[MACHINE_ID]");
+               }
+
                // write the machine ID to the file
-               fprintf(fp, "\n[MACHINE_ID]\n%s\n", serialnumBufLine);
-               fflush(fp);
+               fprintf(tempfp, "\n%s\n", serialnumBufLine);
+
+               fflush(tempfp);
 
                // close the temp file
-               fclose(fp);
+               fclose(tempfp);
 
-               // delete the original features.bin from templates
-               remove(TEMPLATES_PATH "/" FILE_FEATURES);
+               if ( cp(filename, bakFile.c_str()) == ERROR )
+               {
+                  installLog << "Creation of backup file failed\n";
+               }
 
-               // zip the temp file to features.bin
-               if (updatetrimaUtils::zipFile(TEMPLATES_PATH "/features.temp", TEMPLATES_PATH "/" FILE_FEATURES) == 0)
+               // delete the original file
+               remove(filename);
+
+               // zip the temp file to the original file name
+               if (updatetrimaUtils::zipFile(tempFile.c_str(), filename) == 0)
                {
                   // zip failed
-                  updatetrimaUtils::logger("zip of features.bin failed\n");
-                  goto LEAVEROUTINE;
+                  installLog << "zip of " << filename << " failed, restoring original\n";
+                  cp(bakFile.c_str(), filename);
                }
-
-               // delete the temp file
-               remove(TEMPLATES_PATH "/features.temp");
-
-               // copy features.bin to the config directory
-               attrib(PNAME_FEATURES, "-R");
-               if ( cp(TEMPLATES_PATH "/" FILE_FEATURES, PNAME_FEATURES) == ERROR )
+               else
                {
-//                  printf("copy of %s failed\n", FILE_FEATURES);
-                  updatetrimaUtils::logger("copy of ", FILE_FEATURES, " failed\n");
-                  goto LEAVEROUTINE;
-               }
-               if (attrib(PNAME_FEATURES, "+R") == ERROR)
-               {
-//                  printf("copy of %s to config failed\n", FILE_FEATURES);
-                  updatetrimaUtils::logger("copy of ", FILE_FEATURES, " to config failed\n");
-                  goto LEAVEROUTINE;
+                  retval = true;
                }
 
-               updatetrimaUtils::unzipFile(TEMPLATES_PATH "/" FILE_FEATURES, TEMPLATES_PATH "/features.temp2");
-
+               // clean up file
+               remove(tempFile.c_str());
+               remove(bakFile.c_str());
             }
-            else
+            else     // couldn't get a serial number
             {
-               // close the temp file
-               fclose(fp);
+               installLog << "couldn't get a serial number from globvars\n";
 
-               // machine name not defined
-               updatetrimaUtils::logger("machine name not defined\n");
-               goto LEAVEROUTINE;
+               // close & delete the temp file
+               fclose(tempfp);
+               remove(tempFile.c_str());
             }
          }
          else
          {
-            // can't open the temp file
-            updatetrimaUtils::logger("can't open the features.bin temp file\n");
-            goto LEAVEROUTINE;
+            installLog << "couldn't open " << tempFile.c_str() << " for append\n";
+
+            // delete the temp file
+            remove(tempFile.c_str());
          }
       }
-      else
+      else   // couldn't unzip file
       {
-         // unzip failed
-         updatetrimaUtils::logger("unzip of features.bin failed\n");
-         goto LEAVEROUTINE;
+         installLog << "unzip of " << filename << " failed\n";
+      }
+   }
+   else  // filename doesn't exist
+   {
+      installLog << filename << " doesn't exist\n";
+   }
+
+   return retval;
+}
+
+void installer::updateSW ()
+{
+   // Look if there is a features.bin and use it instead of sw.dat
+   struct stat featuresFileStat;
+
+   if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+   {
+
+      if ( appendSerialNumToZipFile(TEMPLATES_PATH "/" FILE_FEATURES, true) )
+      {
+         // copy features.bin to the config directory
+         attrib(PNAME_FEATURES, "-R");
+         if ( cp(TEMPLATES_PATH "/" FILE_FEATURES, PNAME_FEATURES) == ERROR )
+         {
+            installLog << "copy of " << FILE_FEATURES << " failed\n";
+         }
+
+         attrib(PNAME_FEATURES, "+R");
       }
 
       // remove the old sw.dat files
@@ -636,15 +638,18 @@ void installer::updateSW ()
 
       if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
       {
-//         printf("Updating sw.dat to new version %s from existing version %s...\n", newVersion, currVersion);
-         updatetrimaUtils::logger("Updating sw.dat to new version ", newVersion, " from existing version ", newVersion);
-         updatetrimaUtils::logger("\n");
+         installLog << "Updating sw.dat to new version " << newVersion;
+         if (currVersion)
+         {
+            installLog << " from existing version " << currVersion << "\n";
+         }
+         installLog << "\n";
+
          attrib(CONFIG_PATH "/" FILE_SW_DAT, "-R");
 
          if ( cp(TEMPLATES_PATH "/" FILE_SW_DAT, CONFIG_PATH "/" FILE_SW_DAT) == ERROR )
          {
-//            printf("copy of %s failed\n", FILE_SW_DAT);
-            updatetrimaUtils::logger("copy of ", FILE_SW_DAT, " failed\n");
+            installLog << "copy of " << FILE_SW_DAT << " failed\n";
             goto LEAVEROUTINE;
          }
 
@@ -667,7 +672,6 @@ void installer::updateTerror ()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-//      printf("Updating terror_config.dat to new version %s from existing version %s...\n", newVersion, currVersion);
       updatetrimaUtils::logger("Updating terror_config.dat to new version ", newVersion, " from existing version ", newVersion);
       updatetrimaUtils::logger("\n");
       attrib(TERROR_CONFIG_FILE, "-R");
@@ -2295,6 +2299,57 @@ LEAVEROUTINE:
    return retval;
 }
 
+void installer::installMachineId ()
+{
+   struct stat tempFileStat;
+   struct stat configFileStat;
+
+//////////////////
+/// Test code
+   if ( stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat) == OK )
+   {
+      installLog << "machine.id exists in templates\n";
+   }
+   else
+   {
+      installLog << "machine.id does not exist in templates\n";
+   }
+
+   if ( stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat) == OK )
+   {
+      installLog << "machine.id exists in config\n";
+   }
+   else
+   {
+      installLog << "machine.id does not exist in config\n";
+   }
+//////////////////////////
+
+
+   // if there's a machine.id in temp and there isn't one in config, install it
+   if ( ( stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat) == OK ) &&
+        ( stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat) != OK ))
+   {
+      installLog << "Installing default machine.id\n";
+
+      // append the serial number and copy the file
+      if ( appendSerialNumToZipFile(TEMPLATES_PATH "/" FILE_MACHINE_ID) )
+      {
+         if ( cp(TEMPLATES_PATH "/" FILE_MACHINE_ID, PNAME_MACHINE_ID) == ERROR )
+         {
+            installLog << "Copy of default machine.id failed\n";
+         }
+      }
+      else
+      {
+         installLog << "Appending serial number failed so copy of default machine.id failed\n";
+      }
+   }
+   else
+   {
+      installLog << "Install of machine.id not needed\n";
+   }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -2483,6 +2538,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateCassette();
    updatetrimaUtils::logger("Updating Vista\n");
    updateVista();
+   updatetrimaUtils::logger("Installing machine.id\n");
+   installMachineId();
 
    // do different stuff for 6.3
    if ( buildData[buildRef].setConfigCopy )
@@ -2571,4 +2628,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 38adcd6ef30f9ec434659411961039d7 */
+/* FORMAT HASH ec94da0a7c4f97555ba57b3823a3ed10 */
