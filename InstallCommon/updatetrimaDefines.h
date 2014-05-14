@@ -201,6 +201,22 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
     #define TERROR_CONFIG_FILE CONFIG_PATH       "/terror_config.dat"
 #endif
 
+#ifndef FILE_MACHINE_ID
+    #define FILE_MACHINE_ID     "machine.id"
+#endif
+
+#ifndef FILE_MACHINE_ID_TMP
+    #define FILE_MACHINE_ID_TMP "machine.tmp"
+#endif
+
+#ifndef PNAME_MACHINE_ID
+    #define PNAME_MACHINE_ID        CONFIG_PATH "/" FILE_MACHINE_ID
+#endif
+
+#ifndef PNAME_MACHINE_ID_TMP
+    #define PNAME_MACHINE_ID_TMP    TEMP_PATH "/" FILE_MACHINE_ID_TMP
+#endif
+
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH c518c0f10bd40156991e78fc5d5f5d8f */
+/* FORMAT HASH 2f62a486c2131574f685677e5705875b */
