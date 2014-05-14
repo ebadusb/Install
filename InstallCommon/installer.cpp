@@ -1886,14 +1886,6 @@ bool installer::checkRange (const char* section, const char* key, const char* va
             foundInRangeData = true;
          }
       }
-/*
-      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType &&
-           strcmp(rangeData[rngCtr].section, section) == 0 &&
-           (strcmp(rangeData[rngCtr].dataKey, key) == 0 ||
-            (strlen(key)-1 == strlen(rangeData[rngCtr].dataKey) &&
-             strncmp(rangeData[rngCtr].dataKey, key, strlen(key)-1) == 0 &&
-             strcmp(section, "PRODUCT_DEFINITIONS") == 0)))
-*/
       if ( foundInRangeData )
       {
          updatetrimaUtils::logger(" Compare data:");
@@ -1903,13 +1895,10 @@ bool installer::checkRange (const char* section, const char* key, const char* va
          updatetrimaUtils::logger(rangeData[rngCtr].value);
 //         updatetrimaUtils::logger("\n");
 
-//         foundInRangeData = true;
-
          if ( rangeData[rngCtr].compareType == FORCE )
          {
 //            updatetrimaUtils::logger("Forcing update\n");
             retval = false;
-//            break;
          }
          else if ( rangeData[rngCtr].valType == INT )
          {
@@ -1925,7 +1914,6 @@ bool installer::checkRange (const char* section, const char* key, const char* va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1937,7 +1925,6 @@ bool installer::checkRange (const char* section, const char* key, const char* va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1949,7 +1936,6 @@ bool installer::checkRange (const char* section, const char* key, const char* va
                {
 //                  updatetrimaUtils::logger(" FAILED\n");
                   retval = false;
-//                  break;
                }
 //               updatetrimaUtils::logger(" PASSED\n");
             }
@@ -1963,7 +1949,6 @@ bool installer::checkRange (const char* section, const char* key, const char* va
                if ( floatvalue < atof(rangeData[rngCtr].value) )
                {
                   retval = false;
-//                  break;
                }
             }
             else if ( rangeData[rngCtr].compareType == MAX )
@@ -1971,11 +1956,16 @@ bool installer::checkRange (const char* section, const char* key, const char* va
                if ( floatvalue > atof(rangeData[rngCtr].value) )
                {
                   retval = false;
-//                  break;
                }
             }
          }
-         break;
+         // if it failed then we can stop checking
+         if (retval == false)
+         {
+            break;
+         }
+
+         foundInRangeData = false;
       }
       rngCtr++;
    }
@@ -2303,10 +2293,14 @@ void installer::installMachineId ()
 {
    struct stat tempFileStat;
    struct stat configFileStat;
+   int         tempFileStatStatus   = OK;
+   int         configFileStatStatus = OK;
 
-//////////////////
-/// Test code
-   if ( stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat) == OK )
+   tempFileStatStatus   = stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat);
+   configFileStatStatus = stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat);
+
+   // just for logging
+   if ( tempFileStatStatus == OK )
    {
       installLog << "machine.id exists in templates\n";
    }
@@ -2315,7 +2309,7 @@ void installer::installMachineId ()
       installLog << "machine.id does not exist in templates\n";
    }
 
-   if ( stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat) == OK )
+   if ( configFileStatStatus == OK )
    {
       installLog << "machine.id exists in config\n";
    }
@@ -2323,12 +2317,11 @@ void installer::installMachineId ()
    {
       installLog << "machine.id does not exist in config\n";
    }
-//////////////////////////
-
 
    // if there's a machine.id in temp and there isn't one in config, install it
-   if ( ( stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat) == OK ) &&
-        ( stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat) != OK ))
+//   if ( ( stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat) == OK ) &&
+//        ( stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat) != OK ))
+   if ( ( tempFileStatStatus == OK ) && ( configFileStatStatus != OK ) )
    {
       installLog << "Installing default machine.id\n";
 
@@ -2628,4 +2621,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH ec94da0a7c4f97555ba57b3823a3ed10 */
+/* FORMAT HASH 9af18481e9304ff0525de1f6bd3ffee4 */
