@@ -17,10 +17,10 @@
 #include "updatecassette.h"           // Gets the cassette container
 
 // FOR TRAVERSING THE CASSETTE LIST OUTSIDE THIS CLASS
-typedef vector<UpdateCatalogNumber*> UPDATE_CASSETTE_VECTOR_TYPE;
+typedef std::vector<UpdateCatalogNumber*> UPDATE_CASSETTE_VECTOR_TYPE;
 typedef UPDATE_CASSETTE_VECTOR_TYPE::iterator UPDATE_CASSETTE_VECTOR_ITERATOR;
 
-typedef map<string, UpdateCatalogNumber*> UPDATE_CASSETTE_MAP_TYPE;
+typedef std::map<std::string, UpdateCatalogNumber*> UPDATE_CASSETTE_MAP_TYPE;
 typedef UPDATE_CASSETTE_MAP_TYPE::iterator UPDATE_CASSETTE_MAP_ITERATOR;
 
 class UpdateCassetteDat
@@ -107,4 +107,4 @@ protected:
 
 #endif
 
-/* FORMAT HASH 44b10509771551c93f47b0048891c395 */
+/* FORMAT HASH 356d8ca7d15b0d1a15729794fa40b560 */

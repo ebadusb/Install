@@ -2,6 +2,7 @@
 #include <map>
 #include <usrLib.h>
 #include <cstdio>
+#include <iostream>
 
 
 #include "updatecassette_dat.h"
@@ -599,16 +600,16 @@ bool AdminUpdateCassetteDat::updateCassetteFile ()
 
       if (barcodeLength < 5 || barcodeLength > 80)
       {
-         outFile << "0" << endl;
+         outFile << "0" << std::endl;
       }
       else
       {
-         outFile << barcodeStr << endl;
+         outFile << barcodeStr << std::endl;
       }
    }
 
    if (_fileVersion && strcmp(_fileVersion, "") != 0)
-      outFile << "file_version=" << _fileVersion << endl;
+      outFile << "file_version=" << _fileVersion << std::endl;
 //   else
 //      printf("No file version to report, so not outputting one.\n");
 
@@ -640,7 +641,7 @@ bool AdminUpdateCassetteDat::updateCassetteFile ()
       return false;
    }
 
-   crcFile << "0x" << hex << calculatedCrc << dec << endl;
+   crcFile << "0x" << std::hex << calculatedCrc << std::dec << std::endl;
    crcFile.close();
 
    attrib(PNAME_SETCONFIG_CRC, "+R");
@@ -658,42 +659,42 @@ bool AdminUpdateCassetteDat::updateCassetteFile ()
 //
 void AdminUpdateCassetteDat::decorateFile (ostream& o)
 {
-   o << "#"                                                    << endl;
-   o << "#\tThis file lists the cassettes configured by the"   << endl;
-   o << "#\tadministrator.  It is not a comprehensive list."   << endl;
-   o << "#\tRather, it represents the subset of REF numbers"   << endl;
-   o << "#\tthat will come up in the listbox on the REF"       << endl;
-   o << "#\tnumber entry screen."                              << endl;
-   o << "#"                                                    << endl;
-   o << "#\tEach cassette has a 5 or 6 digit REF number and"   << endl;
-   o << "#\tan 8-digit admin code that encrypts the"           << endl;
-   o << "#\tfunctionality of the cassette. Also, a barcode"    << endl;
-   o << "#\tstring is available so that those customers who"   << endl;
-   o << "#\thave a barcode reader available can scan a"        << endl;
-   o << "#\tbarcode instead of manually selecting a REF"       << endl;
-   o << "#\tnumber."                                           << endl;
-   o << "#"                                                    << endl;
-   o << "#\tCassettes can be added or removed through the"     << endl;
-   o << "#\tmachine config screen.  If a REF number exists in" << endl;
-   o << "#\tboth this file and cassette.dat, but with"         << endl;
-   o << "#\tdifferent functionality or barcode listed, this"   << endl;
-   o << "#\tfile overrides the other one."                     << endl;
-   o << "#"                                                    << endl;
-   o << "#\tA list of REF numbers and the sets they are"       << endl;
-   o << "#\tassociated with is available from the MDC"         << endl;
-   o << "#\t(part number 377500017)."                          << endl;
-   o << "#"                                                    << endl;
-   o << "#\tID\tADMIN CODE   \tBARCODE"                        << endl;
+   o << "#"                                                    << std::endl;
+   o << "#\tThis file lists the cassettes configured by the"   << std::endl;
+   o << "#\tadministrator.  It is not a comprehensive list."   << std::endl;
+   o << "#\tRather, it represents the subset of REF numbers"   << std::endl;
+   o << "#\tthat will come up in the listbox on the REF"       << std::endl;
+   o << "#\tnumber entry screen."                              << std::endl;
+   o << "#"                                                    << std::endl;
+   o << "#\tEach cassette has a 5 or 6 digit REF number and"   << std::endl;
+   o << "#\tan 8-digit admin code that encrypts the"           << std::endl;
+   o << "#\tfunctionality of the cassette. Also, a barcode"    << std::endl;
+   o << "#\tstring is available so that those customers who"   << std::endl;
+   o << "#\thave a barcode reader available can scan a"        << std::endl;
+   o << "#\tbarcode instead of manually selecting a REF"       << std::endl;
+   o << "#\tnumber."                                           << std::endl;
+   o << "#"                                                    << std::endl;
+   o << "#\tCassettes can be added or removed through the"     << std::endl;
+   o << "#\tmachine config screen.  If a REF number exists in" << std::endl;
+   o << "#\tboth this file and cassette.dat, but with"         << std::endl;
+   o << "#\tdifferent functionality or barcode listed, this"   << std::endl;
+   o << "#\tfile overrides the other one."                     << std::endl;
+   o << "#"                                                    << std::endl;
+   o << "#\tA list of REF numbers and the sets they are"       << std::endl;
+   o << "#\tassociated with is available from the MDC"         << std::endl;
+   o << "#\t(part number 377500017)."                          << std::endl;
+   o << "#"                                                    << std::endl;
+   o << "#\tID\tADMIN CODE   \tBARCODE"                        << std::endl;
 }
 
 int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* pcrc)
 {
    enum { MAXBUFFERLENGTH = 256 };
-   unsigned char buffer[MAXBUFFERLENGTH];
-   int           count;
-   int           totalBytesRead = 0;
+   char     buffer[MAXBUFFERLENGTH];
+   int      count;
+   int      totalBytesRead = 0;
 
-   ifstream      inStream (filename, ios::in + ios::binary + ios::nocreate);
+   ifstream inStream (filename, ios::in | ios::binary | ios::nocreate);
 
    if (inStream.fail())
    {
@@ -720,11 +721,11 @@ int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* 
          return -1;
       }
 
-      crcgen32 (pcrc, buffer, count);
+      crcgen32 (pcrc, (const unsigned char*)buffer, count);
 
    } while ( count == MAXBUFFERLENGTH );
 
    return 0;
 }
 
-/* FORMAT HASH 6154dd2b7d9c89158f475e1ea43c01b1 */
+/* FORMAT HASH 079979149177012ce4353c0557f3ecb1 */

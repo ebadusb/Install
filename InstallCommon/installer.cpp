@@ -7,7 +7,9 @@
 #include "updatetrima.h"
 #include "installer.h"
 
-#include "crc.c"
+// #include "crc.c"
+#include "crcgen.h"
+#include <iostream>
 #include <fstream>
 
 // #include "zlib.h"
@@ -1056,7 +1058,7 @@ void installer::updateCal6 ()
             datfile.RemoveLine(tsHeader, tsAF[i].c_str());
          }
          else
-            std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
+            cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
       }
       for (int i = 0; i<=5; i++) // Keep both loops separate.
       {
@@ -1067,7 +1069,7 @@ void installer::updateCal6 ()
             datfile.RemoveLine(tsHeader, tsOriginal[i].c_str());
          }
          else
-            std::cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
+            cout << tsHeader << ":" << tsOriginal[i] << " not found " << std::endl;
       }
       datfile.RemoveLine(tsHeader);
    }
@@ -1846,9 +1848,9 @@ void installer::forceSetConfig ()
 
 bool installer::checkRange (const char* section, const char* key, const char* value)
 {
-   char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "END"};
-   char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
-   char* rangeValTypeStr[] = {"INT", "FLOAT"};
+   const char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "END"};
+   const char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
+   const char* rangeValTypeStr[] = {"INT", "FLOAT"};
 
    updatetrimaUtils::logger("Checking range of: ", section, " ", key);
    updatetrimaUtils::logger(" ", value);
@@ -2424,34 +2426,50 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    //
    // Make /vxboot and /trima partitions writable
+
    DOS_VOLUME_DESC_ID pVolDesc;
 
-   char*              vxboot = VXBOOT_PATH;
+   const char*        vxboot = VXBOOT_PATH;
    pVolDesc = dosFsVolDescGet((void*)vxboot, NULL);
    if ( !pVolDesc )
    {
       perror(VXBOOT_PATH);
       return(-1);
    }
-   cbioModeSet(pVolDesc->pCbio, O_RDWR);
 
-   char* trima = TRIMA_PATH;
+#if (_WRS_VXWORKS_MAJOR < 6)
+   cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
+#else
+   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+#endif
+
+   const char* trima = TRIMA_PATH;
    pVolDesc = dosFsVolDescGet((void*)trima, NULL);
    if ( !pVolDesc )
    {
       perror(TRIMA_PATH);
       return(-1);
    }
-   cbioModeSet(pVolDesc->pCbio, O_RDWR);
 
-   char* config = CONFIG_PATH;
+#if (_WRS_VXWORKS_MAJOR < 6)
+   cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
+#else
+   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+#endif
+
+   const char* config = CONFIG_PATH;
    pVolDesc = dosFsVolDescGet((void*)config, NULL);
    if ( !pVolDesc )
    {
       perror(CONFIG_PATH);
       return(-1);
    }
-   cbioModeSet(pVolDesc->pCbio, O_RDWR);
+
+#if (_WRS_VXWORKS_MAJOR < 6)
+   cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
+#else
+   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+#endif
 
    // Remove any old copy of features.bin in templates
    updatetrimaUtils::logger("Removing any old copy of features.bin in templates\n");
@@ -2621,4 +2639,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 9af18481e9304ff0525de1f6bd3ffee4 */
+/* FORMAT HASH e836ffab801985a8efeb5d4066a34f7d */

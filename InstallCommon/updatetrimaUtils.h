@@ -102,7 +102,7 @@ public:
 
    static bool parseRevision (const char* revString, int& curMajorRev, int& curMinorRev, int& curBuild);
 
-   static void logFileHeader (string& hdrStr);
+   static void logFileHeader (std::string& hdrStr);
 
    static bool development_install;
 
@@ -143,7 +143,7 @@ public:
    bool                       is_open ();
    void                       close ();
    installLogStream& operator << (const char* stuff);
-   installLogStream& operator << (const string& stuff);
+   installLogStream& operator << (const std::string& stuff);
    installLogStream& operator << (const long stuff);
    installLogStream& operator << (const int stuff);
    installLogStream& operator << (const unsigned int stuff);
@@ -159,10 +159,10 @@ private:
 public:
 
 protected:
-   bool              logToScreen;
-   vector<ofstream*> streamVect;
+   bool                   logToScreen;
+   std::vector<ofstream*> streamVect;
 };
 
 #endif // UPDATETRIMAUTILS_H
 
-/* FORMAT HASH d15128c933002c4fb1261d8f0a2fb052 */
+/* FORMAT HASH 12769d13dddccb5e9f60bdc04ad92040 */

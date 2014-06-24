@@ -41,6 +41,8 @@ ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(MAINDIR)\os -I$(
 #ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
 #ADDN_CCFLAGS := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
 
+ADDN_CLEAN = bin/updateTrima
+
 include $(MAINDIR)/makefile.vxc
 
 # ------------------------------------------------------------------------------
