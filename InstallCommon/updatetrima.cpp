@@ -35,18 +35,18 @@ installLogStream installLog;
 
 bool findTazRevision (const char* searchFileName, char* tazRevString)
 {
-   char* projrevString    = "$ProjectRevision: ";
-   int   projrevStringLen = strlen(projrevString);
-   int   bytesRead        = 0;
-   int   totBytesRead     = 0;
-   int   overlap          = 50;        // amount of character overlap so we don't miss anything during the search
-   int   baselen          = 10 * 1024; // base size of the read buffer
-   char  tmpBuffer[baselen + overlap];
-   char  tmpChar;
-   char  revBuffer[100];
-   int   ctr  = 0;
-   int   i;
-   bool  done = false;
+   const char* projrevString    = "$ProjectRevision: ";
+   int         projrevStringLen = strlen(projrevString);
+   int         bytesRead        = 0;
+   int         totBytesRead     = 0;
+   int         overlap          = 50;        // amount of character overlap so we don't miss anything during the search
+   int         baselen          = 10 * 1024; // base size of the read buffer
+   char        tmpBuffer[baselen + overlap];
+   char        tmpChar;
+   char        revBuffer[100];
+   int         ctr  = 0;
+   int         i;
+   bool        done = false;
 
 //    cerr << "updatetrimaBase :: findTazRevision" << endl;
 
@@ -189,6 +189,31 @@ bool extractTopLevelFiles ()
    return true;
 }
 
+static STATUS mySymFindByName (SYMTAB_ID symTblId, const char* name, char** pValue)
+{
+   char symName[32];
+   strncpy(symName, name, sizeof(symName));
+   symName[sizeof(symName) - 1] = '\0';
+
+#if (_WRS_VXWORKS_MAJOR < 6)
+
+   SYM_TYPE symType;
+   STATUS   status = symFindByName(symTblId, symName, pValue, &symType);
+
+#else // VxWorks 6.x
+
+   SYMBOL_DESC symDesc;
+   symDesc.mask    = SYM_FIND_BY_NAME;
+   symDesc.name    = symName;
+   symDesc.nameLen = strlen(symName);
+   STATUS status = symFind(symTblId, &symDesc);
+   *pValue         = symDesc.value;
+
+#endif
+
+   return status;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////
 //  The main line of update
 //////////////////////////////////////////////////////////////////////////////////////
@@ -237,9 +262,9 @@ int updateTrima ()
 
    updatetrimaUtils::development_install = (development_only_file ? true : false); // Don't hate the conditional operator
 
-   if (symFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc, &symType) == OK)
+   if ( mySymFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc) == OK )
    {
-      updatetrimaUtils::development_install |= (* keyboardattachedFunc)();
+      updatetrimaUtils::development_install |= keyboardattachedFunc();
    }
 
    updatetrimaUtils::logger("Reading software revision string for the new version from updateTrima.taz file.\n");
@@ -427,4 +452,4 @@ LEAVEROUTINE:
    return( retval );
 }
 
-/* FORMAT HASH 8af1543dde7369421c04904fdc4c6e34 */
+/* FORMAT HASH e6d8fac16c15e58ba2eb83c4d522e21c */

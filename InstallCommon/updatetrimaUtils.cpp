@@ -4,6 +4,7 @@
  * Install program for the Trima/vxWorks system
  */
 
+#include <iostream>
 #include <time.h>
 
 #include "updatetrima.h"
@@ -676,4 +677,4 @@ installLogStream& installLogStream::operator << (ostream& stuff)
 }
 */
 
-/* FORMAT HASH d34386e3baf2dfb4df1bcb5c6e97718f */
+/* FORMAT HASH 775c8425d38fb22e2d4e43247268ecd1 */
