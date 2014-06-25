@@ -258,13 +258,20 @@ int updateTrima ()
 //   development_only = false;
 
    // the is a development install if a keyboard is attached or the development_only file is present
-   development_only_file                 = fopen("/machine/update/development_only", "r");
+   development_only_file = fopen("/machine/update/development_only", "r");
+   installLog << "Found /machine/update/development_only\n";
 
    updatetrimaUtils::development_install = (development_only_file ? true : false); // Don't hate the conditional operator
 
    if ( mySymFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc) == OK )
    {
       updatetrimaUtils::development_install |= keyboardattachedFunc();
+      installLog << "Found a keyboard attached\n";
+   }
+
+   if ( updatetrimaUtils::development_install )
+   {
+      installLog << "----- PERFORMING A DEVELOPMENT INSTALL -----\n";
    }
 
    updatetrimaUtils::logger("Reading software revision string for the new version from updateTrima.taz file.\n");
@@ -394,6 +401,10 @@ int updateTrima ()
          remove(installSpecialFiles[i]);
       }
    }
+   else
+   {
+      installLog << "Development install - not Deleting special files.\n";
+   }
 
 /////////////////////////////////
 // do the upgrading
@@ -452,4 +463,4 @@ LEAVEROUTINE:
    return( retval );
 }
 
-/* FORMAT HASH e6d8fac16c15e58ba2eb83c4d522e21c */
+/* FORMAT HASH 757ab1d2162ee8f756f9cd10d0c13521 */

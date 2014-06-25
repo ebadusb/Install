@@ -588,7 +588,7 @@ bool installLogStream::is_open ()
 
 void installLogStream::close ()
 {
-   printf("installLogStream::close\n");
+//   printf("installLogStream::close\n");
 
    for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
    {
@@ -677,4 +677,4 @@ installLogStream& installLogStream::operator << (ostream& stuff)
 }
 */
 
-/* FORMAT HASH 775c8425d38fb22e2d4e43247268ecd1 */
+/* FORMAT HASH 179fc0d7f38ed35c22ece64314b030ca */
