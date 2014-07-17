@@ -51,10 +51,10 @@ installer::~installer()
 
 bool installer::replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal)
 {
-   bool  retval     = true;
-   bool  madeChange = false;
-   char  destDatFileName[256];
-   char  oldDatFileName[256];
+   bool retval     = true;
+   bool madeChange = false;
+   char destDatFileName[256];
+   char oldDatFileName[256];
 
    char  inputBuffer[256];
    char  workingBuffer[256];
@@ -338,7 +338,7 @@ LEAVEROUTINE: ;
 
 bool installer::updatePostCount ()
 {
-   bool           bUpdate = false;
+   bool bUpdate = false;
 
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
@@ -890,8 +890,8 @@ void installer::updateCal5 ()
    const std::string tsOriginal [] = {"screen_horizontal_size", "screen_vertical_size", "tsraw_left_edge", "tsraw_right_edge",
                                       "tsraw_top_edge", "tsraw_bottom_edge"};
 
-   const char*       tsHeader = "TOUCHSCREEN";
-   struct stat       fileStat;
+   const char* tsHeader = "TOUCHSCREEN";
+   struct stat fileStat;
    if ( stat((char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
    {   // 6.0 spiral 4 file
       CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
@@ -1661,7 +1661,7 @@ bool installer::checkCRC6 ()
 
 bool installer::checkPasSettings ()
 {
-   bool           returnVal = false;
+   bool returnVal = false;
 
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
@@ -1695,7 +1695,7 @@ bool installer::checkPasSettings ()
       float       percentPlasma    = ((percentPlasmaStr) ? atof(percentPlasmaStr) : 0.0f);
 
       // Now find collect vol setting
-      char        pltVolVarNameStr[64];
+      char pltVolVarNameStr[64];
       sprintf (pltVolVarNameStr, "key_plt_volume_%d", prodNum + 1);
       const char* collectVolStr = datfile.Find("PRODUCT_TEMPLATES", pltVolVarNameStr);
       float       collectVol    = ((collectVolStr) ? atof(collectVolStr) : 0.0f);
@@ -1742,9 +1742,9 @@ bool installer::checkPasSettings ()
 
 bool installer::checkRasSettings ()
 {
-   bool           returnVal     = false;
-   bool           drbcAlertOn   = false;
-   int            drbcThreshold = 275;
+   bool returnVal     = false;
+   bool drbcAlertOn   = false;
+   int  drbcThreshold = 275;
 
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
@@ -1780,8 +1780,8 @@ bool installer::checkRasSettings ()
       char rasVolVarNameStr[64];
       char rbcDoseVarNameStr[64];
 
-      int  dose   = 0;
-      int  rasVol = 0;
+      int dose   = 0;
+      int rasVol = 0;
 
       // Find the PAS toggle setting
       sprintf (rasVolVarNameStr, "key_rbc_mss_volume_%d", prodNum + 1);
@@ -1859,7 +1859,7 @@ bool installer::checkRange (const char* section, const char* key, const char* va
    bool retval           = true;
    bool foundInRangeData = false;
 
-   int  rngCtr           = 0;
+   int rngCtr = 0;
 
    while ( rangeData[rngCtr].rangeType != END )
    {
@@ -2018,7 +2018,7 @@ bool installer::checkPlasmaRB ()
             {
                datfile.WriteCfgFile(FILE_CONFIG_DAT);
 //                    cerr << "Set key_plasma_rinseback to 0" << endl;
-               retval     = true;
+               retval = true;
 
                configData = findSetting("key_plasma_rinseback=", PNAME_CONFIGDAT);
 //                    if (configData) cerr << "config.dat key_plasma_rinseback = " << configData << endl;
@@ -2246,7 +2246,7 @@ int installer::readDatFileVals (CFileLine& cfLine, FILE* fp)
 
    while ( !found && fgets(buffer, sizeof(buffer), fp) )
    {
-      CFileLine           newLine(buffer);
+      CFileLine newLine(buffer);
 
       CFileLine::LINETYPE newType = newLine.Type();
 
@@ -2264,7 +2264,7 @@ int installer::readDatFileVals (CFileLine& cfLine, FILE* fp)
 
       cfLine = newLine;
 
-      found  = true;
+      found = true;
    }
 
 LEAVEROUTINE:
@@ -2352,12 +2352,12 @@ void installer::installMachineId ()
 //////////////////////////////////////////////////////////////////////////////////////
 int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 {
-   bool retval          = 0;
+   bool retval = 0;
 
-   int  cntr            = 0;
-   int  buildRef        = 0;
-   int  largestMinorRev = 0;
-   int  largestBuild    = 0;
+   int cntr            = 0;
+   int buildRef        = 0;
+   int largestMinorRev = 0;
+   int largestBuild    = 0;
 
    char loggingBuff[256];
 
@@ -2429,7 +2429,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    DOS_VOLUME_DESC_ID pVolDesc;
 
-   const char*        vxboot = VXBOOT_PATH;
+   const char* vxboot = VXBOOT_PATH;
    pVolDesc = dosFsVolDescGet((void*)vxboot, NULL);
    if ( !pVolDesc )
    {
@@ -2440,7 +2440,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #if (_WRS_VXWORKS_MAJOR < 6)
    cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
 #else
-   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+   pVolDesc->readOnly = 0;
 #endif
 
    const char* trima = TRIMA_PATH;
@@ -2454,7 +2454,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #if (_WRS_VXWORKS_MAJOR < 6)
    cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
 #else
-   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+   pVolDesc->readOnly = 0;
 #endif
 
    const char* config = CONFIG_PATH;
@@ -2468,7 +2468,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #if (_WRS_VXWORKS_MAJOR < 6)
    cbioModeSet(pVolDesc->pCbio, O_RDWR);  // for VxWorks 5.5
 #else
-   cbioModeSet((CBIO_DEV_ID)(pVolDesc->device), O_RDWR);  // for VxWorks 6.9
+   pVolDesc->readOnly = 0;
 #endif
 
    // Remove any old copy of features.bin in templates
@@ -2639,4 +2639,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH e836ffab801985a8efeb5d4066a34f7d */
+/* FORMAT HASH dbd355ab63204f6a2d97634e66920dd9 */

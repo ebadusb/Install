@@ -1,9 +1,8 @@
-# $Header: //bctQuad3/home/BCT_Development/Trima5.R_PAS/Trima/update/RCS/makefile.vx 1.1 2008/03/12 16:06:16 jheiusb Exp $
+##########################################################################################
 #
-# Makefile - makefile for the update utility
+# Makefile for the update/install utility
 #
-# $Log: makefile.vx $
-#
+##########################################################################################
 
 ifeq ($(BUILD_TYPE),CLEAN)
 .PHONY: all
@@ -19,7 +18,7 @@ UPDATEDIR = .
 endif
 
 # ------------------------------------------------------------------------------
-# Setup MAINDIR and COMDIR. Must use \ (DOS/Windows style) directory separators if they are needed.
+# Setup MAINDIR and COMDIR.
 # ------------------------------------------------------------------------------
 #COMDIR ?= \\bctquad3\HOME\BCT_Development\vxworks\common\common_builds\common_build-6.87_1
 # for tornado 2.2/Trima 6.X
@@ -35,15 +34,19 @@ ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(MAINDIR)\os -I$(
 # ------------------------------------------------------------------------------
 #LIBDIR = 
 
-#OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_ASFLAGS : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
+#OPTFLAGS      := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_ASFLAGS  : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
 #ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
 #ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_CCFLAGS := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CCFLAGS  := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
 
 ADDN_CLEAN = bin/updateTrima
 
 include $(MAINDIR)/makefile.vxc
+
+ifdef LD_ARCH_FLAGS_VX69
+  LD_ARCH_FLAGS := $(LD_ARCH_FLAGS_VX69)
+endif
 
 # ------------------------------------------------------------------------------
 # Definitions required for building update.out
