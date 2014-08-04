@@ -1292,13 +1292,15 @@ bool installer::extractUpdateFiles6 ()
          updatetrimaUtils::logger("Archive of old OS image failed\n");
       }
 
-      // Save off backup vxWorks image in case of massive failure ...
-      updatetrimaUtils::logger("Saving the backup OS image...\n");
+      // Remove the .bak file to save space for vxWorks 6.9
+      updatetrimaUtils::logger("Removing vxWorks.bak\n");
       attrib(VXBOOT_PATH "/vxWorks.bak", "-R");
 
-      if ( cp(VXBOOT_PATH "/vxWorks", VXBOOT_PATH "/vxWorks.bak") == ERROR )
+      struct stat bakfileStat;
+
+      if ( stat((char*)VXBOOT_PATH "/vxWorks.bak", &bakfileStat) == OK )
       {
-         updatetrimaUtils::logger("Archive of backup OS image failed\n");
+         remove(VXBOOT_PATH "/vxWorks.bak");
       }
    }
 
@@ -2639,4 +2641,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH dbd355ab63204f6a2d97634e66920dd9 */
+/* FORMAT HASH 9e5651d76a85d71b45a3fbb45897fc97 */
