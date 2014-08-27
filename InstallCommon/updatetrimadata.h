@@ -84,6 +84,7 @@ buildDataStruct buildData[] =
    {"11.0.00368", 6, false, true, true, true, true, 6, true, true, true, V630},
    {"12.0.00001", 6, false, true, true, true, true, 6, true, true, false, V630},
    {"12.1.00001", 6, false, true, true, true, true, 6, true, true, false, V640},
+   {"20.0.00001", 6, false, true, true, true, true, 6, true, true, false, V700},
    {"END", 6, false, true, true, true, true, 6, true, true, false, V640}
 };
 
@@ -148,6 +149,18 @@ rangeStruct rangeData[] =
    {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},  // MAX_KEY_PLT_AMAP
    {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},         // MAX_KEY_PLASMA
    {V640, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6"},            // NUM_CRIT_DOSE
+   
+   {V700, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
+   {V700, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
+   {V700, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
+   {V700, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
+   {V700, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},      // NUM_YIELD_VOLUME
+   {V700, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},  // MAX_KEY_PLT_AMAP
+   {V700, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},         // MAX_KEY_PLASMA
+   {V700, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6"},            // NUM_CRIT_DOSE   
 
    {END, "xxx", "xxx", MAX, INT, "0"}
 };
