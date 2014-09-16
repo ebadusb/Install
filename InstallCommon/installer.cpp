@@ -49,7 +49,7 @@ installer::installer(const installer& obj)
 installer::~installer()
 {}
 
-bool installer::replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal)
+bool installer::replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal, bool addCRC)
 {
    bool retval     = true;
    bool madeChange = false;
@@ -72,9 +72,7 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
    if ( !fpSource || !fpDest )
    {
       if (!fpSource) updatetrimaUtils::logger("fpSource ", datFileName, " failed to open\n");
-//      if (!fpSource) printf("fpSource %s failed to open\n", datFileName);
       if (!fpSource) updatetrimaUtils::logger("fpDest ", destDatFileName, " failed to open\n");
-//      if (!fpDest) printf("fpDest %s failed to open\n", destDatFileName);
 
       retval = false;
       fclose(fpSource);
@@ -82,40 +80,53 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
       goto LEAVEROUTINE;
    }
 
+   memset(inputBuffer, 0, sizeof(inputBuffer));
+
    while ( fgets(inputBuffer, 256, fpSource) )
    {
+      // init working buffer
+      memset(workingBuffer, 0, sizeof(workingBuffer));
+
       // make a copy to work on
       strncpy(workingBuffer, inputBuffer, strlen(inputBuffer));
 
-      // printf("inputBuffer %s\n", inputBuffer);
-
       char* start = workingBuffer + strspn(workingBuffer, " \t");    // get rid of leading white space
 
-      // printf("workingBuffer %s\n", workingBuffer);
-      // printf("start %s\n", start);
+      // find the beginning of the value and the length to use in the compare
+      char* valStart   = start + strcspn(start, " =");
+      int   origValLen = valStart - start;
+      int   maxValLen  = (origValLen > strlen(optionName) ? origValLen : strlen(optionName));
 
       // did we find the option?
-      if ( strncmp(start, optionName, strlen(optionName)) == 0 )
+      if ( strncmp(start, optionName, maxValLen) == 0 )
       {
          // now look for the existing value
-         start += strlen(optionName);
-         start += strcspn(start, " =");         // pass any spaces and ='s
+         start += strlen(optionName)+1;
          start[strcspn(start, ",\n\r")] = '\0'; // stop it at the comma in front of the crc & get rid of trailing cr/lf's
 
          // is the value not equal to the new value?
          if ( strncmp(start, newVal, strlen(newVal)) != 0 )
          {
+            installLog << "For option " << optionName << ", current Val " << start << " != newVal " << newVal << ", replacing.\n";
+
             unsigned long crcval = 0;
             long          buflen = 0;
 
             // create the updated line
             buflen = sprintf(baseNewlineBuf, "%s=%s", optionName, newVal);
 
-            // calc the crc for the line
-            crcgen32(&crcval, (const unsigned char*)baseNewlineBuf, buflen);
+            if (addCRC)
+            {
+               // calc the crc for the line
+               crcgen32(&crcval, (const unsigned char*)baseNewlineBuf, buflen);
 
-            // add the crc to the line
-            buflen = sprintf(newlineBuf, "%s,%lx\n", baseNewlineBuf, crcval);
+               // add the crc to the line
+               buflen = sprintf(newlineBuf, "%s,%lx\n", baseNewlineBuf, crcval);
+            }
+            else
+            {
+               buflen = sprintf(newlineBuf, "%s\n", baseNewlineBuf);
+            }
 
             // set the new line to be the one written
             outputLine = newlineBuf;
@@ -123,6 +134,14 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
             // set this so we know we've made a change
             madeChange = true;
          }
+         else
+         {
+            installLog << "For option " << optionName << ", current Val " << start << " == newVal " << newVal << ", no update needed.\n";
+         }
+      }
+      else
+      {
+         outputLine = inputBuffer;
       }
 
       // write the line to the dest file
@@ -130,6 +149,9 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
 
       // reset the output pointer in case we changed it
       outputLine = inputBuffer;
+
+      // re-init input buffer
+      memset(inputBuffer, 0, sizeof(inputBuffer));
    }
 
    // close 'em up
@@ -143,16 +165,12 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
    {
       if ( mv(datFileName, oldDatFileName) == ERROR )
       {
-//            printf("move existing file failed\n");
-         // logStream << "move existing file failed" << endl;
-         // stop
+         // installLog << "move existing file failed\n";
          retval = false;
       }
       else if ( mv(destDatFileName, datFileName) == ERROR )
       {
-//            printf("move new file to existing file failed\n");
-         // logStream << "move new file to existing file failed" << endl;
-         // try to put it back
+         // installLog << "move new file to existing file failed\n";
          mv(oldDatFileName, datFileName);
          retval = false;
       }
@@ -164,7 +182,6 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
 
 LEAVEROUTINE: ;     // this extra semicolon cleans up auto-indenting after the label
 
-   // printf("returning %d\n", retval);
    return( retval);
 }
 
@@ -178,7 +195,7 @@ const char* installer::findSetting (const char* setting, FILE* fp)
       char buffer[256];
       while ( !result && fgets(buffer, 256, fp) )
       {
-         char* start = buffer + strspn(buffer, " \t");
+         char* start = buffer + strspn(buffer, "# \t");
          if ( strncmp(start, setting, strlen(setting)) == 0 )
          {
             start += strlen(setting);
@@ -383,23 +400,74 @@ void installer::updateRBC ()
 
 void installer::updateGlobVars ()
 {
+   currVersion = findSetting("file_version=", GLOBVARS_FILE);
+   newVersion  = findSetting("file_version=", GLOBVARS_DEFAULT_FILE);
+
    // Create the dat file reader to retrieve the global environment vars data.
    CDatFileReader datfile(GLOBVARS_FILE, false, true);
    if ( datfile.Error() )
    {
-      updatetrimaUtils::logger(GLOBVARS_FILE, " file read error : ");
-      updatetrimaUtils::logger(datfile.Error());
-      updatetrimaUtils::logger("\n");
+      installLog << GLOBVARS_FILE << " file read error : " << datfile.Error() << "\n";
       return;
    }
+
+   string machineID;
+   string externalIP;
+   string externalBIP;
 
    if ( !datfile.Find("EXTERNALIP") )
    {
       updatetrimaUtils::logger("pre-v5.1 globvars file found Unable to Convert... ending\n");
       return;
    }
+   else
+   {
+      // Need to change the globvars?
+      if ((newVersion != currVersion && (newVersion == NULL || currVersion == NULL)) // one is NULL but noth both
+          || (newVersion && currVersion && strcmp(newVersion, currVersion) != 0))    // neither NULL, strings are different
+      {
+         installLog << "Need to update globvars to correct format.\n";
 
-   updatetrimaUtils::logger("v5.2 globvars file found.  No conversion needed\n");
+         // get existing data for conversion
+         if (!datfile.Find("MACHINE") || !datfile.Find("EXTERNALIP") || !datfile.Find("EXTERNALBIP"))
+         {
+            installLog << "Error: unable to read globvars to convert to new version.\n";
+            return;
+         }
+         else
+         {
+            machineID   = datfile.GetString("MACHINE");
+            externalIP  = datfile.GetString("EXTERNALIP");
+            externalBIP = datfile.GetString("EXTERNALBIP");
+         }
+
+         attrib(GLOBVARS_FILE ".gvtemp", "-R");
+         rm(GLOBVARS_FILE ".gvtemp");
+
+         // copy the new version
+         if ( cp(GLOBVARS_DEFAULT_FILE, GLOBVARS_FILE ".gvtemp") == ERROR )
+         {
+            updatetrimaUtils::logger("Error: unable to copy globvars.default\n");
+            return;
+         }
+
+         // update new version with data
+         replaceDatfileLine (GLOBVARS_FILE ".gvtemp", "MACHINE", machineID.c_str(), false);
+         replaceDatfileLine (GLOBVARS_FILE ".gvtemp", "EXTERNALIP", externalIP.c_str(), false);
+         replaceDatfileLine (GLOBVARS_FILE ".gvtemp", "EXTERNALBIP", externalBIP.c_str(), false);
+
+         attrib(GLOBVARS_FILE, "-R");  // do this just in case
+
+         if ( cp(GLOBVARS_FILE ".gvtemp", GLOBVARS_FILE) == ERROR )
+         {
+            updatetrimaUtils::logger("Error: unable to update globvars\n");
+         }
+
+         rm(GLOBVARS_FILE ".gvtemp");
+      }
+
+   }
+   return;
 }
 
 void installer::updateHW ()
@@ -2054,6 +2122,7 @@ bool installer::allowedUpgrade (bool ampro, bool versalogic, bool python, bool o
    return retval;
 }
 
+
 bool installer::updateConfigGeneric ()
 {
    bool           retval       = true;
@@ -2641,4 +2710,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 9e5651d76a85d71b45a3fbb45897fc97 */
+/* FORMAT HASH 815f29f568e7acab7319ec5cecb6140b */

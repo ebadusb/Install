@@ -48,7 +48,7 @@ protected:
 
    bool replaceCassette (const char* refStr, unsigned int tubingSetCode, const char* barcodeStr);
 
-   bool replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal);
+   bool replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal, bool addCRC = true);
 
    bool validateSetConfig ();
 
@@ -193,4 +193,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH b319d6faaf5a3e3741e391b3c250f389 */
+/* FORMAT HASH 09794f64d9f58d5f92519770870f2b8d */
