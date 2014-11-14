@@ -34,6 +34,7 @@ struct rangeStruct {
    RANGECOMPARETYPE compareType;
    RANGEVARIABLETYPE valType;
    const char * value;
+   bool useLimit;
 };
 */
 
@@ -95,76 +96,89 @@ buildDataStruct buildData[] =
 // look in cfg_vars.cpp and configdef.h for values
 rangeStruct rangeData[] =
 {
-//   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4"},
-   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V510, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
-   {V510, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
-   {V510, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
-   {V510, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "6"},
-   {V510, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
-   {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
-   {V510, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
+//   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", NOT, INT, "4", false},
+   {V510, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V510, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7", false},
+   {V510, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
+   {V510, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V510, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8", false},
+   {V510, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "6", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
 
-   {V520, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7"},
-   {V520, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8"},
-   {V520, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2"},
-   {V520, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "6"},
-   {V520, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
-   {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
-   {V520, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
+   {V520, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7", false},
+   {V520, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
+   {V520, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V520, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.8", false},
+   {V520, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.2", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "6", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
 
-   {V600, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15"},
-   {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
-   {V600, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
-   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
-   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
-   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V600, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
-   {V600, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
-   {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8"},
-   {V600, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
+   {V600, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15", false},
+   {V600, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
+   {V600, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
+   {V600, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
+   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
+   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80", false},
+   {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
 
-   {V630, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
-   {V630, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
-   {V630, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
-   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
-   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
-   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V630, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},
-   {V630, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3"},
-   {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},
-   {V630, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3"},
+   {V630, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
+   {V630, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
+   {V630, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V630, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
+   {V630, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
+   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
+   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80", false},
+   {V630, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
 
-   {V640, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
-   {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
-   {V640, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
-   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
-   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
-   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V640, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},      // NUM_YIELD_VOLUME
-   {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},  // MAX_KEY_PLT_AMAP
-   {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},         // MAX_KEY_PLASMA
-   {V640, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6"},            // NUM_CRIT_DOSE
-   
-   {V700, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0"},
-   {V700, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63"},
-   {V700, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9"},
-   {V700, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1"},
-   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80"},
-   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80"},
-   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80"},
-   {V700, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10"},      // NUM_YIELD_VOLUME
-   {V700, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6"},  // MAX_KEY_PLT_AMAP
-   {V700, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9"},         // MAX_KEY_PLASMA
-   {V700, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6"},            // NUM_CRIT_DOSE   
+   {V640, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
+   {V640, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
+   {V640, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
+   {V640, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80", false},
+   {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80", false},
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10", false},      // NUM_YIELD_VOLUME
+   {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6", false},  // MAX_KEY_PLT_AMAP
+   {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},         // MAX_KEY_PLASMA
+   {V640, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6", false},            // NUM_CRIT_DOSE
+
+   {V700, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V700, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
+   {V700, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "230", true},
+   {V700, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V700, "PROCEDURE_CONFIG", "key_return_press", NOT, INT, "310", false},     // use the default if the value = 310
+   {V700, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
+   {V700, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_2", MIN, INT, "80", false},
+   {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_3", MIN, INT, "80", false},
+   {V700, "PRODUCT_DEFINITIONS", "key_platelet_", MAX, INT, "10", false},      // NUM_YIELD_VOLUME
+   {V700, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6", false},  // MAX_KEY_PLT_AMAP
+   {V700, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},         // MAX_KEY_PLASMA
+   {V700, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6", false},            // NUM_CRIT_DOSE
 
    {END, "xxx", "xxx", MAX, INT, "0"}
 };
 
 #endif // UPDATETRIMADATA_H
 
-/* FORMAT HASH 7b2013258dc62416b0e21909079581bc */
+/* FORMAT HASH 8970359ba07d5c7ffe6a1eddc8a8776b */

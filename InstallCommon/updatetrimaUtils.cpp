@@ -10,6 +10,7 @@
 #include "updatetrima.h"
 #include "updatetrimaUtils.h"
 #include "updateTrimaDefines.h"
+#include "updatetrimaData.h"
 
 #include "filenames.h"
 
@@ -37,18 +38,18 @@ int softcrc (const char* options);
 };
 #endif
 
+extern installLogStream installLog;
+
 extern "C" STATUS xdelete (const char* fileName);
 
-extern bool             development_only;
+extern bool development_only;
 
 extern installLogStream installLog;
 
-bool                    updatetrimaUtils::loggingEnabled      = false;
-bool                    updatetrimaUtils::logToScreen         = false;
-bool                    updatetrimaUtils::development_install = false;
-FILE*                   updatetrimaUtils::logFile             = NULL;
-
-
+bool  updatetrimaUtils::loggingEnabled      = false;
+bool  updatetrimaUtils::logToScreen         = false;
+bool  updatetrimaUtils::development_install = false;
+FILE* updatetrimaUtils::logFile             = NULL;
 
 
 fourPartVersion::fourPartVersion()
@@ -175,7 +176,7 @@ int updatetrimaUtils::copyFileContiguous (const char* from, const char* to)
    int fromFD = open(from, O_RDONLY, 0644);
 
    attrib(to, "-R");
-   int         toFD = open(to, O_CREAT | O_RDWR, 0644);
+   int toFD = open(to, O_CREAT | O_RDWR, 0644);
 
    struct stat fileStat;
    char        buffer[512];
@@ -403,6 +404,78 @@ bool updatetrimaUtils::parseRevision (const char* revString, int& curMajorRev, i
 //    return retval;
 }
 
+buildDataStruct& updatetrimaUtils::getBuildData (int buildRef)
+{
+   return buildData[buildRef];
+}
+
+rangeStruct& updatetrimaUtils::getNextRangeData (bool reset)
+{
+   static int counter = 0;
+
+   if ( reset )
+   {
+      counter = 0;
+   }
+
+   return rangeData[counter++];
+}
+
+bool updatetrimaUtils::getBuildInfo (versionStruct& versionInfo, int& buildRef)
+{
+   // get the upgrade data for the version given
+   // this gets the build info for the version that matches the major/minor revs and
+   // has the largest build number that isn't larger than the new build
+   int  cntr            = 0;
+   int  largestMinorRev = 0;
+   int  largestBuild    = 0;
+   int  toMajorRev      = 0;
+   int  toMinorRev      = 0;
+   int  toBuild         = 0;
+   bool foundBuild      = false;
+
+   installLog << "Looking up build info for buildNum ="
+              << " " << versionInfo.majorRev
+              << "." << versionInfo.minorRev
+              << "." << versionInfo.buildNum
+              << "\n";
+
+   while ( strcmp(buildData[cntr].buildNum, "END") != 0 )
+   {
+      updatetrimaUtils::parseRevision(buildData[cntr].buildNum, toMajorRev, toMinorRev, toBuild);
+
+      if ( toMajorRev == versionInfo.majorRev )
+      {
+         if ( toMinorRev >= largestMinorRev && versionInfo.minorRev >= toMinorRev )
+         {
+            foundBuild      = true;
+            largestMinorRev = toMinorRev;
+            buildRef        = cntr;
+
+            if (toBuild > largestBuild && versionInfo.buildNum >= toBuild)
+            {
+               buildRef     = cntr;
+               largestBuild = toBuild;
+            }
+//            installLog << "Build info best so far ref: " << buildRef << " ver: " << toMajorRev << "." << toMinorRev << "." << toBuild << "\n";
+         }
+      }
+      cntr++;
+   }
+
+   if ( !foundBuild )
+   {
+//      installLog << "Build info match not found.\n";
+      return(false);
+   }
+   else
+   {
+//      installLog << "Build info best match ref: " << buildRef << " ver: " << toMajorRev << "." << toMinorRev << "." << toBuild << "\n";
+      return(true);
+   }
+
+}
+
 
 void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4)
 {
@@ -478,7 +551,7 @@ bool updatetrimaUtils::initLogging ()
 {
    mkdir(INSTALL_LOG_PATH);
 
-   char   fileNameBuffer[256];
+   char fileNameBuffer[256];
    fileNameBuffer[255] = 0;
    time_t _now = time(NULL);
    sprintf(fileNameBuffer, "%s", PNAME_INSTALL_LOG);
@@ -517,7 +590,7 @@ void updatetrimaUtils::logFileHeader (string& hdrStr)
 {
    time_t _now = time(NULL);
 
-   char   outBuff[256];
+   char outBuff[256];
    outBuff[255] = 0;
    strftime(outBuff, sizeof(outBuff), "Trima Install Log %Y-%m-%d %H:%M:%S", localtime(&_now));
 
@@ -677,4 +750,4 @@ installLogStream& installLogStream::operator << (ostream& stuff)
 }
 */
 
-/* FORMAT HASH 179fc0d7f38ed35c22ece64314b030ca */
+/* FORMAT HASH e88984fc116a1c6533c412fa11c83565 */

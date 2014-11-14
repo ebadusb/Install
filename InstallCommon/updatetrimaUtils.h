@@ -18,6 +18,13 @@ enum RANGEVARIABLETYPE {INT, FLOAT};
 
 struct versionStruct
 {
+/*
+   versionStruct() :
+      majorRev(0),
+      minorRev(0),
+      buildNum(0)
+   {}
+*/
    int majorRev;
    int minorRev;
    int buildNum;
@@ -25,6 +32,22 @@ struct versionStruct
 
 struct buildDataStruct
 {
+/*
+   buildDataStruct() :
+      buildNum(NULL),
+      extractType(0),
+      ampro(false),
+      versalogic(false),
+      python(false),
+      ocelot(false),
+      adjPASRAS(false),
+      calFileType(0),
+      adjPostcount(false),
+      updateTrapFiles(false),
+      setConfigCopy(false),
+      rangeType(V510)
+   {}
+*/
    const char* buildNum;
    int         extractType;
    bool        ampro;
@@ -42,12 +65,23 @@ struct buildDataStruct
 
 struct rangeStruct
 {
+/*
+   rangeStruct() :
+      rangeType(V510),
+      section(NULL),
+      dataKey(NULL),
+      compareType(MIN),
+      valType(INT),
+      value(NULL)
+   {}
+*/
    RANGETYPE         rangeType;
    const char*       section;
    const char*       dataKey;
    RANGECOMPARETYPE  compareType;
    RANGEVARIABLETYPE valType;
    const char*       value;
+   bool              useLimit;
 };
 
 
@@ -106,11 +140,16 @@ public:
 
    static bool development_install;
 
-   //////////////////////////////////////////////////
-   // The logger calls are all depricated - they are being replaced by the installLogStream
-   // They will be removed if/when I get the time to go through the code and switch
-   // all of the logging to use the stream class.
-   // The logger calls now all use the stream class behind the scenes to do the logging
+   static bool getBuildInfo (versionStruct& versionInfo, int& buildRef);
+
+   static buildDataStruct& getBuildData (int buildRef);
+   static rangeStruct&     getNextRangeData (bool reset = false);
+
+//////////////////////////////////////////////////
+// The logger calls are all depricated - they are being replaced by the installLogStream
+// They will be removed if/when I get the time to go through the code and switch
+// all of the logging to use the stream class.
+// The logger calls now all use the stream class behind the scenes to do the logging
    static bool loggingEnabled;
    static bool logToScreen;
    static void logger (const char* stuff);
@@ -165,4 +204,4 @@ protected:
 
 #endif // UPDATETRIMAUTILS_H
 
-/* FORMAT HASH 12769d13dddccb5e9f60bdc04ad92040 */
+/* FORMAT HASH 57053f4d83a7aac5e1cfff0a5215ae2d */

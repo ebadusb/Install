@@ -16,8 +16,6 @@
 #include "targzextract.c"
 #include "updatecassette_dat.h"
 
-#include "updatetrimaData.h"
-
 using namespace std;
 
 #ifdef __cplusplus
@@ -39,6 +37,10 @@ extern installLogStream installLog;
 
 // Default constructor
 installer::installer()
+   : currVersion(NULL),
+     newVersion(NULL),
+     newBuildRef(0),
+     prevBuildRef(0)
 {}
 
 // Copy constructor
@@ -71,8 +73,8 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
    // if either file didn't open, bail out
    if ( !fpSource || !fpDest )
    {
-      if (!fpSource) updatetrimaUtils::logger("fpSource ", datFileName, " failed to open\n");
-      if (!fpSource) updatetrimaUtils::logger("fpDest ", destDatFileName, " failed to open\n");
+      if (!fpSource) installLog << "fpSource " << datFileName << " failed to open\n";
+      if (!fpSource) installLog << "fpDest " << destDatFileName << " failed to open\n";
 
       retval = false;
       fclose(fpSource);
@@ -253,7 +255,7 @@ bool installer::replaceCassette (const char* refStr, unsigned int tubingSetCode,
    }
    else
    {
-      updatetrimaUtils::logger("Couldn't read setconfig.dat so can't replace a line in it\n");
+      installLog << "Couldn't read setconfig.dat so can't replace a line in it\n";
       retval = false;
    }
 
@@ -273,7 +275,7 @@ bool installer::validateSetConfig ()
 
    if ( stat((char*)TEMPLATES_PATH "/" FILE_CASSETTE_DAT, &fileStat) != OK )
    {
-      updatetrimaUtils::logger("Installing 5.1, ignoring cassette file validation\n");
+      installLog << "Installing 5.1, ignoring cassette file validation\n";
       goto LEAVEROUTINE;
    }
 
@@ -360,8 +362,7 @@ bool installer::updatePostCount ()
    CDatFileReader datfile(PNAME_CONFIGDAT);
    if ( datfile.Error() )
    {
-      updatetrimaUtils::logger("Config file read error : ", datfile.Error());
-      updatetrimaUtils::logger("\n");
+      installLog << "Config file read error : " << datfile.Error() << "\n";
       return bUpdate;
    }
 
@@ -371,8 +372,7 @@ bool installer::updatePostCount ()
    {
       datfile.RemoveLine("PROCEDURE_CONFIG", "key_post_plat");
       datfile.AddLine("PROCEDURE_CONFIG", "key_post_plat", "100000");
-      updatetrimaUtils::logger("Changed donor post count from ", postCount);
-      updatetrimaUtils::logger(" to 100000\n");
+      installLog << "Changed donor post count from " << postCount << " to 100000\n";
       bUpdate = true;
    }
 
@@ -390,8 +390,7 @@ void installer::updateRBC ()
    attrib(CONFIG_PATH "/" FILE_RBC_DAT, "-R");
    if ( cp(TEMPLATES_PATH "/" FILE_RBC_DAT, CONFIG_PATH "/" FILE_RBC_DAT) == ERROR )
    {
-//        printf("copy of rbc.dat failed\n");
-      updatetrimaUtils::logger("copy of rbc.dat failed\n");
+      installLog << "copy of rbc.dat failed\n";
       return;
    }
    attrib(CONFIG_PATH "/" FILE_RBC_DAT, "+R");
@@ -417,7 +416,7 @@ void installer::updateGlobVars ()
 
    if ( !datfile.Find("EXTERNALIP") )
    {
-      updatetrimaUtils::logger("pre-v5.1 globvars file found Unable to Convert... ending\n");
+      installLog << "pre-v5.1 globvars file found Unable to Convert... ending\n";
       return;
    }
    else
@@ -447,7 +446,7 @@ void installer::updateGlobVars ()
          // copy the new version
          if ( cp(GLOBVARS_DEFAULT_FILE, GLOBVARS_FILE ".gvtemp") == ERROR )
          {
-            updatetrimaUtils::logger("Error: unable to copy globvars.default\n");
+            installLog << "Error: unable to copy globvars.default\n";
             return;
          }
 
@@ -460,7 +459,7 @@ void installer::updateGlobVars ()
 
          if ( cp(GLOBVARS_FILE ".gvtemp", GLOBVARS_FILE) == ERROR )
          {
-            updatetrimaUtils::logger("Error: unable to update globvars\n");
+            installLog << "Error: unable to update globvars\n";
          }
 
          rm(GLOBVARS_FILE ".gvtemp");
@@ -482,7 +481,7 @@ void installer::updateHW ()
       newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_ampro.dat");
       if ( newVersion == NULL )
       {
-         updatetrimaUtils::logger("Could not find hw_ampro.dat\n");
+         installLog << "Could not find hw_ampro.dat\n";
          return;
       }
    }
@@ -492,12 +491,12 @@ void installer::updateHW ()
       newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw_versalogic.dat");
       if ( newVersion == NULL )
       {
-         updatetrimaUtils::logger("Could not find hw_versalogic.dat, trying hw.dat\n");
+         installLog << "Could not find hw_versalogic.dat, trying hw.dat\n";
 
          newVersion = findSetting("file_version=", TEMPLATES_PATH "/hw.dat");
          if ( newVersion == NULL )
          {
-            updatetrimaUtils::logger("Could not find hw.dat\n");
+            installLog << "Could not find hw.dat\n";
             return;
          }
          else
@@ -509,8 +508,7 @@ void installer::updateHW ()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      updatetrimaUtils::logger("Updating hw.dat to new version ", newVersion, " from existing version ", currVersion);
-      updatetrimaUtils::logger("\n");
+      installLog << "Updating hw.dat to new version " << newVersion << " from existing version " << currVersion << "\n";
 
       attrib(CONFIG_PATH "/" FILE_HW_DAT, "-R");
 
@@ -518,7 +516,7 @@ void installer::updateHW ()
       {
          if ( cp(TEMPLATES_PATH "/hw_ampro.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
          {
-            updatetrimaUtils::logger("copy of hw_ampro.dat failed\n");
+            installLog << "copy of hw_ampro.dat failed\n";
             return;
          }
       }
@@ -528,7 +526,7 @@ void installer::updateHW ()
          {
             if ( cp(TEMPLATES_PATH "/hw.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
             {
-               updatetrimaUtils::logger("copy of hw.dat failed\n");
+               installLog << "copy of hw.dat failed\n";
                return;
             }
          }
@@ -536,7 +534,7 @@ void installer::updateHW ()
          {
             if ( cp(TEMPLATES_PATH "/hw_versalogic.dat", CONFIG_PATH "/" FILE_HW_DAT) == ERROR )
             {
-               updatetrimaUtils::logger("copy of hw_versalogic.dat failed\n");
+               installLog << "copy of hw_versalogic.dat failed\n";
                return;
             }
          }
@@ -742,13 +740,12 @@ void installer::updateTerror ()
 
    if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      updatetrimaUtils::logger("Updating terror_config.dat to new version ", newVersion, " from existing version ", newVersion);
-      updatetrimaUtils::logger("\n");
+      installLog << "Updating terror_config.dat to new version " << newVersion << " from existing version " << newVersion << "\n";
       attrib(TERROR_CONFIG_FILE, "-R");
 
       if ( cp(TEMPLATES_PATH "/terror_config.dat", CONFIG_PATH "/terror_config.dat") == ERROR )
       {
-         updatetrimaUtils::logger("copy of terror_config.dat failed\n");
+         installLog << "copy of terror_config.dat failed\n";
          return;
       }
 
@@ -759,12 +756,12 @@ void installer::updateTerror ()
 
 void installer::updateSounds ()
 {
-   updatetrimaUtils::logger("Updating sounds.dat...\n");
+   installLog << "Updating sounds.dat...\n";
    attrib(PNAME_SOUNDSDAT, "-R");
 
    if ( cp(TEMPLATES_PATH "/" FILE_SOUNDS_DAT, PNAME_SOUNDSDAT) == ERROR )
    {
-      updatetrimaUtils::logger("copy of sounds.dat failed\n");
+      installLog << "copy of sounds.dat failed\n";
       return;
    }
 
@@ -781,22 +778,21 @@ void installer::updateCassette ()
    // if the new version is from before we used cassette.dat, remove it from /config
    if (newVersion == NULL)
    {
-      updatetrimaUtils::logger("Installing 5.1, ignoring cassette.dat\n");
+      installLog << "Installing 5.1, ignoring cassette.dat\n";
    }
    else if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
    {
-      updatetrimaUtils::logger("Updating ", FILE_CASSETTE_DAT, " to new version ");
-      updatetrimaUtils::logger(newVersion, " from existing version ", currVersion);
-      updatetrimaUtils::logger("\n");
+      installLog << "Updating " << FILE_CASSETTE_DAT << " to new version " << newVersion << " from existing version " << currVersion << "\n";
+
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "-R");
 
       if ( cp(TEMPLATES_PATH "/" FILE_CASSETTE_DAT, CONFIG_PATH "/" FILE_CASSETTE_DAT) == ERROR )
       {
-         updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " failed\n");
+         installLog << "copy of " << FILE_CASSETTE_DAT << " failed\n";
       }
       else
       {
-         updatetrimaUtils::logger("copy of ", FILE_CASSETTE_DAT, " succeeded\n");
+         installLog << "copy of " << FILE_CASSETTE_DAT << " succeeded\n";
       }
 
       attrib(CONFIG_PATH "/" FILE_CASSETTE_DAT, "+R");
@@ -1916,121 +1912,129 @@ void installer::forceSetConfig ()
 //   }
 }
 
-bool installer::checkRange (const char* section, const char* key, const char* value)
+bool installer::checkRange (const char* section, const char* key, const char* value, std::string& forceVal)
 {
-   const char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "END"};
+   const char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "V700", "END"};
    const char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
    const char* rangeValTypeStr[] = {"INT", "FLOAT"};
 
-   updatetrimaUtils::logger("Checking range of: ", section, " ", key);
-   updatetrimaUtils::logger(" ", value);
-//   updatetrimaUtils::logger("\n");
+//   installLog << "Checking range of: " << section << " " << key << " " << value << "\n";
 
-   bool retval           = true;
-   bool foundInRangeData = false;
+   bool        retval               = true;
+   bool        foundInRangeData     = false;
+   bool        everFoundInRangeData = false;
+   rangeStruct rangeData;
 
-   int rngCtr = 0;
+   // clear out the forceVal string and populate it later, if needed
+//   forceVal.clear();
+   forceVal.resize(0);
 
-   while ( rangeData[rngCtr].rangeType != END )
+   rangeData = updatetrimaUtils::getNextRangeData(true);
+
+//   int rngCtr = 0;
+
+   while ( rangeData.rangeType != END )
    {
-      if ( rangeData[rngCtr].rangeType == newBuildData.rangeType)
+      if ( rangeData.rangeType == newBuildData.rangeType)
       {
-         if (strcmp(rangeData[rngCtr].section, section) == 0 &&
-             strcmp(rangeData[rngCtr].dataKey, key) == 0)
+         if (strcmp(rangeData.section, section) == 0 &&
+             strcmp(rangeData.dataKey, key) == 0)
          {
-            updatetrimaUtils::logger(" Found exact match rangeData:");
-            updatetrimaUtils::logger(" ", rangeTypeStr[(int)(rangeData[rngCtr].rangeType)]);
-            updatetrimaUtils::logger(" ", rangeData[rngCtr].section);
-            updatetrimaUtils::logger(" ", rangeData[rngCtr].dataKey);
-//                updatetrimaUtils::logger("\n");
-            foundInRangeData = true;
+            installLog << " Found exact match rangeData:"
+                       << " " << rangeTypeStr[(int)(rangeData.rangeType)]
+                       << " " << rangeData.section
+                       << " " << rangeData.dataKey;
+
+            foundInRangeData     = true;
+            everFoundInRangeData = true;
          }
-         else if (strlen(key) - 1 == strlen(rangeData[rngCtr].dataKey) &&
-                  strncmp(rangeData[rngCtr].dataKey, key, strlen(key) - 1) == 0 &&
+         else if (strlen(key) - 1 == strlen(rangeData.dataKey) &&
+                  strncmp(rangeData.dataKey, key, strlen(key) - 1) == 0 &&
                   strcmp(section, "PRODUCT_DEFINITIONS") == 0)
          {
-            updatetrimaUtils::logger(" Found partial match rangeData:");
-            updatetrimaUtils::logger(" ", rangeTypeStr[(int)(rangeData[rngCtr].rangeType)]);
-            updatetrimaUtils::logger(" ", rangeData[rngCtr].section);
-            updatetrimaUtils::logger(" ", rangeData[rngCtr].dataKey);
-//                updatetrimaUtils::logger("\n");
-//                updatetrimaUtils::logger("Found partial match rangeData: ", rangeData[rngCtr].section, " ", rangeData[rngCtr].dataKey);
-            foundInRangeData = true;
+            installLog << " Found partial match rangeData:"
+                       << " " << rangeTypeStr[(int)(rangeData.rangeType)]
+                       << " " << rangeData.section
+                       << " " << rangeData.dataKey;
+
+            foundInRangeData     = true;
+            everFoundInRangeData = true;
          }
       }
       if ( foundInRangeData )
       {
-         updatetrimaUtils::logger(" Compare data:");
-         updatetrimaUtils::logger(" compareType: ", compareTypeStr[(int)(rangeData[rngCtr].compareType)]);
-         updatetrimaUtils::logger(" valueType: ", rangeValTypeStr[(int)(rangeData[rngCtr].valType)]);
-         updatetrimaUtils::logger(" value: ");
-         updatetrimaUtils::logger(rangeData[rngCtr].value);
-//         updatetrimaUtils::logger("\n");
+         installLog << " Compare data:"
+                    << " compareType: " << compareTypeStr[(int)(rangeData.compareType)]
+                    << " valueType: " << rangeValTypeStr[(int)(rangeData.valType)]
+                    << " value: " << rangeData.value;
 
-         if ( rangeData[rngCtr].compareType == FORCE )
+         if ( rangeData.compareType == FORCE )
          {
-//            updatetrimaUtils::logger("Forcing update\n");
+//            installLog << "Forcing update\n";
             retval = false;
          }
-         else if ( rangeData[rngCtr].valType == INT )
+         else if ( rangeData.valType == INT )
          {
             int intvalue = atoi(value);
 
-//            updatetrimaUtils::logger("Comparing INT ", intvalue);
+//            installLog << "Comparing INT " << intvalue;
 
-            if ( rangeData[rngCtr].compareType == MIN )
+            if ( rangeData.compareType == MIN )
             {
-//               updatetrimaUtils::logger(" MIN vs ", rangeData[rngCtr].value);
+//               installLog << " MIN vs " << rangeData.value;
 
-               if ( intvalue < atoi(rangeData[rngCtr].value) )
+               if ( intvalue < atoi(rangeData.value) )
                {
-//                  updatetrimaUtils::logger(" FAILED\n");
+//                  installLog << " FAILED\n";
                   retval = false;
                }
-//               updatetrimaUtils::logger(" PASSED\n");
+//               installLog << " PASSED\n";
             }
-            else if ( rangeData[rngCtr].compareType == MAX )
+            else if ( rangeData.compareType == MAX )
             {
-//               updatetrimaUtils::logger(" MAX vs ", rangeData[rngCtr].value);
+//               installLog << " MAX vs " << rangeData.value;
 
-               if ( intvalue > atoi(rangeData[rngCtr].value) )
+               if ( intvalue > atoi(rangeData.value) )
                {
-//                  updatetrimaUtils::logger(" FAILED\n");
+//                  installLog << " FAILED\n";
                   retval = false;
                }
-//               updatetrimaUtils::logger(" PASSED\n");
+//               installLog << " PASSED\n";
             }
-            else if ( rangeData[rngCtr].compareType == NOT )
+            else if ( rangeData.compareType == NOT )
             {
-//               updatetrimaUtils::logger(" NOT vs ", rangeData[rngCtr].value);
+//               installLog << " NOT vs " << rangeData.value;
 
-               if ( intvalue == atoi(rangeData[rngCtr].value) )
+               if ( intvalue == atoi(rangeData.value) )
                {
-//                  updatetrimaUtils::logger(" FAILED\n");
+//                  installLog << " FAILED\n";
                   retval = false;
                }
-//               updatetrimaUtils::logger(" PASSED\n");
+//               installLog << " PASSED\n";
             }
          }
          else    // it must be a float
          {
             float floatvalue = atof(value);
 
-            if ( rangeData[rngCtr].compareType == MIN )
+            if ( rangeData.compareType == MIN )
             {
-               if ( floatvalue < atof(rangeData[rngCtr].value) )
+               if ( floatvalue < atof(rangeData.value) )
                {
                   retval = false;
                }
             }
-            else if ( rangeData[rngCtr].compareType == MAX )
+            else if ( rangeData.compareType == MAX )
             {
-               if ( floatvalue > atof(rangeData[rngCtr].value) )
+               if ( floatvalue > atof(rangeData.value) )
                {
                   retval = false;
                }
             }
          }
+
+         installLog << " " << (retval ? "PASSED; " : "FAILED") << "\n";
+
          // if it failed then we can stop checking
          if (retval == false)
          {
@@ -2039,16 +2043,34 @@ bool installer::checkRange (const char* section, const char* key, const char* va
 
          foundInRangeData = false;
       }
-      rngCtr++;
+      rangeData = updatetrimaUtils::getNextRangeData();
+
+//      rngCtr++;
    }
 
-   if ( foundInRangeData )
+   if ( everFoundInRangeData )
    {
-      updatetrimaUtils::logger(" Found in range data, ", (retval ? "PASSED" : "FAILED"), "\n");
+      if (retval)
+      {
+         installLog << " Found in range data, PASSED all checks\n";
+      }
+      else
+      {
+         installLog << " Found in range data, FAILD a check\n";
+
+         if (rangeData.useLimit)
+         {
+            forceVal = rangeData.value;
+         }
+      }
+//      if (!retval && rangeData.useLimit)
+//      {
+//         forceVal = rangeData.value;
+//      }
    }
    else
    {
-      updatetrimaUtils::logger(" Not found in range data, PASSED by default\n");
+      installLog << " Not found in range data, PASSED by default\n";
    }
 
    return retval;
@@ -2156,8 +2178,7 @@ bool installer::updateConfigGeneric ()
    newdatfile.Initialize(TEMPLATES_PATH "/" FILE_CONFIG_DAT);
    if ( newdatfile.Error() )
    {
-      updatetrimaUtils::logger("Config file read error : ", templatedatfile.Error());
-      updatetrimaUtils::logger("\n");
+      installLog << "Config file read error : " << templatedatfile.Error() << "\n";
       retval = false;
       goto LEAVEupdateConfigGeneric;
    }
@@ -2171,15 +2192,14 @@ bool installer::updateConfigGeneric ()
       newdatfile.Initialize(PNAME_CONFIGDAT ".new");
       if ( newdatfile.Error() )
       {
-         updatetrimaUtils::logger("Config file read error : ", newdatfile.Error());
-         updatetrimaUtils::logger("\n");
+         installLog << "Config file read error : " << newdatfile.Error() << "\n";
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
    }
    else
    {
-      updatetrimaUtils::logger("copy of config.dat template failed\n");
+      installLog << "copy of config.dat template failed\n";
       retval = false;
       goto LEAVEupdateConfigGeneric;
    }
@@ -2208,41 +2228,47 @@ bool installer::updateConfigGeneric ()
       {
          strcpy(newVal, cfLine.cpValue());
 
-//         updatetrimaUtils::logger("Checking: ", section, " ", cfLine.cpName());
-//         updatetrimaUtils::logger(" ", newVal, "\n");
+//         installLog << "Checking: " << section << " " << cfLine.cpName() << " " << newVal << "\n";
 
          // get the value from the new config.dat
          strVal = newdatfile.GetString(section, cfLine.cpName());
+//         installLog << section << " " << cfLine.cpName() << " " << "Existing val: " << newVal << " Default val: " << strVal << "\n";
 
          // compare the values and check if the old value passes the range check for the new config.dat
-//         if ( strVal.compare(newVal) != 0 && checkRange(section, cfLine.cpName(), strVal.c_str()))
          if ( strVal.compare(newVal) != 0 )
          {
-            if ( checkRange(section, cfLine.cpName(), newVal) )
+            installLog << "Checking the range of value: " << section << " " << cfLine.cpName() << " " << newVal << " Default val: " << strVal << "\n";
+
+            std::string forceVal;
+
+            if ( checkRange(section, cfLine.cpName(), newVal, forceVal) )
 #ifdef JUST_LOOKING
             {
-//               updatetrimaUtils::logger("Config.dat setting: ", cfLine.cpName(), "=", newVal);
-//               updatetrimaUtils::logger(" differs from template config.dat & PASSES range check\n");
-               updatetrimaUtils::logger("Passed\n");
+               installLog << "Passed\n";
             }
             else
             {
-//               updatetrimaUtils::logger("Config.dat setting: ", cfLine.cpName(), "=", newVal);
-//               updatetrimaUtils::logger(" differs from template config.dat & FAILS range check\n");
-               updatetrimaUtils::logger("Failed\n");
+               installLog << "Failed\n";
             }
 #else       // not JUST_LOOKING
             {
                newdatfile.SetValue(section, cfLine.cpName(), newVal);
-               updatetrimaUtils::logger("Transferring setting for: ", section, " ", cfLine.cpName());
-               updatetrimaUtils::logger(", setting to: ", newVal, "\n");
+               installLog << " Transferring setting for: " << section << " " << cfLine.cpName() << ", setting to: " << newVal << "\n";
             }
             else
             {
-               updatetrimaUtils::logger("Range check failed for: ");
-               updatetrimaUtils::logger(section, " ", cfLine.cpName());
-               updatetrimaUtils::logger(" ", newVal);
-               updatetrimaUtils::logger(", Using default value of: ", strVal.c_str(), "\n");
+               installLog << " Range check failed for: " << section << " " << cfLine.cpName() << " " << newVal;
+
+               // if the compare failed and a forced value is provided, use it
+               if (forceVal.size() > 0)
+               {
+                  newdatfile.SetValue(section, cfLine.cpName(), forceVal.c_str());
+                  installLog << ", Using forced value of " << forceVal.c_str() << "\n";
+               }
+               else
+               {
+                  installLog << ", Using default value of " << strVal.c_str() << "\n";
+               }
             }
 #endif      // JUST_LOOKING
          }
@@ -2262,13 +2288,13 @@ bool installer::updateConfigGeneric ()
       // write the modified config.dat.new
       if ( !newdatfile.WriteCfgFile(FILE_CONFIG_DAT ".new") )
       {
-         updatetrimaUtils::logger("config.dat.new write failed\n");
+         installLog << "config.dat.new write failed\n";
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
       else
       {
-         updatetrimaUtils::logger("config.dat.new write worked\n");
+         installLog << "config.dat.new write worked\n";
       }
 
       ///////////////////////////////////
@@ -2276,8 +2302,7 @@ bool installer::updateConfigGeneric ()
       attrib(PNAME_CONFIGDAT, "-R");
       if ( cp(PNAME_CONFIGDAT ".new", PNAME_CONFIGDAT) == ERROR )
       {
-//         printf("copy of %s.new failed\n", PNAME_CONFIGDAT);
-         updatetrimaUtils::logger("copy of ", PNAME_CONFIGDAT, ".new failed.\n");
+         installLog << "copy of " << PNAME_CONFIGDAT << ".new failed.\n";
          retval = false;
          goto LEAVEupdateConfigGeneric;
       }
@@ -2425,73 +2450,38 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 {
    bool retval = 0;
 
-   int cntr            = 0;
-   int buildRef        = 0;
-   int largestMinorRev = 0;
-   int largestBuild    = 0;
-
-   char loggingBuff[256];
-
-   sprintf(loggingBuff, "Looking up build info for buildNum = %d.%d.%d\n", toVer.majorRev, toVer.minorRev, toVer.buildNum);
-   updatetrimaUtils::logger(loggingBuff);
-
-   // get the upgrade data for the version we're going to
-   // this gets the build info for the version that matches the major/minor revs and
-   // has the largest build number that isn't larger than the new build
-//    while ( sizeof(buildData) > 0 && strcmp(buildData[cntr].buildNum, "END") != 0 )
-   while ( strcmp(buildData[cntr].buildNum, "END") != 0 )
+   // get the info for the previous build
+//   updatetrimaUtils::getBuildInfo(fromVer, prevBuildRef);
+   if (!updatetrimaUtils::getBuildInfo(fromVer, prevBuildRef))
    {
-      int toMajorRev = 0;
-      int toMinorRev = 0;
-      int toBuild    = 0;
-
-      updatetrimaUtils::parseRevision(buildData[cntr].buildNum, toMajorRev, toMinorRev, toBuild);
-
-//        if ( toMajorRev == toVer.majorRev && toMinorRev == toVer.minorRev)
-      if ( toMajorRev == toVer.majorRev )
-      {
-         if ( toMinorRev >= largestMinorRev && toVer.minorRev >= toMinorRev )
-         {
-            largestMinorRev = toMinorRev;
-            buildRef        = cntr;
-//            sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
-//            updatetrimaUtils::logger(loggingBuff);
-
-            if (toBuild > largestBuild && toVer.buildNum >= toBuild)
-            {
-//               sprintf(loggingBuff, "Build info best match: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
-//               updatetrimaUtils::logger(loggingBuff);
-               buildRef     = cntr;
-               largestBuild = toBuild;
-            }
-            sprintf(loggingBuff, "Build info best match so far: %d.%d.%d\n", toMajorRev, toMinorRev, toBuild);
-            updatetrimaUtils::logger(loggingBuff);
-         }
-
-      }
-
-      cntr++;
-   }
-
-   if ( !buildRef )
-   {
-      updatetrimaUtils::logger("Build info not found - aborting install\n");
+      installLog << "Previous build info not found - aborting install\n";
       return(-1);
    }
+   installLog << "Previous build info: " << prevBuildRef << "\n";
 
    // record it for later use
-   newBuildData = buildData[buildRef];
+//   prevBuildData = updatetrimaUtils::getBuildData(prevBuildRef);
 
-   sprintf(loggingBuff, "Build best match found for the version given: %s\n", buildData[buildRef].buildNum);
-   updatetrimaUtils::logger(loggingBuff);
-
-   // check if this upgrade is allowed
-   if ( !allowedUpgrade(buildData[buildRef].ampro, buildData[buildRef].versalogic, buildData[buildRef].python, buildData[buildRef].ocelot) )
+   // get the info for the new build
+   if (!updatetrimaUtils::getBuildInfo(toVer, newBuildRef))
    {
-      updatetrimaUtils::logger("Upgrade to this version not allowed on this hardware\n");
+      installLog << "Build info not found - aborting install\n";
       return(-1);
    }
-   updatetrimaUtils::logger("Upgrade to this version is allowed on this hardware\n");
+   installLog << "Build info: " << newBuildRef << "\n";
+
+   // record it for later use
+   newBuildData = updatetrimaUtils::getBuildData(newBuildRef);
+
+   installLog << "Build best match found for the version given: " << newBuildData.buildNum << "\n";
+
+   // check if this upgrade is allowed
+   if ( !allowedUpgrade(newBuildData.ampro, newBuildData.versalogic, newBuildData.python, newBuildData.ocelot) )
+   {
+      installLog << "Upgrade to this version not allowed on this hardware\n";
+      return(-1);
+   }
+   installLog << "Upgrade to this version is allowed on this hardware\n";
 
    updatetrimaUtils::update_file_set_rdwrite(CONFIG_PATH);
 
@@ -2543,7 +2533,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #endif
 
    // Remove any old copy of features.bin in templates
-   updatetrimaUtils::logger("Removing any old copy of features.bin in templates\n");
+   installLog << "Removing any old copy of features.bin in templates\n";
    struct stat featuresFileStat;
 
    if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
@@ -2551,22 +2541,20 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       remove(TEMPLATES_PATH "/" FILE_FEATURES);
    }
 
-   updatetrimaUtils::logger("Extract the Trima files\n");
+   installLog << "Extract the Trima files\n";
    // extract the Trima files
-   if ( buildData[buildRef].extractType == 5 )
+   if ( newBuildData.extractType == 5 )
    {
       retval = extractUpdateFiles5();
-      // logStream << "Extract method 5" << endl;
    }
    else
    {
       retval = extractUpdateFiles6();
-      // logStream << "Extract method 6" << endl;
    }
 
    if ( !retval )
    {
-      updatetrimaUtils::logger("File extraction failed\n");
+      installLog << "File extraction failed\n";
       return(-1);
    }
 
@@ -2574,87 +2562,86 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    // Update the configuration files
    // do this before all other config.dat changes
-   updatetrimaUtils::logger("Update the configuration files\n");
-   if ( !updateConfigGeneric() )
+   // Don't do this if it's the same version
+   if (newBuildRef != prevBuildRef)
    {
-      updatetrimaUtils::logger("Configuration update failed\n");
-      return(-1);
+      installLog << "Update the configuration files\n";
+      if ( !updateConfigGeneric() )
+      {
+         installLog << "Configuration update failed\n";
+         return(-1);
+      }
    }
-
-/*
-   // make sure any of the config.dat values are not out of range
-   updatetrimaUtils::logger("Range checking config.dat for this version\n");
-   if ( rangeCheckConfig(buildRef) )
+   else
    {
-      updatetrimaUtils::logger("Made config.dat range adjustments\n");
+      installLog << "No config.dat key difference between the previous software version and the new one, using the existing config.dat unchanged.\n";
    }
-*/
 
    // update cal files
-   if ( buildData[buildRef].calFileType == 5 )
+   if ( newBuildData.calFileType == 5 )
    {
-      updatetrimaUtils::logger("Update cal ver 5\n");
+      installLog << "Update cal ver 5\n";
       updateCal5();
    }
    else
    {
-      updatetrimaUtils::logger("Update cal ver 6\n");
+      installLog << "Update cal ver 6\n";
       updateCal6();
    }
 
 //    updatetrimaUtils::logger("Do a bunch of stuff\n");
 // stuff to always do
-   updatetrimaUtils::logger("Updating Globvars\n");
+   installLog << "Updating Globvars\n";
    updateGlobVars();
-   updatetrimaUtils::logger("Updating RBC\n");
+   installLog << "Updating RBC\n";
    updateRBC();
-   updatetrimaUtils::logger("Updating Hardware\n");
+   installLog << "Updating Hardware\n";
    updateHW();
-   updatetrimaUtils::logger("Updating Software\n");
+   installLog << "Updating Software\n";
    updateSW();
-   updatetrimaUtils::logger("Updating Terror\n");
+   installLog << "Updating Terror\n";
    updateTerror();
-   updatetrimaUtils::logger("Updating Sounds\n");
+   installLog << "Updating Sounds\n";
    updateSounds();
-   updatetrimaUtils::logger("Updating Cassette\n");
+   installLog << "Updating Cassette\n";
    updateCassette();
-   updatetrimaUtils::logger("Updating Vista\n");
+   installLog << "Updating Vista\n";
    updateVista();
-   updatetrimaUtils::logger("Installing machine.id\n");
+   installLog << "Updating machine.id\n";
    installMachineId();
 
    // do different stuff for 6.3
-   if ( buildData[buildRef].setConfigCopy )
+   if ( newBuildData.setConfigCopy )
    {
-      updatetrimaUtils::logger("force copy setconfig file\n");
+      installLog << "force copy setconfig file\n";
       forceSetConfig();
    }
    else
    {
-      updatetrimaUtils::logger("update setconfig file\n");
+      installLog << "update setconfig file\n";
       updateSetConfig();
    }
 
    // validate the cassettes in setconfig.dat vs cassette.dat
-   updatetrimaUtils::logger("validating the setconfig file\n");
+   installLog << "validating the setconfig file\n";
    validateSetConfig();
 
    // if coming from 5.1.0-3 update trap files if called for
-   if ( buildData[buildRef].updateTrapFiles && fromVer.majorRev == 6 )
+   if ( newBuildData.updateTrapFiles && fromVer.majorRev == 6 )
    {
-      updatetrimaUtils::logger("update trap files\n");
+      installLog << "update trap file\n";
       copyTrapFiles();
    }
 
-   if ( buildData[buildRef].adjPostcount )
+   if ( newBuildData.adjPostcount )
    {
-      updatetrimaUtils::logger("update post count\n");
+      installLog << "update post count\n";
       updatePostCount();
    }
 
-   if ( buildData[buildRef].adjPASRAS )
+   if ( newBuildData.adjPASRAS )
    {
-      updatetrimaUtils::logger("check PAS & RAS settings\n");
+      installLog << "check PAS & RAS settings\n";
       checkPasSettings();
       checkRasSettings();
    }
@@ -2663,19 +2650,19 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    if ( (fromVer.majorRev == 6 || fromVer.majorRev == 7) &&
         (toVer.majorRev == 6 || toVer.majorRev == 7) )
    {
-      updatetrimaUtils::logger("check plasma RB\n");
+      installLog << "check plasma RB\n";
       checkPlasmaRB();
    }
 
    // update & check the CRCs
-   if ( buildData[buildRef].calFileType == 5 )
+   if ( newBuildData.calFileType == 5 )
    {
-      updatetrimaUtils::logger("checkCRC5\n");
+      installLog << "checkCRC5\n";
       retval = checkCRC5();
    }
    else
    {
-      updatetrimaUtils::logger("checkCRC6\n");
+      installLog << "checkCRC6\n";
       retval = checkCRC6();
    }
 
@@ -2685,16 +2672,14 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    }
 
 LEAVEROUTINE:
-
+   ;
 //    attrib( TEMP_PATH,"R" );
 
-   updatetrimaUtils::logger("Trima software update complete\n");
-//    updatetrimaUtils::logger("Trima software update complete.\n");
+   installLog << "Trima software update complete\n";
 
    // Delete the update script so that it doesn't run again on the subsequent boot if the GTS guy
    // is still holding down the buttons.
-   updatetrimaUtils::logger("Removing update script\n");
-//    updatetrimaUtils::logger("Removing update script.\n");
+   installLog << "Removing update script\n";
    remove(UPDATE_PATH "/projectrevision");
    remove(UPDATE_PATH "/updatetrima");
    remove(UPDATE_PATH "/updatetrima.taz");
@@ -2710,4 +2695,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 815f29f568e7acab7319ec5cecb6140b */
+/* FORMAT HASH 2e6fbd088c452e61d47033c9064a0fe5 */

@@ -118,7 +118,7 @@ protected:
 //
    virtual bool updateConfigGeneric ();
 
-   virtual bool checkRange (const char* section, const char* key, const char* value);
+   virtual bool checkRange (const char* section, const char* key, const char* value, std::string& forceVal);
 
 //
 // Main config file update function, calls the others
@@ -188,9 +188,12 @@ protected:
 
    const char*     currVersion;
    const char*     newVersion;
+   int             newBuildRef;
    buildDataStruct newBuildData;
+   int             prevBuildRef;
+//   buildDataStruct prevBuildData;
 
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 09794f64d9f58d5f92519770870f2b8d */
+/* FORMAT HASH 56575ef5f8cfa284a58249e095abab37 */
