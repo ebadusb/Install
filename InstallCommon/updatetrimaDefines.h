@@ -182,6 +182,17 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
     #define PNAME_DATA_CRC PNAME_DATA_CRC_FILE
 #endif
 
+#ifndef SAFETY_COMMON_KERNEL_INIT_PATH
+   #define SAFETY_COMMON_KERNEL_INIT_PATH  CONFIG_PATH "/kernel_init/safety"
+#endif
+
+#ifndef SAFETY_KERNEL_INIT_SRC
+   #define SAFETY_KERNEL_INIT_SRC          TRIMA_PATH  "/kernel_init/safety_init.out"
+#endif
+
+#ifndef SAFETY_KERNEL_INIT_TMP
+   #define SAFETY_KERNEL_INIT_TMP          TEMP_PATH   "/safety_init.out"
+#endif
 
 // for the new logging
 #ifndef INSTALL_LOG_PATH
@@ -219,4 +230,4 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
 
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH 2f62a486c2131574f685677e5705875b */
+/* FORMAT HASH e14b234929a8de873543eb4f9e2434f7 */

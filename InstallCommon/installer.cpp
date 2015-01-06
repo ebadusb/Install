@@ -1342,9 +1342,10 @@ bool installer::extractUpdateFiles6 ()
 
    bootStringToStruct(sysBootLine, params);
    bool defaultBootImage = ( strcmp(params->bootFile, "/ata0/vxWorks") == 0 );
+   bool isCommonKernel   = ( strcmp(params->bootFile, "/ata0a/vxWorks") == 0 );
    delete params;
 
-   if ( defaultBootImage )
+   if ( defaultBootImage || isCommonKernel )
    {
       //
       // Save off the old vxWorks image in case of failure ...
@@ -1528,33 +1529,71 @@ bool installer::extractUpdateFiles6 ()
       return false;
    }
 
+   struct stat fileStat;
+
+   // Look for Safety's Common Kernel boot files (vxboot_safety.taz)
+   if ( stat((char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
+   {
+      // Remove the files that will be installed by the extraction
+      xdelete(SAFETY_COMMON_KERNEL_INIT_PATH);
+
+      updatetrimaUtils::logger("Extracting the safety vxboot files...\n");
+
+      if (tarExtract(UPDATE_PATH "/vxboot_safety.taz", SAFETY_COMMON_KERNEL_INIT_PATH) == ERROR)
+      {
+         updatetrimaUtils::logger("Extraction of the safety vxboot files failed.\n");
+      }
+
+      if (remove(UPDATE_PATH "/vxboot_safety.taz") == ERROR)
+      {
+         updatetrimaUtils::logger("Removal of Tools archive image failed\n");
+      }
+
+      // One other special-case for Common Kernel: to compute the same CRC that
+      // Safety computes for its kernel init module, we do what Control does
+      // during init and copy Safety's module to /machine/tmp.
+      if (cp(SAFETY_KERNEL_INIT_SRC, SAFETY_KERNEL_INIT_TMP) == ERROR)
+      {
+         updatetrimaUtils::logger("Temp copy of safety's kernel init file failed: ", SAFETY_KERNEL_INIT_SRC, "\n");
+      }
+   }
+
    //
    // Copy over the safety images depending on the board type.
    //
-//    if ( IsVendor( "Ampro" ) )
-   if ( isAmpro() )
+   // If there are files in SAFETY_BOOT_PATH install Safety from there
+   if ( attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys", "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR)
    {
-      updatetrimaUtils::logger("Copying Safety Ampro bootrom.sys and vxworks to ", SAFETY_BOOT_PATH);
-
-      if ( cp(SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE)    == ERROR ||
-           cp(SAFETY_BOOT_PATH "/vxWorks_ampro", SAFETY_VXWORKS_IMAGE)    == ERROR )
+      if ( isAmpro() )
       {
-         updatetrimaUtils::logger("Install of OS image failed\n");
-         return false;
+         updatetrimaUtils::logger("Copying Safety Ampro bootrom.sys and vxworks to ", SAFETY_BOOT_PATH);
+
+         if ( cp(SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE)    == ERROR ||
+              cp(SAFETY_BOOT_PATH "/vxWorks_ampro", SAFETY_VXWORKS_IMAGE)    == ERROR )
+         {
+            updatetrimaUtils::logger("Install of OS image failed\n");
+            return false;
+         }
+      }
+      else
+      {
+         updatetrimaUtils::logger("Copying Safety Versalogic bootrom.sys and vxworks to ", SAFETY_BOOT_PATH, "\n");
+
+         if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic", SAFETY_VXWORKS_IMAGE)     == ERROR ||
+              cp(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", SAFETY_BOOTROM_IMAGE)     == ERROR ||
+              cp(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_VXWORKS_PXE_IMAGE) == ERROR ||
+              cp(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", SAFETY_BOOTROM_PXE_IMAGE) == ERROR )
+         {
+            updatetrimaUtils::logger("Install of OS image failed\n");
+            return false;
+         }
       }
    }
-   else
+   else if ( attrib(SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", "-R") == ERROR )
    {
-      updatetrimaUtils::logger("Copying Safety Versalogic bootrom.sys and vxworks to ", SAFETY_BOOT_PATH, "\n");
-
-      if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic", SAFETY_VXWORKS_IMAGE)     == ERROR ||
-           cp(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", SAFETY_BOOTROM_IMAGE)     == ERROR ||
-           cp(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_VXWORKS_PXE_IMAGE) == ERROR ||
-           cp(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", SAFETY_BOOTROM_PXE_IMAGE) == ERROR )
-      {
-         updatetrimaUtils::logger("Install of OS image failed\n");
-         return false;
-      }
+      // If there aren't files in SAFETY_BOOT_PATH or SAFETY_KERNEL_INIT_PATH abort the install
+      return false;
    }
 
    //
@@ -1582,8 +1621,6 @@ bool installer::extractUpdateFiles6 ()
 
 
    // Uncompress the optional tools archive if it exists
-   struct stat fileStat;
-
    if ( stat((char*)UPDATE_PATH "/engr_tools.taz", &fileStat) == OK )
    {
       updatetrimaUtils::logger("Extracting the engr tools files...\n");
@@ -1662,13 +1699,13 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH  "/rbcdat.crc");
    softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH  "/cassette.crc");
    softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH  "/setconfig.crc");
-   softcrc("-filelist " FILELISTS_PATH "/graphics.files	-update "   PNAME_GUI_GRAPHICS_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/strings.files		-update "PNAME_STRING_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/fonts.files		-update "PNAME_FONT_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/data.files		-update "PNAME_DATA_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/safety.files		-update "TRIMA_PATH"/safety.crc");
-   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH       "/trima.crc");
-   softcrc("-filelist " FILELISTS_PATH "/machine.files		-update "CONFIG_CRC_PATH"/machine.crc");
+   softcrc("-filelist " FILELISTS_PATH "/graphics.files  -update " PNAME_GUI_GRAPHICS_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRING_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/fonts.files     -update " PNAME_FONT_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/data.files      -update " PNAME_DATA_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/safety.files    -update " TRIMA_PATH "/safety.crc");
+   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH "/trima.crc");
+   softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH "/machine.crc");
 
    // Separate check for TERROR since the file may or may not exist
    const int terrorExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
@@ -1693,19 +1730,19 @@ bool installer::checkCRC6 ()
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
 
    // Verify the installation CRC values
-   if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files	-verify "CONFIG_CRC_PATH"/caldat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/config.files	-verify "CONFIG_CRC_PATH"/config.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files		-verify "CONFIG_CRC_PATH"/hwdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	-verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/cassette.files	-verify "CONFIG_CRC_PATH"/cassette.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files	-verify "CONFIG_CRC_PATH"/setconfig.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/graphics.files	-verify "PNAME_GUI_GRAPHICS_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify "   PNAME_STRING_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify "   PNAME_FONT_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify "   PNAME_DATA_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/safety.files	-verify "TRIMA_PATH"/safety.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/trima.files		-verify "TRIMA_PATH"/trima.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/machine.files	-verify "CONFIG_CRC_PATH"/machine.crc"))
+   if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files    -verify " CONFIG_CRC_PATH "/caldat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/config.files    -verify " CONFIG_CRC_PATH "/config.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files     -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	   -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/cassette.files  -verify " CONFIG_CRC_PATH "/cassette.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/graphics.files  -verify " PNAME_GUI_GRAPHICS_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify " PNAME_STRING_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify " PNAME_FONT_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify " PNAME_DATA_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/safety.files    -verify " TRIMA_PATH "/safety.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/trima.files     -verify " TRIMA_PATH "/trima.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/machine.files   -verify " CONFIG_CRC_PATH "/machine.crc"))
    {
       return false;
    }
@@ -2695,4 +2732,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 2e6fbd088c452e61d47033c9064a0fe5 */
+/* FORMAT HASH a4d896ab5acc87f2640fa66bf3cbb9ce */
