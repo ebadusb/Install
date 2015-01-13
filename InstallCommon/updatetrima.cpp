@@ -16,7 +16,6 @@
 using namespace std;
 
 FILE* development_only_file;
-// bool  development_only;
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +43,7 @@ bool findTazRevision (const char* searchFileName, char* tazRevString)
    char        tmpBuffer[baselen + overlap];
    char        tmpChar;
    char        revBuffer[100];
-   int         ctr  = 0;
+   int         ctr = 0;
    int         i;
    bool        done = false;
 
@@ -58,7 +57,7 @@ bool findTazRevision (const char* searchFileName, char* tazRevString)
 //        cerr << searchFileName << " open" << endl;
 
       // Read the initial buffer-full, including the overlap area
-      bytesRead    = gzread(fromFD, tmpBuffer, sizeof(tmpBuffer));
+      bytesRead = gzread(fromFD, tmpBuffer, sizeof(tmpBuffer));
 
       bytesRead   -= overlap;
       totBytesRead = bytesRead;
@@ -178,11 +177,11 @@ bool extractTopLevelFiles ()
 {
    //
    // Extract the update files
-   updatetrimaUtils::logger("Extracting updateTrima ...\n");
+   installLog << "Extracting updateTrima ...\n";
 
    if ( tarExtract(UPDATE_PATH "/updateTrima.taz", UPDATE_PATH) == ERROR )
    {
-      updatetrimaUtils::logger("Extraction of top level update files failed\n");
+      installLog << "Extraction of top level update files failed\n";
       return false;
    }
 
@@ -207,7 +206,7 @@ static STATUS mySymFindByName (SYMTAB_ID symTblId, const char* name, char** pVal
    symDesc.name    = symName;
    symDesc.nameLen = strlen(symName);
    STATUS status = symFind(symTblId, &symDesc);
-   *pValue         = symDesc.value;
+   *pValue = symDesc.value;
 
 #endif
 
@@ -219,18 +218,16 @@ static STATUS mySymFindByName (SYMTAB_ID symTblId, const char* name, char** pVal
 //////////////////////////////////////////////////////////////////////////////////////
 int updateTrima ()
 {
-   char          logBuff[256];
-
    versionStruct toVer;
    versionStruct fromVer;
 
-   SYM_TYPE      symType;
-   int           (* keyboardattachedFunc)(void);
+   SYM_TYPE symType;
+   int      (* keyboardattachedFunc)(void);
 
-   int           retval                 = 0;
+   int retval = 0;
 
-   bool          topLevelFilesExtracted = false;
-   char          revString[50];
+   bool topLevelFilesExtracted = false;
+   char revString[50];
 
    // what does the upgrade work
    installer upgrader;
@@ -238,35 +235,27 @@ int updateTrima ()
    // open the install log file
    installLog.open(PNAME_INSTALL_LOG);
 
-   //////////////////////////////////////
-   // version numbering test
-
-//    char vernum[80];
-//    strcpy(vernum, INSTALL_VERSION);
-//    cerr << "Veraion Number: " << vernum << endl;
-// #ifndef INSTALL_VERSION
-//    #define INSTALL_VERSION "development build"
-// #endif
-//    cerr << "Version Number: " << INSTALL_VERSION << endl;
-//    goto LEAVEROUTINE;
-
    //
    // Make sure we don't interrupt anybody else who is running ...
    //
    taskPrioritySet(taskIdSelf(), TRIMA_PRIORITY);
 
-//   development_only = false;
-
    // the is a development install if a keyboard is attached or the development_only file is present
+   updatetrimaUtils::development_install = false;
+
    development_only_file = fopen("/machine/update/development_only", "r");
-   installLog << "Found /machine/update/development_only\n";
-
-   updatetrimaUtils::development_install = (development_only_file ? true : false); // Don't hate the conditional operator
-
-   if ( mySymFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc) == OK )
+   if (development_only_file)
    {
-      updatetrimaUtils::development_install |= keyboardattachedFunc();
-      installLog << "Found a keyboard attached\n";
+      installLog << "Found /machine/update/development_only\n";
+      updatetrimaUtils::development_install = true;
+   }
+   else if (mySymFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc) == OK)
+   {
+      if (keyboardattachedFunc())
+      {
+         updatetrimaUtils::development_install = true;
+         installLog << "Found a keyboard attached\n";
+      }
    }
 
    if ( updatetrimaUtils::development_install )
@@ -274,7 +263,7 @@ int updateTrima ()
       installLog << "----- PERFORMING A DEVELOPMENT INSTALL -----\n";
    }
 
-   updatetrimaUtils::logger("Reading software revision string for the new version from updateTrima.taz file.\n");
+   installLog << "Reading software revision string for the new version from updateTrima.taz file.\n";
 
    // Get the revision string from the taz file the easy way - works for new taz files
    if ( findTazRevision(UPDATE_PATH "/updateTrima.taz", revString) )
@@ -283,20 +272,18 @@ int updateTrima ()
       {
          updatetrimaUtils::logToScreen = false;
       }
-      updatetrimaUtils::logger("Software revision string from updateTrima.taz is: ");
-      updatetrimaUtils::logger(revString);
-      updatetrimaUtils::logger("\n");
+      installLog << "Software revision string from updateTrima.taz is: " << revString << "\n";
+
       updatetrimaUtils::logToScreen = true;
    }
    else   // Try getting it the hard way
    {
-      updatetrimaUtils::logger("Can't read software version from updateTrima.taz,");
-      updatetrimaUtils::logger("uncompressing it to look in trima.taz\n");
+      installLog << "Can't read software version from updateTrima.taz, uncompressing it to look in trima.taz\n";
 
       if ( (topLevelFilesExtracted = extractTopLevelFiles()) )
       {
-         updatetrimaUtils::logger("Extracted top level files.\n");
-         updatetrimaUtils::logger("Reading software revision string from trima.taz file.\n");
+         installLog << "Extracted top level files.\n";
+         installLog << "Reading software revision string from trima.taz file.\n";
 
          if ( findTazRevision(UPDATE_PATH "/trima.taz", revString) )
          {
@@ -304,22 +291,21 @@ int updateTrima ()
             {
                updatetrimaUtils::logToScreen = false;
             }
-            updatetrimaUtils::logger("Software revision string from trima.taz is: ");
-            updatetrimaUtils::logger(revString);
-            updatetrimaUtils::logger("\n");
+            installLog << "Software revision string from trima.taz is: " << revString << "\n";
+
             updatetrimaUtils::logToScreen = true;
          }
          else
          {
             // Can't get the taz version
-            updatetrimaUtils::logger("Can't read the software version from trima.taz file, aborting update.\n");
+            installLog << "Can't read the software version from trima.taz file, aborting update.\n";
             return(-1);
          }
       }
       else
       {
          // Can't get the taz version
-         updatetrimaUtils::logger("Can't extract trima.taz from updateTrima.taz, aborting update.\n");
+         installLog << "Can't extract trima.taz from updateTrima.taz, aborting update.\n";
          return(-1);
       }
    }
@@ -328,32 +314,31 @@ int updateTrima ()
    if ( !updatetrimaUtils::parseRevision(revString, toVer.majorRev, toVer.minorRev, toVer.buildNum) )
    {
       // Can't parse the string into anything intelligible
-      updatetrimaUtils::logger("Can't determine software version from revision string, aborting update.\n");
+      installLog << "Can't determine software version from revision string, aborting update.\n";
       return(-1);
    }
    if ( updatetrimaUtils::development_install )
    {
       updatetrimaUtils::logToScreen = false;
    }
-   updatetrimaUtils::logger("Software version for the new version from updateTrima.taz is: ");
-   sprintf(logBuff, "%d.%d.%d\n", toVer.majorRev, toVer.minorRev, toVer.buildNum);
-   updatetrimaUtils::logger(logBuff);
-   updatetrimaUtils::logger("\n");
+   installLog << "Software version for the new version from updateTrima.taz is: "
+              << " " << toVer.majorRev
+              << "." << toVer.minorRev
+              << "." << toVer.buildNum
+              << "\n";
+
    updatetrimaUtils::logToScreen = true;
 
-
-
    // Read the "from" revision
-   updatetrimaUtils::logger("Reading software revision string of software installed on the machine.\n");
+   installLog << "Reading software revision string of software installed on the machine.\n";
    if ( readProjectRevisionFile(revString) )
    {
       if ( updatetrimaUtils::development_install )
       {
          updatetrimaUtils::logToScreen = false;
       }
-      updatetrimaUtils::logger("Software revision string of software installed on the machine is: ");
-      updatetrimaUtils::logger(revString);
-      updatetrimaUtils::logger("\n");
+      installLog << "Software revision string of software installed on the machine is: " << revString << "\n";
+
       updatetrimaUtils::logToScreen = true;
 
 
@@ -361,30 +346,31 @@ int updateTrima ()
       if ( !updatetrimaUtils::parseRevision(revString, fromVer.majorRev, fromVer.minorRev, fromVer.buildNum) )
       {
          // Can't parse the string into anything intelligible
-         updatetrimaUtils::logger("Can't determine software version from revision string, aborting update.\n");
+         installLog << "Can't determine software version from revision string, aborting update.\n";
          return(-1);
       }
    }
    else
    {
       // Can't read the projectrevision file
-      updatetrimaUtils::logger("Can't read the software revision string of software installed on the machine, aborting update.\n");
+      installLog << "Can't read the software revision string of software installed on the machine, aborting update.\n";
       return(-1);
    }
 
-   updatetrimaUtils::logger("Software version for the installed version is: ");
-   sprintf(logBuff, "%d.%d.%d\n", fromVer.majorRev, fromVer.minorRev, fromVer.buildNum);
-   updatetrimaUtils::logger(logBuff);
-   updatetrimaUtils::logger("\n");
+   installLog << "Software version for the installed version is: "
+              << " " << fromVer.majorRev
+              << "." << fromVer.minorRev
+              << "." << fromVer.buildNum
+              << "\n";
 
    // Extract the top-level files, if haven't done it already
    if ( retval != -1 && !topLevelFilesExtracted )
    {
-      updatetrimaUtils::logger("Extracting top level files.\n");
+      installLog << "Extracting top level files.\n";
 
       if ( (topLevelFilesExtracted = extractTopLevelFiles()) == false )
       {
-         updatetrimaUtils::logger("Can't extract top level files from updateTrima.taz, aborting update.\n");
+         installLog << "Can't extract top level files from updateTrima.taz, aborting update.\n";
          retval = -1;
          goto LEAVEROUTINE;
       }
@@ -393,7 +379,7 @@ int updateTrima ()
    // Delete the "special" files if it isn't a development install
    if ( !updatetrimaUtils::development_install )
    {
-      updatetrimaUtils::logger("Deleting special files.");
+      installLog << "Deleting special files.";
 
       for ( int i = 0; i < numInstallSpecialFiles; i++ )
       {
@@ -436,31 +422,38 @@ LEAVEROUTINE:
    remove(UPDATE_PATH "/vxboot.taz");
 
    // Write an install summary
-   updatetrimaUtils::logger("Install summary:\n");
+   installLog << "Install summary:\n";
    if ( retval == 0 )
    {
-      updatetrimaUtils::logger("     Install successful\n");
+      installLog << "     Install successful\n";
       if ( !updatetrimaUtils::development_install )
       {
          updatetrimaUtils::logToScreen = false;
       }
 
-      char tmpBuff[256];
-      sprintf(tmpBuff, "     Old software version: %d.%d.%d\n", fromVer.majorRev, fromVer.minorRev, fromVer.buildNum);
-      updatetrimaUtils::logger(tmpBuff);
-      sprintf(tmpBuff, "     New software version: %d.%d.%d\n", toVer.majorRev, toVer.minorRev, toVer.buildNum);
-      updatetrimaUtils::logger(tmpBuff);
+      installLog << "     Old software version:"
+                 << " " << fromVer.majorRev
+                 << "." << fromVer.minorRev
+                 << "." << fromVer.buildNum
+                 << "\n";
+
+      installLog << "     New software version:"
+                 << " " << toVer.majorRev
+                 << "." << toVer.minorRev
+                 << "." << toVer.buildNum
+                 << "\n";
+
       updatetrimaUtils::logToScreen = true;
    }
    else
    {
-      updatetrimaUtils::logger("     Install failed\n");
+      installLog << "     Install failed\n";
    }
-   updatetrimaUtils::logger("\n");
+   installLog << "\n";
 
    installLog.close();
 
    return( retval );
 }
 
-/* FORMAT HASH 757ab1d2162ee8f756f9cd10d0c13521 */
+/* FORMAT HASH 3edea9ec7f39adc1975d782f6b5f15c0 */

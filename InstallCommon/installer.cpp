@@ -565,6 +565,10 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
       if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
       {
          remove(tempFile.c_str());
+         if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
+         {
+            installLog << "remove of " <<  tempFile.c_str() << " failed.\n";
+         }
       }
 
       // unzip the file to a temp file
@@ -614,7 +618,12 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                }
 
                // delete the original file
+               attrib(filename, "-R");
                remove(filename);
+               if ( stat((char*)filename, &fileStat) == OK )
+               {
+                  installLog << "remove of " <<  filename << " failed.\n";
+               }
 
                // zip the temp file to the original file name
                if (updatetrimaUtils::zipFile(tempFile.c_str(), filename) == 0)
@@ -628,9 +637,18 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                   retval = true;
                }
 
-               // clean up file
+               // clean up files (I created them, so they must be writable)
                remove(tempFile.c_str());
+               if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
+               {
+                  installLog << "remove of " <<  tempFile.c_str() << " failed.\n";
+               }
+
                remove(bakFile.c_str());
+               if ( stat((char*)(bakFile.c_str()), &fileStat) == OK )
+               {
+                  installLog << "remove of " <<  bakFile.c_str() << " failed.\n";
+               }
             }
             else     // couldn't get a serial number
             {
@@ -639,6 +657,10 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                // close & delete the temp file
                fclose(tempfp);
                remove(tempFile.c_str());
+               if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
+               {
+                  installLog << "remove of " <<  tempFile.c_str() << " failed.\n";
+               }
             }
          }
          else
@@ -647,6 +669,10 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 
             // delete the temp file
             remove(tempFile.c_str());
+            if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
+            {
+               installLog << "remove of " <<  tempFile.c_str() << " failed.\n";
+            }
          }
       }
       else   // couldn't unzip file
@@ -669,9 +695,12 @@ void installer::updateSW ()
 
    if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
    {
+      installLog << TEMPLATES_PATH << "/" << FILE_FEATURES << " does exist.\n";
 
       if ( appendSerialNumToZipFile(TEMPLATES_PATH "/" FILE_FEATURES, true) )
       {
+         installLog << "appendSerialNumToZipFile succeeded.\n";
+
          // copy features.bin to the config directory
          attrib(PNAME_FEATURES, "-R");
          if ( cp(TEMPLATES_PATH "/" FILE_FEATURES, PNAME_FEATURES) == ERROR )
@@ -681,23 +710,42 @@ void installer::updateSW ()
 
          attrib(PNAME_FEATURES, "+R");
       }
+      else
+      {
+         installLog << "appendSerialNumToZipFile failed\n";
+      }
 
       // remove the old sw.dat files
+      attrib(PNAME_SWDAT, "-R");
       remove(PNAME_SWDAT);
+      if ( stat((char*)PNAME_SWDAT, &featuresFileStat) == OK )
+      {
+         installLog << "Delete of " << PNAME_SWDAT << " failed\n";
+      }
+
+      attrib(TEMPLATES_PATH, "-R");
       remove(TEMPLATES_PATH "/" FILE_SW_DAT);
+      if ( stat((char*)TEMPLATES_PATH, &featuresFileStat) == OK )
+      {
+         installLog << "Delete of " << TEMPLATES_PATH << "/" << FILE_SW_DAT << " failed\n";
+      }
 
    }
    else
    {
+      installLog << TEMPLATES_PATH << "/" << FILE_FEATURES << " does not exist.\n";
+
       // Not installing features.bin so delete any that exist in config directory
       if ( stat((char*)PNAME_FEATURES, &featuresFileStat) == OK )
       {
-         remove(PNAME_FEATURES);
-      }
+         installLog << "removing " << PNAME_FEATURES << "\n";
 
-      if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
-      {
-         remove(TEMPLATES_PATH "/" FILE_FEATURES);
+         attrib(PNAME_FEATURES, "-R");
+         remove(PNAME_FEATURES);
+         if ( stat((char*)PNAME_FEATURES, &featuresFileStat) == OK )
+         {
+            installLog << "remove of " << PNAME_FEATURES << " failed\n";
+         }
       }
 
       // Replace sw.dat if the version number has changed
@@ -1191,19 +1239,8 @@ void installer::updateCal6 ()
 
 bool installer::extractUpdateFiles5 ()
 {
-   // This is done by the extractTopLevelFiles in updatetrima.cpp
-   /*
    //
-   // Extract the update files
-   updatetrimaUtils::logger("Extracting updateTrima ...\n" );
-   if ( tarExtract( "/machine/update/updateTrima.taz", "/machine/update" ) == ERROR )
-   {
-       updatetrimaUtils::logger("Extraction of update files failed\n" );
-       return false;
-   }
-*/
-   //
-   // If we booted up using the default vxWorks image, then
+   // If we booted up using the default vxWorks (and not vxWorks.old) image, then
    //  save it for emergency cases ...
    //
    BOOT_PARAMS* params = new BOOT_PARAMS;
@@ -1322,18 +1359,6 @@ bool installer::extractUpdateFiles5 ()
 
 bool installer::extractUpdateFiles6 ()
 {
-   // This is done by the extractTopLevelFiles in updatetrima.cpp
-   /*
-   //
-   // Extract the update files
-   updatetrimaUtils::logger("Extracting updateTrima ...\n");
-   if ( tarExtract( UPDATE_PATH "/updateTrima.taz", UPDATE_PATH ) == ERROR )
-   {
-       updatetrimaUtils::logger("Extraction of update files failed\n");
-       return false;
-   }
-*/
-
    //
    // If we booted up using the default vxWorks image, then
    //  save it for emergency cases ...
@@ -1392,7 +1417,6 @@ bool installer::extractUpdateFiles6 ()
    //
    // Copy over the control images depending on the board type.
    //
-//    if ( IsVendor( "Ampro" ) )
    if ( isAmpro() )
    {
       updatetrimaUtils::logger("Copying Control Ampro bootrom.sys and vxworks to ", VXBOOT_PATH);
@@ -2732,4 +2756,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH a4d896ab5acc87f2640fa66bf3cbb9ce */
+/* FORMAT HASH b66e15fc66f8f3adadf5cf7e53983780 */

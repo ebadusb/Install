@@ -126,8 +126,6 @@ public:
 
    static int zipFile (const char* from, const char* to);
 
-//   bool parseRevision(const char *revString, TrimaVersion &parsedVersion);
-
    static FileCallBackStatus update_clean_file (const char* fullPathName);
 
    static FileCallBackStatus update_file_set_rdwrite (const char* fullPathName);
@@ -204,4 +202,4 @@ protected:
 
 #endif // UPDATETRIMAUTILS_H
 
-/* FORMAT HASH 57053f4d83a7aac5e1cfff0a5215ae2d */
+/* FORMAT HASH b961e8d855b4c22a1fd0362aac0682d8 */

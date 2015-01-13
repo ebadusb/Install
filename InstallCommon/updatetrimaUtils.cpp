@@ -38,6 +38,20 @@ int softcrc (const char* options);
 };
 #endif
 
+// stringify macros
+#define strfy1(x) strfy2(x)
+#define strfy2(x) #x
+
+#ifndef INSTALL_BUILD_DATE
+   #define INSTALL_BUILD_DATE "build date not available"
+#endif
+#ifndef INSTALL_BUILD_USER
+   #define INSTALL_BUILD_USER "user name not available"
+#endif
+#ifndef INSTALL_BUILD_MACHINE
+   #define INSTALL_BUILD_MACHINE "full computer name not available"
+#endif
+
 extern installLogStream installLog;
 
 extern "C" STATUS xdelete (const char* fileName);
@@ -625,19 +639,35 @@ installLogStream::~installLogStream()
 
 bool installLogStream::open (const char* filename)
 {
+   char usrStr[256];
+   memset(usrStr, 0, sizeof(usrStr));
+   strcpy(usrStr, INSTALL_BUILD_USER);
+
+   char machStr[256];
+   memset(machStr, 0, sizeof(machStr));
+   strcpy(machStr, INSTALL_BUILD_MACHINE);
+
+   char* namePtr = 0;
+   namePtr = strtok(usrStr+9, " ");  // +9 to skip the "User name" & strtok to skip the spaces
+
+   char* machPtr = 0;
+   machPtr = strtok(machStr+18, " .");  // +18 to skip the "Full Computer name" & strtok to skip the spaces + kill the .'s
+
    bool retval = false;
 
    mkdir(INSTALL_LOG_PATH);
 
-//    printf("installLogStream::open filename: %s\n", filename);
-
    ofstream* newStream = new ofstream(filename);
    if ( newStream->is_open() )
    {
-//       printf("installLogStream::open file opened\n");
       string hdrString;
       updatetrimaUtils::logFileHeader(hdrString);
-      *newStream << hdrString.c_str() << "\n\n";
+      *newStream << hdrString.c_str() << "\n";
+      *newStream << "Install Build Date: " << INSTALL_BUILD_DATE << "\n";
+//      *newStream << "Install Build User: " << INSTALL_BUILD_USER << "\n";
+      *newStream << "Install Build User: " << namePtr << "\n";
+//      *newStream << "Install Build Machine: " << INSTALL_BUILD_MACHINE << "\n\n";
+      *newStream << "Install Build Machine: " << machPtr << "\n\n";
       newStream->flush();
 
       streamVect.push_back(newStream);
@@ -750,4 +780,4 @@ installLogStream& installLogStream::operator << (ostream& stuff)
 }
 */
 
-/* FORMAT HASH e88984fc116a1c6533c412fa11c83565 */
+/* FORMAT HASH 7bce6023b593a3595f10e4e78c975bf2 */
