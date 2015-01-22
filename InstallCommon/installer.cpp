@@ -817,6 +817,47 @@ void installer::updateSounds ()
    fflush(stderr);
 }
 
+void installer::updateBarcodeCategories ()
+{
+   struct stat fileStat;
+
+   // if there's a barcode file in templates install it, otherwise delete any in config
+   if ( stat( (char*)TEMPLATES_PATH "/" FILE_BARCODECATEGORY_DAT, &fileStat) == OK )
+   {
+      // Replace existing one if the version number has changed
+      currVersion = findSetting("file_version=", PNAME_BARCODECATEGORYDAT);
+      newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_BARCODECATEGORY_DAT);
+
+      if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
+      {
+         if( currVersion == NULL )
+         {
+            currVersion = "(NON EXISTANT)";
+         }
+         installLog << "Updating " << FILE_BARCODECATEGORY_DAT << " to new version " << newVersion << " from existing version " << currVersion << "\n";
+
+         attrib(PNAME_BARCODECATEGORYDAT, "-R");
+
+         if ( cp(TEMPLATES_PATH "/" FILE_BARCODECATEGORY_DAT, PNAME_BARCODECATEGORYDAT) == ERROR )
+         {
+            installLog << "copy of " << FILE_BARCODECATEGORY_DAT << " failed\n";
+         }
+         else
+         {
+            installLog << "copy of " << FILE_BARCODECATEGORY_DAT << " succeeded\n";
+         }
+
+         attrib(PNAME_BARCODECATEGORYDAT, "+R");
+         fflush(stdout);
+      }
+   }
+   else
+   {
+      attrib(PNAME_BARCODECATEGORYDAT, "-R");
+      remove(PNAME_BARCODECATEGORYDAT);
+   }
+}
+
 void installer::updateCassette ()
 {
    // Replace cassette.dat if the version number has changed
@@ -1717,19 +1758,20 @@ bool installer::checkCRC6 ()
    // Update configuration CRC values
    mkdir(CONFIG_CRC_PATH);
 
-   softcrc("-filelist " FILELISTS_PATH "/caldat.files    -update " CONFIG_CRC_PATH  "/caldat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/config.files    -update " CONFIG_CRC_PATH  "/config.crc");
-   softcrc("-filelist " FILELISTS_PATH "/hwdat.files     -update " CONFIG_CRC_PATH  "/hwdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files    -update " CONFIG_CRC_PATH  "/rbcdat.crc");
-   softcrc("-filelist " FILELISTS_PATH "/cassette.files  -update " CONFIG_CRC_PATH  "/cassette.crc");
-   softcrc("-filelist " FILELISTS_PATH "/setconfig.files -update " CONFIG_CRC_PATH  "/setconfig.crc");
-   softcrc("-filelist " FILELISTS_PATH "/graphics.files  -update " PNAME_GUI_GRAPHICS_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/strings.files   -update " PNAME_STRING_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/fonts.files     -update " PNAME_FONT_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/data.files      -update " PNAME_DATA_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/safety.files    -update " TRIMA_PATH "/safety.crc");
-   softcrc("-filelist " FILELISTS_PATH "/trima.files     -update " TRIMA_PATH "/trima.crc");
-   softcrc("-filelist " FILELISTS_PATH "/machine.files   -update " CONFIG_CRC_PATH "/machine.crc");
+   softcrc("-filelist " FILELISTS_PATH "/caldat.files              -update " CONFIG_CRC_PATH  "/caldat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/config.files              -update " CONFIG_CRC_PATH  "/config.crc");
+   softcrc("-filelist " FILELISTS_PATH "/hwdat.files               -update " CONFIG_CRC_PATH  "/hwdat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/rbcdat.files              -update " CONFIG_CRC_PATH  "/rbcdat.crc");
+   softcrc("-filelist " FILELISTS_PATH "/cassette.files            -update " CONFIG_CRC_PATH  "/cassette.crc");
+   softcrc("-filelist " FILELISTS_PATH "/barcode_categories.files  -update " CONFIG_CRC_PATH  "/barcode_categories.crc");
+   softcrc("-filelist " FILELISTS_PATH "/setconfig.files           -update " CONFIG_CRC_PATH  "/setconfig.crc");
+   softcrc("-filelist " FILELISTS_PATH "/graphics.files            -update " PNAME_GUI_GRAPHICS_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/strings.files             -update " PNAME_STRING_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/fonts.files               -update " PNAME_FONT_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/data.files                -update " PNAME_DATA_CRC);
+   softcrc("-filelist " FILELISTS_PATH "/safety.files              -update " TRIMA_PATH "/safety.crc");
+   softcrc("-filelist " FILELISTS_PATH "/trima.files               -update " TRIMA_PATH "/trima.crc");
+   softcrc("-filelist " FILELISTS_PATH "/machine.files             -update " CONFIG_CRC_PATH "/machine.crc");
 
    // Separate check for TERROR since the file may or may not exist
    const int terrorExists = open(FILELISTS_PATH "/terrordat.files",  O_RDONLY, DEFAULT_FILE_PERM);
@@ -1754,19 +1796,20 @@ bool installer::checkCRC6 ()
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
 
    // Verify the installation CRC values
-   if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files    -verify " CONFIG_CRC_PATH "/caldat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/config.files    -verify " CONFIG_CRC_PATH "/config.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files     -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	   -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/cassette.files  -verify " CONFIG_CRC_PATH "/cassette.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/graphics.files  -verify " PNAME_GUI_GRAPHICS_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/strings.files   -verify " PNAME_STRING_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/fonts.files     -verify " PNAME_FONT_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/data.files      -verify " PNAME_DATA_CRC) ||
-       verifyCrc("-filelist " FILELISTS_PATH "/safety.files    -verify " TRIMA_PATH "/safety.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/trima.files     -verify " TRIMA_PATH "/trima.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/machine.files   -verify " CONFIG_CRC_PATH "/machine.crc"))
+   if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files              -verify " CONFIG_CRC_PATH "/caldat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/config.files              -verify " CONFIG_CRC_PATH "/config.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files               -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	             -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/cassette.files            -verify " CONFIG_CRC_PATH "/cassette.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files  -verify " CONFIG_CRC_PATH "/barcode_categories.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files           -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/graphics.files            -verify " PNAME_GUI_GRAPHICS_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/strings.files             -verify " PNAME_STRING_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/fonts.files               -verify " PNAME_FONT_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/data.files                -verify " PNAME_DATA_CRC) ||
+       verifyCrc("-filelist " FILELISTS_PATH "/safety.files              -verify " TRIMA_PATH "/safety.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/trima.files               -verify " TRIMA_PATH "/trima.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/machine.files             -verify " CONFIG_CRC_PATH "/machine.crc"))
    {
       return false;
    }
@@ -2668,6 +2711,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateCassette();
    installLog << "Updating Vista\n";
    updateVista();
+   installLog << "Updating Barcode Categories\n";
+   updateBarcodeCategories();
    installLog << "Updating machine.id\n";
    installMachineId();
 

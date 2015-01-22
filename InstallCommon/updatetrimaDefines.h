@@ -195,6 +195,18 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define PNAME_INSTALL_LOG INSTALL_LOG_PATH "/" FILE_INSTALL_LOG
 #endif
 
+#ifndef FILE_BARCODECATEGORY_DAT
+   #define FILE_BARCODECATEGORY_DAT    "barcode_categories.dat"
+#endif
+
+#ifndef PNAME_BARCODECATEGORYDAT
+   #define PNAME_BARCODECATEGORYDAT CONFIG_PATH "/" FILE_BARCODECATEGORY_DAT
+#endif
+
+#ifndef PNAME_BARCODE_LOG
+   #define PNAME_INSTALL_LOG INSTALL_LOG_PATH "/" FILE_INSTALL_LOG
+#endif
+
 // 6.4 removes terror from filenames.dat
 #ifndef TERROR_CONFIG_FILE
     #define TERROR_CONFIG_FILE CONFIG_PATH       "/terror_config.dat"

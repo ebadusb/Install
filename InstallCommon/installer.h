@@ -88,6 +88,11 @@ protected:
    virtual void updateCassette ();
 
 //
+// barcode_categories.dat update function
+//
+   virtual void updateBarcodeCategories ();
+
+//
 // setconfig.dat update function
 //
    virtual void updateSetConfig ();
