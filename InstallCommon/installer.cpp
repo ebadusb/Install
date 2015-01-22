@@ -1617,9 +1617,11 @@ bool installer::extractUpdateFiles6 ()
       // One other special-case for Common Kernel: to compute the same CRC that
       // Safety computes for its kernel init module, we do what Control does
       // during init and copy Safety's module to /machine/tmp.
+      attrib(SAFETY_KERNEL_INIT_TMP, "-R");      
       if (cp(SAFETY_KERNEL_INIT_SRC, SAFETY_KERNEL_INIT_TMP) == ERROR)
       {
          updatetrimaUtils::logger("Temp copy of safety's kernel init file failed: ", SAFETY_KERNEL_INIT_SRC, "\n");
+         return false;
       }
    }
 
