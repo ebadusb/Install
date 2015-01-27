@@ -1617,7 +1617,8 @@ bool installer::extractUpdateFiles6 ()
       // One other special-case for Common Kernel: to compute the same CRC that
       // Safety computes for its kernel init module, we do what Control does
       // during init and copy Safety's module to /machine/tmp.
-      attrib(SAFETY_KERNEL_INIT_TMP, "-R");      
+      attrib(SAFETY_KERNEL_INIT_TMP, "-R");
+
       if (cp(SAFETY_KERNEL_INIT_SRC, SAFETY_KERNEL_INIT_TMP) == ERROR)
       {
          updatetrimaUtils::logger("Temp copy of safety's kernel init file failed: ", SAFETY_KERNEL_INIT_SRC, "\n");
@@ -1765,7 +1766,6 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/hwdat.files               -update " CONFIG_CRC_PATH  "/hwdat.crc");
    softcrc("-filelist " FILELISTS_PATH "/rbcdat.files              -update " CONFIG_CRC_PATH  "/rbcdat.crc");
    softcrc("-filelist " FILELISTS_PATH "/cassette.files            -update " CONFIG_CRC_PATH  "/cassette.crc");
-   softcrc("-filelist " FILELISTS_PATH "/barcode_categories.files  -update " CONFIG_CRC_PATH  "/barcode_categories.crc");
    softcrc("-filelist " FILELISTS_PATH "/setconfig.files           -update " CONFIG_CRC_PATH  "/setconfig.crc");
    softcrc("-filelist " FILELISTS_PATH "/graphics.files            -update " PNAME_GUI_GRAPHICS_CRC);
    softcrc("-filelist " FILELISTS_PATH "/strings.files             -update " PNAME_STRING_CRC);
@@ -1793,6 +1793,15 @@ bool installer::checkCRC6 ()
       softcrc("-filelist " FILELISTS_PATH "/features.files -update " CONFIG_CRC_PATH  "/features.crc");
    }
 
+   // Separate check for Barcode Categories since the file may or may not exist
+   const int barcodeExists = open(FILELISTS_PATH "/barcode_categories.files",  O_RDONLY, DEFAULT_FILE_PERM);
+
+   if (barcodeExists > 0)
+   {
+      close(barcodeExists);
+      softcrc("-filelist " FILELISTS_PATH "/barcode_categories.files -update " CONFIG_CRC_PATH  "/barcode_categories.crc");
+   }
+
 
    // Set permissions in config directory
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
@@ -1803,7 +1812,6 @@ bool installer::checkCRC6 ()
        verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files               -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	             -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/cassette.files            -verify " CONFIG_CRC_PATH "/cassette.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files  -verify " CONFIG_CRC_PATH "/barcode_categories.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files           -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/graphics.files            -verify " PNAME_GUI_GRAPHICS_CRC) ||
        verifyCrc("-filelist " FILELISTS_PATH "/strings.files             -verify " PNAME_STRING_CRC) ||
@@ -1824,6 +1832,12 @@ bool installer::checkCRC6 ()
 
    // Separate check for FEATURES since the file may or may not exist
    if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc") )
+   {
+      return false;
+   }
+
+   // Separate check for Barcode Categories since the file may or may not exist
+   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH"/barcode_categories.crc") )
    {
       return false;
    }
