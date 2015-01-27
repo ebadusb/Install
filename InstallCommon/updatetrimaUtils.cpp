@@ -49,7 +49,7 @@ int softcrc (const char* options);
    #define INSTALL_BUILD_USER "user name not available"
 #endif
 #ifndef INSTALL_BUILD_MACHINE
-   #define INSTALL_BUILD_MACHINE "full computer name not available"
+   #define INSTALL_BUILD_MACHINE "full computer name not available - possibly Vx 5.5 Build"
 #endif
 
 extern installLogStream installLog;
@@ -664,9 +664,7 @@ bool installLogStream::open (const char* filename)
       updatetrimaUtils::logFileHeader(hdrString);
       *newStream << hdrString.c_str() << "\n";
       *newStream << "Install Build Date: " << INSTALL_BUILD_DATE << "\n";
-//      *newStream << "Install Build User: " << INSTALL_BUILD_USER << "\n";
       *newStream << "Install Build User: " << namePtr << "\n";
-//      *newStream << "Install Build Machine: " << INSTALL_BUILD_MACHINE << "\n\n";
       *newStream << "Install Build Machine: " << machPtr << "\n\n";
       newStream->flush();
 

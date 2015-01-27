@@ -35,11 +35,8 @@ ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(MAINDIR)\os -I$(
 # ------------------------------------------------------------------------------
 #LIBDIR = 
 
-IBM := "\"$(shell cmd /c 'net config workstation | grep ^Full')\""
-IBU := "\"$(shell cmd /c 'net config workstation | grep ^User')\""
-IBD := "\"$(shell cmd /c 'date /t')$(shell cmd /c 'time /t')\""
-
-OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__ -DINSTALL_BUILD_DATE=$(IBD) -DINSTALL_BUILD_USER=$(IBU) -DINSTALL_BUILD_MACHINE=$(IBM)
+#OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__ -DINSTALL_BUILD_DATE=$(IBD) -DINSTALL_BUILD_USER=$(IBU) -DINSTALL_BUILD_MACHINE=$(IBM)
+OPTFLAGS := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
 ADDN_ASFLAGS : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
 ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
 ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__

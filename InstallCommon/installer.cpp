@@ -1596,12 +1596,12 @@ bool installer::extractUpdateFiles6 ()
 
    struct stat fileStat;
 
+   // Remove the files that will be installed by the extraction
+   xdelete(SAFETY_COMMON_KERNEL_INIT_PATH);
+
    // Look for Safety's Common Kernel boot files (vxboot_safety.taz)
    if ( stat((char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
    {
-      // Remove the files that will be installed by the extraction
-      xdelete(SAFETY_COMMON_KERNEL_INIT_PATH);
-
       updatetrimaUtils::logger("Extracting the safety vxboot files...\n");
 
       if (tarExtract(UPDATE_PATH "/vxboot_safety.taz", SAFETY_COMMON_KERNEL_INIT_PATH) == ERROR)
@@ -1771,8 +1771,6 @@ bool installer::checkCRC6 ()
    softcrc("-filelist " FILELISTS_PATH "/strings.files             -update " PNAME_STRING_CRC);
    softcrc("-filelist " FILELISTS_PATH "/fonts.files               -update " PNAME_FONT_CRC);
    softcrc("-filelist " FILELISTS_PATH "/data.files                -update " PNAME_DATA_CRC);
-   softcrc("-filelist " FILELISTS_PATH "/safety.files              -update " TRIMA_PATH "/safety.crc");
-   softcrc("-filelist " FILELISTS_PATH "/trima.files               -update " TRIMA_PATH "/trima.crc");
    softcrc("-filelist " FILELISTS_PATH "/machine.files             -update " CONFIG_CRC_PATH "/machine.crc");
 
    // Separate check for TERROR since the file may or may not exist
