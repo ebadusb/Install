@@ -2726,7 +2726,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    installLog << "Updating Vista\n";
    updateVista();
    installLog << "Updating Barcode Categories\n";
-//   updateBarcodeCategories();
+   updateBarcodeCategories();
    installLog << "Updating machine.id\n";
    installMachineId();
 
