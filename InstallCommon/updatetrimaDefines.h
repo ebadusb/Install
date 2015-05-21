@@ -203,6 +203,14 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define PNAME_BARCODECATEGORYDAT CONFIG_PATH "/" FILE_BARCODECATEGORY_DAT
 #endif
 
+#ifndef FILE_RTSCONFIG_DAT
+   #define FILE_RTS_CONFIG_DAT    "rts_config.dat"
+#endif
+
+#ifndef PNAME_RTSCONFIGDAT
+   #define PNAME_RTSCONFIGDAT CONFIG_PATH "/" FILE_RTSCONFIG_DAT
+#endif
+
 #ifndef PNAME_BARCODE_LOG
    #define PNAME_INSTALL_LOG INSTALL_LOG_PATH "/" FILE_INSTALL_LOG
 #endif

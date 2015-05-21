@@ -858,6 +858,46 @@ void installer::updateBarcodeCategories ()
    }
 }
 
+void installer::updateRTSConfig ()
+{
+   struct stat fileStat;
+
+   // if there's a config file in templates install it, otherwise delete any in config
+   if ( stat( (char*)TEMPLATES_PATH "/" FILE_RTSCONFIG_DAT, &fileStat) == OK )
+   {
+      // Replace existing one if the version number has changed
+      currVersion = findSetting("file_version=", PNAME_RTSCONFIGDAT);
+      newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_RTSCONFIG_DAT);
+
+      if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
+      {
+         if( currVersion == NULL )
+         {
+            currVersion = "(NON EXISTANT)";
+         }
+         installLog << "Updating " << FILE_RTSCONFIG_DAT << " to new version " << newVersion << " from existing version " << currVersion << "\n";
+
+         attrib(PNAME_RTSCONFIGDAT, "-R");
+         if ( cp(TEMPLATES_PATH "/" FILE_RTSCONFIG_DAT, PNAME_RTSCONFIGDAT) == ERROR )
+         {
+            installLog << "copy of " << FILE_RTSCONFIG_DAT << " failed\n";
+         }
+         else
+         {
+            installLog << "copy of " << FILE_RTSCONFIG_DAT << " succeeded\n";
+         }
+
+         attrib(PNAME_RTSCONFIGDAT, "+R");
+         fflush(stdout);
+      }
+   }
+   else
+   {
+      attrib(PNAME_RTSCONFIGDAT, "-R");
+      remove(PNAME_RTSCONFIGDAT);
+   }
+}
+
 void installer::updateCassette ()
 {
    // Replace cassette.dat if the version number has changed
@@ -1793,12 +1833,19 @@ bool installer::checkCRC6 ()
 
    // Separate check for Barcode Categories since the file may or may not exist
    const int barcodeExists = open(FILELISTS_PATH "/barcode_categories.files",  O_RDONLY, DEFAULT_FILE_PERM);
-
    if (barcodeExists > 0)
    {
       close(barcodeExists);
       softcrc("-filelist " FILELISTS_PATH "/barcode_categories.files -update " CONFIG_CRC_PATH  "/barcode_categories.crc");
    }
+   
+   // Separate check for RTS config since the file may or may not exist
+   const int rtsConfigExists = open(FILELISTS_PATH "/rts_config.files",  O_RDONLY, DEFAULT_FILE_PERM);
+   if (rtsConfigExists > 0)
+   {
+      close(rtsConfigExists);
+      softcrc("-filelist " FILELISTS_PATH "/rts_config.files -update " CONFIG_CRC_PATH  "/rts_config.crc");
+   }   
 
 
    // Set permissions in config directory
@@ -1836,6 +1883,12 @@ bool installer::checkCRC6 ()
 
    // Separate check for Barcode Categories since the file may or may not exist
    if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH"/barcode_categories.crc") )
+   {
+      return false;
+   }
+   
+   // Separate check for RTS Config since the file may or may not exist
+   if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files	-verify "CONFIG_CRC_PATH"/rts_config.crc") )
    {
       return false;
    }
@@ -2727,6 +2780,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateVista();
    installLog << "Updating Barcode Categories\n";
    updateBarcodeCategories();
+   installLog << "Updating RTS Config\n";
+   updateRTSConfig();   
    installLog << "Updating machine.id\n";
    installMachineId();
 

@@ -91,6 +91,11 @@ protected:
 // barcode_categories.dat update function
 //
    virtual void updateBarcodeCategories ();
+   
+//
+// rts_config.dat update function
+//
+   virtual void updateRTSConfig();   
 
 //
 // setconfig.dat update function
