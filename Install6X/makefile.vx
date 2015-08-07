@@ -9,11 +9,11 @@ ifeq ($(BUILD_TYPE),CLEAN)
 all: clean
 else
 .PHONY: all
-all: check_opt_change bin/updateTrima
+all: check_opt_change updateTrima
 endif
 
 # ?= won't work in Tornado 2.02 because the version of make is so old
-ifeq ($(UPDATEDIR),  )
+ifeq ($(UPDATEDIR),)
 UPDATEDIR = .
 endif
 
@@ -29,28 +29,32 @@ COMDIR ?= \\bctquad3\HOME\BCT_Development\Trima5.R\Trima\common_builds\common_bu
 # ------------------------------------------------------------------------------
 ADDN_INCDIR = -I$(COMDIR)\include -I$(MAINDIR)\trima_common -I$(MAINDIR)\os -I$(COMDIR)\os -I$(UPDATEDIR)/../InstallCommon -I$(UPDATEDIR)
 
-# ------------------------------------------------------------------------------
-# Define location for Trima libraries
-# ------------------------------------------------------------------------------
-#LIBDIR = 
-
 IBM := "\"$(shell cmd /c 'net config workstation | grep ^Full')\""
 IBU := "\"$(shell cmd /c 'net config workstation | grep ^User')\""
 IBD := "\"$(shell cmd /c 'date /t')$(shell cmd /c 'time /t')\""
 
-OPTFLAGS      := $(OPTFLAGS) -DINSTALL_BUILD_DATE=$(IBD) -DINSTALL_BUILD_USER=$(IBU) -DINSTALL_BUILD_MACHINE=$(IBM)
-#OPTFLAGS      := $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_ASFLAGS  : $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_CXXFLAGS := $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_CPPFLAGS := $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
-#ADDN_CCFLAGS  := $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
-
-printversion:
-	echo $(OPTFLAGS)
-
-ADDN_CLEAN = bin/updateTrima
-
 include $(MAINDIR)/makefile.vxc
+
+# ------------------------------------------------------------------------------
+# Define location for Trima libraries
+# ------------------------------------------------------------------------------
+ifneq ($(BLDTOP),)
+LIBDIR = $(BLDTOP)/lib
+BINDIR = $(BLDPWD)/bin
+else
+# Legacy settings
+LIBDIR = $(MAINDIR)/lib
+BINDIR = bin
+endif
+
+ADDN_CLEAN    += $(BINDIR)/updateTrima
+OPTFLAGS      += -DINSTALL_BUILD_DATE=$(IBD) -DINSTALL_BUILD_USER=$(IBU) -DINSTALL_BUILD_MACHINE=$(IBM)
+#OPTFLAGS      += $(OPTFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_ASFLAGS  += $(ADDN_ASFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CXXFLAGS += $(ADDN_CXXFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CPPFLAGS += $(ADDN_CPPFLAGS) -D__COMPILE_FOR_VX_54__
+#ADDN_CCFLAGS  += $(ADDN_CCFLAGS) -D__COMPILE_FOR_VX_54__
+
 
 ifdef LD_ARCH_FLAGS_VX69
   LD_ARCH_FLAGS := $(LD_ARCH_FLAGS_VX69)
@@ -60,14 +64,17 @@ endif
 # Definitions required for building update.out
 # ------------------------------------------------------------------------------
 APP_NAME := update
-update_dir  = bin
-update_map  = update.map
+update_dir       = $(BINDIR)
+update_map       = update.map
 update_cxx_files = updatetrima.cpp installer.cpp updatetrimaUtils.cpp \
-		   updatecassette.cpp updatecassette_dat.cpp
-update_c_files = discover_hw.c
-update_libs = $(COMDIR)/softcrc/lib/libsoftcrc.a $(COMDIR)/zlib/lib/libzlib.a $(MAINDIR)/lib/libtrima_common.a 
+                   updatecassette.cpp updatecassette_dat.cpp
+update_c_files   = discover_hw.c
+update_libs      = $(COMDIR)/softcrc/lib/libsoftcrc.a \
+                   $(COMDIR)/zlib/lib/libzlib.a \
+                   $(LIBDIR)/libtrima_common.a 
 
-include $(COMDIR)/makefile.process_app
+include $(MAINDIR)/makefile.process_app
+
 vpath %.cpp $(UPDATEDIR)/../InstallCommon
 vpath %.c $(UPDATEDIR)/../InstallCommon/os
 vpath %.h $(UPDATEDIR)/../InstallCommon $(WIND_BASE)
@@ -75,11 +82,18 @@ vpath %.h $(UPDATEDIR)/../InstallCommon $(WIND_BASE)
 # ------------------------------------------------------------------------------
 # Copy update.out to updateTrima (copy instead of move to keep dependency chain intact)
 # ------------------------------------------------------------------------------
-$(update_dir)/updateTrima:$(update_dir)/$(APP_NAME).out
+$(update_dir)/updateTrima: $(update_dir)/$(APP_NAME).out
 	cp $< $@
 
 # ------------------------------------------------------------------------------
 # Actually build the outfile
 # ------------------------------------------------------------------------------
-include $(COMDIR)/makefile.build_apps
+include $(MAINDIR)/makefile.build_apps
+
+.PHONY: updateTrima
+updateTrima: $(update_dir)/updateTrima
+
+.PHONY: printversion
+printversion:
+	@echo $(OPTFLAGS) | sed "s/-D/\n-D/g"
 
