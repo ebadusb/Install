@@ -2734,7 +2734,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    // Update the configuration files
    // do this before all other config.dat changes
    // Don't do this if it's the same version
-   if (newBuildRef != prevBuildRef)
+   if ( (newBuildRef != prevBuildRef) || (fromVer.buildNum == 999) || (toVer.buildNum == 999) )
    {
       installLog << "Update the configuration files\n";
       if ( !updateConfigGeneric() )
