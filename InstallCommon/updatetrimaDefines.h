@@ -204,7 +204,7 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
 #endif
 
 #ifndef FILE_RTSCONFIG_DAT
-   #define FILE_RTS_CONFIG_DAT    "rts_config.dat"
+   #define FILE_RTSCONFIG_DAT    "rts_config.dat"
 #endif
 
 #ifndef PNAME_RTSCONFIGDAT
