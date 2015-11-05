@@ -1473,6 +1473,19 @@ bool installer::extractUpdateFiles6 ()
       {
          remove(VXBOOT_PATH "/vxWorks.bak");
       }
+
+      // For development: if it exists, backup the kernel_init directory too
+      if ( updatetrimaUtils::development_install &&
+           stat((char*)TRIMA_PATH "/kernel_init", &bakfileStat) == OK )
+      {
+         const char* backupDir = TEMP_PATH "/kernel_init.bak";
+         attrib(TEMP_PATH, "-R");
+         if ( mkdir(backupDir) == OK )
+         {
+            updatetrimaUtils::logger("Backing up kernel_init ...\n");
+            cp(TRIMA_PATH "/kernel_init/*.out", backupDir);
+         }
+      }
    }
 
    //
