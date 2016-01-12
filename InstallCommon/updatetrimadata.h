@@ -107,6 +107,8 @@ rangeStruct rangeData[] =
    {V510, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
    {V510, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
    {V510, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V510, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V520, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
    {V520, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "7", false},
@@ -118,6 +120,8 @@ rangeStruct rangeData[] =
    {V520, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
    {V520, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
    {V520, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V520, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V600, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
    {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15", false},
@@ -132,6 +136,8 @@ rangeStruct rangeData[] =
    {V600, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
    {V600, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "8", false},
    {V600, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V600, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V630, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
    {V630, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
@@ -146,6 +152,8 @@ rangeStruct rangeData[] =
    {V630, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "3", false},
    {V630, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},
    {V630, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "3", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V630, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V640, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
    {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
@@ -160,6 +168,8 @@ rangeStruct rangeData[] =
    {V640, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6", false},  // MAX_KEY_PLT_AMAP
    {V640, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},         // MAX_KEY_PLASMA
    {V640, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6", false},            // NUM_CRIT_DOSE
+   {V640, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V640, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V700, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
    {V700, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
@@ -175,6 +185,8 @@ rangeStruct rangeData[] =
    {V700, "PRODUCT_DEFINITIONS", "key_platelet_amap_", MAX, INT, "6", false},  // MAX_KEY_PLT_AMAP
    {V700, "PRODUCT_DEFINITIONS", "key_plasma_", MAX, INT, "9", false},         // MAX_KEY_PLASMA
    {V700, "PRODUCT_DEFINITIONS", "key_rbc_", MAX, INT, "6", false},            // NUM_CRIT_DOSE
+   {V700, "PRODUCT_DEFINITIONS", "key_blood_type_", MIN, INT, "0", false},
+   {V700, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "523", false},
 
    {END, "xxx", "xxx", MAX, INT, "0"}
 };

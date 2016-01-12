@@ -130,6 +130,8 @@ protected:
 
    virtual bool checkRange (const char* section, const char* key, const char* value, std::string& forceVal);
 
+   virtual bool bloodTypeConversionCheck(int bloodType, std::string& newVal);
+
 //
 // Main config file update function, calls the others
 //
