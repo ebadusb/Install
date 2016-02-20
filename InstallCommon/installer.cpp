@@ -1453,7 +1453,7 @@ bool installer::extractUpdateFiles6 ()
    bool isCommonKernel   = ( strcmp(params->bootFile, "/ata0a/vxWorks") == 0 );
    delete params;
 
-   if ( defaultBootImage || isCommonKernel )
+   if ( defaultBootImage || isCommonKernel || isVersalogicFox() )
    {
       //
       // Save off the old vxWorks image in case of failure ...
@@ -1513,7 +1513,18 @@ bool installer::extractUpdateFiles6 ()
    //
    // Copy over the control images depending on the board type.
    //
-   if ( isAmpro() )
+   if ( isVersalogicFox() )
+   {
+      installLog << "Copying Control Fox bootrom.sys and vxWorks to " << VXBOOT_PATH << "\n";
+
+      if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_fox.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
+           updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_fox",     VXBOOT_PATH "/vxWorks") == ERROR  )
+      {
+         installLog << "Install of OS image failed\n";
+         return false;
+      }
+   }
+   else if ( isAmpro() )
    {
       installLog << "Copying Control Ampro bootrom.sys and vxworks to " << VXBOOT_PATH << "\n";
 
@@ -1546,6 +1557,8 @@ bool installer::extractUpdateFiles6 ()
    remove(UPDATE_PATH "/vxWorks");
    remove(UPDATE_PATH "/bootrom_versalogic.sys");
    remove(UPDATE_PATH "/vxWorks_versalogic");
+   remove(UPDATE_PATH "/bootrom_fox.sys");
+   remove(UPDATE_PATH "/vxWorks_fox");
    remove(UPDATE_PATH "/vxboot.taz");
 
    if ( attrib(UPDATE_PATH "/bootrom_ampro.sys", "-R") != ERROR ||
@@ -1554,6 +1567,8 @@ bool installer::extractUpdateFiles6 ()
         attrib(UPDATE_PATH "/vxWorks", "-R") != ERROR ||
         attrib(UPDATE_PATH "/bootrom_versalogic.sys", "-R") != ERROR ||
         attrib(UPDATE_PATH "/vxWorks_versalogic", "-R") != ERROR ||
+        attrib(UPDATE_PATH "/bootrom_fox.sys", "-R") != ERROR ||
+        attrib(UPDATE_PATH "/vxWorks_fox", "-R") != ERROR ||
         attrib(UPDATE_PATH "/vxboot.taz", "-R") != ERROR )
    {
       installLog << "Removal of temporary OS image failed\n";
@@ -1684,15 +1699,30 @@ bool installer::extractUpdateFiles6 ()
    // Copy over the safety images depending on the board type.
    //
    // If there are files in SAFETY_BOOT_PATH install Safety from there
-   if ( attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR)
+   if ( attrib(SAFETY_BOOT_PATH "/vxWorks_bengal", "-R") != ERROR     ||
+        attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys", "-R") != ERROR  ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR )
    {
-      if ( isAmpro() )
+      if ( isVersalogicFox() )
+      {
+         // Fox Control boards are paired with Bengal Safety boards (E-Box 2016).
+         // Uses PXE server to transfer files.
+
+         installLog << "Copying Safety Bengal bootrom.sys and vxWorks to " << SAFETY_BOOT_PATH << "\n";
+
+         if ( cp(SAFETY_BOOT_PATH "/bootrom_bengal.pxe", SAFETY_BOOTROM_PXE_IMAGE) == ERROR ||
+              cp(SAFETY_BOOT_PATH "/vxWorks_bengal",     SAFETY_VXWORKS_IMAGE)     == ERROR )
+         {
+            installLog << "Install of OS image failed\n";
+            return false;
+         }
+      }
+      else if ( isAmpro() )
       {
          installLog << "Copying Safety Ampro bootrom.sys and vxworks to " << SAFETY_BOOT_PATH << "\n";
 
-         if ( cp(SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE)    == ERROR ||
-              cp(SAFETY_BOOT_PATH "/vxWorks_ampro", SAFETY_VXWORKS_IMAGE)    == ERROR )
+         if ( cp(SAFETY_BOOT_PATH "/bootrom_ampro.sys", SAFETY_BOOTROM_IMAGE) == ERROR ||
+              cp(SAFETY_BOOT_PATH "/vxWorks_ampro",     SAFETY_VXWORKS_IMAGE) == ERROR )
          {
             installLog << "Install of OS image failed\n";
             return false;
@@ -1702,10 +1732,10 @@ bool installer::extractUpdateFiles6 ()
       {
          installLog << "Copying Safety Versalogic bootrom.sys and vxworks to " << SAFETY_BOOT_PATH << "\n";
 
-         if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic", SAFETY_VXWORKS_IMAGE)     == ERROR ||
+         if ( cp(SAFETY_BOOT_PATH "/vxWorks_versalogic",      SAFETY_VXWORKS_IMAGE)     == ERROR ||
               cp(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", SAFETY_BOOTROM_IMAGE)     == ERROR ||
-              cp(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", SAFETY_VXWORKS_PXE_IMAGE) == ERROR ||
-              cp(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", SAFETY_BOOTROM_PXE_IMAGE) == ERROR )
+              cp(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe",  SAFETY_VXWORKS_PXE_IMAGE) == ERROR ||
+              cp(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys",   SAFETY_BOOTROM_PXE_IMAGE) == ERROR )
          {
             installLog << "Install of OS image failed\n";
             return false;
@@ -1729,13 +1759,17 @@ bool installer::extractUpdateFiles6 ()
    remove(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys");
    remove(SAFETY_BOOT_PATH "/vxWorks_versalogic");
    remove(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe");
+   remove(SAFETY_BOOT_PATH "/bootrom_bengal.pxe");
+   remove(SAFETY_BOOT_PATH "/vxWorks_bengal");
 
-   if ( attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_ampro", "-R") != ERROR ||
+   if ( attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys",       "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_ampro",           "-R") != ERROR ||
         attrib(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", "-R") != ERROR )
+        attrib(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys",   "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic",      "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe",  "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/bootrom_bengal.pxe",      "-R") != ERROR ||
+        attrib(SAFETY_BOOT_PATH "/vxWorks_bengal",          "-R") != ERROR )
    {
       installLog << "removal of temporary OS image failed\n";
       return false;

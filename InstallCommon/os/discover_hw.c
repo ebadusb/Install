@@ -29,8 +29,11 @@ unsigned char amproStatus           = 0;
 unsigned char versalogicStatus      = 0;
 unsigned char vsbc6Status           = 0;
 unsigned char pythonStatus          = 0;
+unsigned char foxStatus             = 0;
+unsigned char rdcStatus             = 0;
 unsigned char ctStatus              = 0;
 unsigned char geodeLxStatus         = 0;
+const char*   biosIDString          = NULL;
 
 
 static void checkHWID (void)
@@ -40,10 +43,9 @@ static void checkHWID (void)
    unsigned int       searchStartIdx = 0;
    unsigned int       stringLength   = 0;
 
-   const char*        romPtr         = (const char*)(BIOSAddress);
-   char*              biosIDString;
+   const char* romPtr = (const char*)(BIOSAddress);
 
-   amproStatus  = versalogicStatus = 0;
+   amproStatus = versalogicStatus = 0;
 
    biosIDString = findIDString(romPtr, BIOSLength, "Ampro",
                                &searchStartIdx, &stringLength);
@@ -56,16 +58,28 @@ static void checkHWID (void)
       searchStartIdx = 0;
       stringLength   = 0;
 
-      romPtr         = (const char*)(BIOSAddress);
+      romPtr = (const char*)(BIOSAddress);
 
-      biosIDString   = findIDString(romPtr, BIOSLength, "VersaLogic",
-                                    &searchStartIdx, &stringLength);
+      biosIDString = findIDString(romPtr, BIOSLength, "VersaLogic",
+                                  &searchStartIdx, &stringLength);
+
+      if ( NULL == biosIDString )
+      {
+         /* Lastly, try for E-Box, another Versalogic variant */
+         searchStartIdx = 0;
+         stringLength   = 0;
+         biosIDString   = findIDString(romPtr, BIOSLength, "Vortex86DX2",
+                                       &searchStartIdx, &stringLength);
+      }
+
       if ( biosIDString )
       {
          versalogicStatus = 1;
       }
    }
    checkedHWID = 1;
+
+   // printf("biosIDString: %s\n", (biosIDString ? biosIDString : "<NotFound>"));
 }
 
 unsigned char isAmpro (void)
@@ -90,7 +104,7 @@ unsigned char isVersalogic (void)
 
 static void checkVersalogicType (void)
 {
-   pythonStatus = vsbc6Status = 0;
+   foxStatus = pythonStatus = vsbc6Status = 0;
 
    if ( isVersalogic() )
    {
@@ -101,6 +115,10 @@ static void checkVersalogicType (void)
       else if ( isGeodeLXGraphics() )
       {
          pythonStatus = 1;
+      }
+      else if ( isRDCGraphics() )
+      {
+         foxStatus = 1;
       }
    }
    checkedVersalogicType = 1;
@@ -126,13 +144,24 @@ unsigned char isVersalogicPython (void)
    return pythonStatus;
 }
 
+unsigned char isVersalogicFox (void)
+{
+   if ( !checkedVersalogicType )
+   {
+      checkVersalogicType();
+   }
+
+   return foxStatus;
+}
+
 static void checkGraphics (void)
 {
    const unsigned int CT655XXVendorID = 0x00E0102C;
    const unsigned int GeodeLXVendorID = 0x20811022;
+   const unsigned int RDCVendorID     = 0x201217F3;
    unsigned int       currentVendorID;
 
-   ctStatus        = geodeLxStatus = 0;
+   ctStatus        = geodeLxStatus = rdcStatus = 0;
    currentVendorID = getGraphicsVendorID();
    if ( currentVendorID == CT655XXVendorID )
    {
@@ -141,6 +170,10 @@ static void checkGraphics (void)
    else if ( currentVendorID == GeodeLXVendorID )
    {
       geodeLxStatus = 1;
+   }
+   else if ( currentVendorID == RDCVendorID )
+   {
+      rdcStatus = 1;
    }
    checkedGraphics = 1;
 
@@ -167,6 +200,15 @@ unsigned char isGeodeLXGraphics (void)
    return geodeLxStatus;
 }
 
+unsigned char isRDCGraphics (void)
+{
+   if ( !checkedGraphics )
+   {
+      checkGraphics();
+   }
+
+   return rdcStatus;
+}
 
 unsigned int getGraphicsVendorID (void)
 {
@@ -288,4 +330,4 @@ char* findIDString (const char* memPtr,        /* start of memory block */
    return (char*)resultString;
 }
 
-/* FORMAT HASH cb1388a8cdfca65c2406514596bfa60f */
+/* FORMAT HASH fa18a3213c4f22b98778c0400cef5ee2 */
