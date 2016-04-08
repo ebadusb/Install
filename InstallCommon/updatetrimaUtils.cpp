@@ -60,10 +60,10 @@ extern bool development_only;
 
 extern installLogStream installLog;
 
-bool  updatetrimaUtils::loggingEnabled      = false;
-bool  updatetrimaUtils::logToScreen         = false;
+//bool  updatetrimaUtils::loggingEnabled      = false;
+//bool  updatetrimaUtils::logToScreen         = false;
 bool  updatetrimaUtils::development_install = false;
-FILE* updatetrimaUtils::logFile             = NULL;
+//FILE* updatetrimaUtils::logFile             = NULL;
 
 
 fourPartVersion::fourPartVersion()
@@ -187,6 +187,7 @@ updatetrimaUtils::~updatetrimaUtils()
 
 int updatetrimaUtils::copyFileContiguous (const char* from, const char* to)
 {
+#if CPU!=SIMNT
    int fromFD = open(from, O_RDONLY, 0644);
 
    attrib(to, "-R");
@@ -248,6 +249,16 @@ int updatetrimaUtils::copyFileContiguous (const char* from, const char* to)
    }
 
    return result;
+#else
+// in the Sim we don't care about the contiguous, just to get the file there
+   cp(from, to);
+
+//   char cmdStr[256];
+//   sprintf(cmdStr, "copy /B /Y %s %s", from, to );
+//   installLog << "copy command: " << cmdStr << "\n";
+//   system(cmdStr);
+   return 0;
+#endif
 }
 
 int updatetrimaUtils::unzipFile (const char* from, const char* to)
@@ -329,10 +340,10 @@ int updatetrimaUtils::zipFile (const char* from, const char* to)
    return 0;
 }
 
-
-
 FileCallBackStatus updatetrimaUtils::update_clean_file (const char* fullPathName)
 {
+
+#if CPU!=SIMNT
    struct stat fileStat;
 
    if ( stat((char*)fullPathName, &fileStat) == OK &&
@@ -344,13 +355,16 @@ FileCallBackStatus updatetrimaUtils::update_clean_file (const char* fullPathName
       fileSort(fullPathName, FILE_SORT_BY_DATE_ASCENDING, update_clean_file);
    }
 
+//   installLog << "Trying to delete " << fullPathName << "\n";
    attrib(fullPathName, "-R");
    xdelete(fullPathName);
+#endif
    return FILE_CALLBACK_CONTINUE;
 }
 
 FileCallBackStatus updatetrimaUtils::update_file_set_rdwrite (const char* fullPathName)
 {
+#if CPU!=SIMNT
    struct stat fileStat;
 
    if ( stat((char*)fullPathName, &fileStat) == OK &&
@@ -360,11 +374,13 @@ FileCallBackStatus updatetrimaUtils::update_file_set_rdwrite (const char* fullPa
    }
 
    attrib(fullPathName, "-R");
+#endif
    return FILE_CALLBACK_CONTINUE;
 }
 
 FileCallBackStatus updatetrimaUtils::update_file_set_rdonly (const char* fullPathName)
 {
+#if CPU!=SIMNT
    struct stat fileStat;
 
    if ( stat((char*)fullPathName, &fileStat) == OK &&
@@ -377,7 +393,7 @@ FileCallBackStatus updatetrimaUtils::update_file_set_rdonly (const char* fullPat
    {
       attrib(fullPathName, "+R");
    }
-
+#endif
    return FILE_CALLBACK_CONTINUE;
 }
 
@@ -490,7 +506,7 @@ bool updatetrimaUtils::getBuildInfo (versionStruct& versionInfo, int& buildRef)
 
 }
 
-
+/*
 void updatetrimaUtils::logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4)
 {
    char tmpBuff[256];
@@ -544,20 +560,16 @@ void updatetrimaUtils::logger (const char* stuff)
 {
    // use the new stream class
    installLog << stuff;
-/*
-    if ( updatetrimaUtils::logToScreen ) {
-        cerr << stuff;
-        //        printf("%s\n", stuff);
-    }
-
-    if ( updatetrimaUtils::loggingEnabled ) {
-        //        logStream << stuff;
-        if ( updatetrimaUtils::logFile ) {
-            fprintf(updatetrimaUtils::logFile, "%s", stuff);
-            fflush(updatetrimaUtils::logFile);
-        }
-    }
-*/
+//    if ( updatetrimaUtils::logToScreen ) {
+//        cerr << stuff;
+//    }
+//
+//    if ( updatetrimaUtils::loggingEnabled ) {
+//        if ( updatetrimaUtils::logFile ) {
+//            fprintf(updatetrimaUtils::logFile, "%s", stuff);
+//            fflush(updatetrimaUtils::logFile);
+//        }
+//    }
 }
 
 
@@ -598,6 +610,7 @@ void updatetrimaUtils::closelogger ()
    }
    updatetrimaUtils::logFile = NULL;
 }
+*/
 
 
 void updatetrimaUtils::logFileHeader (string& hdrStr)
@@ -620,12 +633,16 @@ void updatetrimaUtils::logFileHeader (string& hdrStr)
 
 installLogStream::installLogStream()
    : logToScreen(true),
-     streamVect()
+     streamVect(),
+     currLogLevel(NORMAL),
+     maxLogLevel(NORMAL)
 {}
 
 installLogStream::installLogStream(bool logToScrn)
    : logToScreen(logToScrn),
-     streamVect()
+     streamVect(),
+     currLogLevel(),
+     maxLogLevel()
 {}
 
 installLogStream::~installLogStream()
@@ -660,6 +677,9 @@ bool installLogStream::open (const char* filename)
    ofstream* newStream = new ofstream(filename);
    if ( newStream->is_open() )
    {
+#if CPU==SIMNT
+      *newStream << "----------------- SIMULATOR INSTALL -----------------\n";
+#endif
       string hdrString;
       updatetrimaUtils::logFileHeader(hdrString);
       *newStream << hdrString.c_str() << "\n";
@@ -702,17 +722,33 @@ void installLogStream::close ()
 
 }
 
+void installLogStream::setMaxLogLevel (installLogLevel logLevel)
+{
+   maxLogLevel = logLevel;
+}
+
+// this actually does the job of writing
 installLogStream& installLogStream::operator << (const char* stuff)
 {
-   if ( logToScreen )
+   if (currLogLevel <= maxLogLevel)
    {
-      cerr << stuff;
+      if (logToScreen) 
+      {
+         cerr << stuff;
+      }
+
+      for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
+      {
+         *(*iter) << stuff;
+         (*iter)->flush();
+      }
    }
 
-   for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
+   // if there's a \n in the string, reset the loglevel after writing
+   string newStr(stuff);
+   if (newStr.find("\n") != string::npos)
    {
-      *(*iter) << stuff;
-      (*iter)->flush();
+      currLogLevel = NORMAL;
    }
 
    return *this;
@@ -761,21 +797,19 @@ installLogStream& installLogStream::operator << (const double stuff)
    return (installLog << (float)stuff);
 }
 
-/*
-installLogStream& installLogStream::operator << (ostream& stuff)
+installLogStream& installLogStream::operator << (installLogLevel stuff)
 {
-   if ( logToScreen )
-   {
-      cerr << stuff;
-   }
-
-   for ( vector<ofstream*>::iterator iter = streamVect.begin(); iter != streamVect.end(); iter++ )
-   {
-      *(*iter) << stuff;
-   }
-
-   return *this;
+   currLogLevel = stuff;
+   return (installLog);
 }
-*/
+
+installLogStream& installLogStream::operator << (installLogDirective stuff)
+{
+   if (stuff == endline)
+   {
+      currLogLevel = NORMAL;
+   }
+   return (installLog);
+}
 
 /* FORMAT HASH 7bce6023b593a3595f10e4e78c975bf2 */

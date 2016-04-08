@@ -84,12 +84,23 @@ static void checkHWID (void)
 
 unsigned char isAmpro (void)
 {
+#if CPU!=SIMNT
    if ( !checkedHWID )
    {
       checkHWID();
    }
 
    return amproStatus;
+#else
+   if ( fopen("Install/machine/update/control_ampro", "r") ) 
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+#endif
 }
 
 unsigned char isVersalogic (void)
@@ -126,22 +137,45 @@ static void checkVersalogicType (void)
 
 unsigned char isVersalogicVSBC6 (void)
 {
+#if CPU!=SIMNT
    if ( !checkedVersalogicType )
    {
       checkVersalogicType();
    }
 
    return vsbc6Status;
+#else
+   if ( fopen("Install/machine/update/control_versalogic", "r") ) 
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+#endif
 }
 
 unsigned char isVersalogicPython (void)
 {
+#if CPU!=SIMNT
    if ( !checkedVersalogicType )
    {
       checkVersalogicType();
    }
 
    return pythonStatus;
+#else
+   if ( fopen("Install/machine/update/control_python", "r") ) 
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+#endif
+
 }
 
 unsigned char isVersalogicFox (void)
@@ -330,4 +364,4 @@ char* findIDString (const char* memPtr,        /* start of memory block */
    return (char*)resultString;
 }
 
-/* FORMAT HASH fa18a3213c4f22b98778c0400cef5ee2 */
+/* FORMAT HASH cb1388a8cdfca65c2406514596bfa60f */

@@ -231,13 +231,13 @@ void MasterUpdateCassetteDat::read ()
    char         buffer[256];
    char         line[256];
 
-   updatetrimaUtils::logger("Reading cassette.dat\n");
+   installLog << "Reading cassette.dat\n";
 
    // This causes problems for Install so remove it
    // Match the CRC calculated from cassette.dat with the CRC value stored in cassette.crc.
 /*   if (!checkFile(PNAME_CASSETTEDAT, PNAME_CASSETTEDAT_CRC, PNAME_CASSETTEDAT_BK, PNAME_CASSETTEDAT_CRC_BK))
    {
-      updatetrimaUtils::logger("MasterUpdateCassetteDat::read Error matching cassette file CRC\n");
+      installLog << "MasterUpdateCassetteDat::read Error matching cassette file CRC\n";
       _fileOK = false;
       return;
    }
@@ -247,7 +247,7 @@ void MasterUpdateCassetteDat::read ()
 
    if (!inFile.good())
    {
-      updatetrimaUtils::logger("MasterUpdateCassetteDat::read File: ", PNAME_CASSETTEDAT, " doesn't exist\n");
+      installLog << "MasterUpdateCassetteDat::read File: " << PNAME_CASSETTEDAT << " doesn't exist\n";
       inFile.close();
       _fileOK = false;
       return;
@@ -260,7 +260,7 @@ void MasterUpdateCassetteDat::read ()
       if (lineNumber > MAX_NUM_LINES) // Make sure the read loop terminates.
       {
          inFile.close();
-         updatetrimaUtils::logger("MasterUpdateCassetteDat::read cassette.dat read loop wouldn't terminate\n");
+         installLog << "MasterUpdateCassetteDat::read cassette.dat read loop wouldn't terminate\n";
          _fileOK = false;
          return;
       }
@@ -268,7 +268,7 @@ void MasterUpdateCassetteDat::read ()
       if (!inFile.good())
       {
          // Log error
-         updatetrimaUtils::logger("MasterUpdateCassetteDat::read Unexpected I/O error reading ", PNAME_CASSETTEDAT, "\n");
+         installLog << "MasterUpdateCassetteDat::read Unexpected I/O error reading " << PNAME_CASSETTEDAT << "\n";
          inFile.close();
          _fileOK = false;
          return;
@@ -328,8 +328,7 @@ void MasterUpdateCassetteDat::read ()
 
       barcodeString = token;
 
-//      sprintf(loggingBuff, "Read Cassette %s %d %s\n", catNumString, adminCode, barcodeString );
-//      updatetrimaUtils::logger(loggingBuff);
+      installLog << installLogStream::DEBUG << "Read Cassette " << catNumString << adminCode << barcodeString << "\n";
 
       _cassetteMap[catNumString] = new UpdateCatalogNumber(catNumString, adminCode, barcodeString);
 
@@ -337,9 +336,7 @@ void MasterUpdateCassetteDat::read ()
    }
 
    inFile.close();
-   sprintf(loggingBuff, "Read %d rows from cassette.dat\n", numberOfEntries);
-   updatetrimaUtils::logger(loggingBuff);
-
+   installLog << "Read " << numberOfEntries << " rows from cassette.dat\n";
    _fileOK = true;
 }
 
@@ -470,7 +467,7 @@ void AdminUpdateCassetteDat::read ()
    // Match up the CRCs
 /*   if (!checkFile(PNAME_SETCONFIGDAT, PNAME_SETCONFIG_CRC, PNAME_SETCONFIGDAT_BK, PNAME_SETCONFIG_CRC_BK))
    {
-      updatetrimaUtils::logger("AdminUpdateCassetteDat::read Error matching cassette file CRC\n");
+      installLog << "AdminUpdateCassetteDat::read Error matching cassette file CRC\n";
       _fileOK = false;
       return;
    }
@@ -479,7 +476,7 @@ void AdminUpdateCassetteDat::read ()
 
    if (!inFile.good())
    {
-      updatetrimaUtils::logger("AdminUpdateCassetteDat::read ", PNAME_SETCONFIGDAT, " doesn't exist\n");
+      installLog << "AdminUpdateCassetteDat::read " << PNAME_SETCONFIGDAT << " doesn't exist\n";
       inFile.close();
       _fileOK = false;
       return;
@@ -491,7 +488,7 @@ void AdminUpdateCassetteDat::read ()
    {
       if (!inFile.good())
       {
-         updatetrimaUtils::logger("AdminUpdateCassetteDat::read Unexpected I/O error reading ", PNAME_SETCONFIGDAT, "\n");
+         installLog << "AdminUpdateCassetteDat::read Unexpected I/O error reading " << PNAME_SETCONFIGDAT << "\n";
          inFile.close();
          _fileOK = false;
 
@@ -535,8 +532,7 @@ void AdminUpdateCassetteDat::read ()
       sprintf(barcodeString,  strtok_r(NULL, "\t\r\n ", &nextToken) );
 
 //      sprintf(loggingBuff, "Read Cassette %d %d %s\n", catNum, adminCode, barcodeString );
-//      updatetrimaUtils::logger(loggingBuff);
-
+      installLog << installLogStream::DEBUG << "Read Cassette " << catNum << adminCode << barcodeString << "\n";
 
       _adminCassettes.push_back(new UpdateCatalogNumber(catNumString, adminCode, barcodeString) );
 
@@ -544,8 +540,8 @@ void AdminUpdateCassetteDat::read ()
    }
 
    inFile.close();
-   sprintf(loggingBuff, "Read %d rows from setconfig.dat\n", index);
-   updatetrimaUtils::logger(loggingBuff);
+//   sprintf(loggingBuff, "Read %d rows from setconfig.dat\n", index);
+   installLog << installLogStream::DEBUG << "Read " << index << " rows from setconfig.dat\n";
 
    _fileOK = true;
 }

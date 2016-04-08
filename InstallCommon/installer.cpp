@@ -1316,7 +1316,7 @@ void installer::updateCal6 ()
 
 bool installer::extractUpdateFiles5 ()
 {
-//   installLog << installLogStream::DEVELOPMENT << "Extracting Trima 5.X files\n";
+   installLog << installLogStream::DEVELOPMENT << "Extracting Trima 5.X files\n";
 
    //
    // If we booted up using the default vxWorks (and not vxWorks.old) image, then
@@ -1414,9 +1414,19 @@ bool installer::extractUpdateFiles5 ()
    //
    // Remove existing Trima files
    installLog << "Removing old Trima files...\n";
+#if CPU!=SIMNT
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(TOOLS_PATH,    FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+#else
+//   char cmdStr[256];
+//   sprintf(cmdStr, "del /s /f /q %s\\*", TRIMA_PATH);
+//   system(cmdStr);
+//   sprintf(cmdStr, "del /s /f /q %s\\*", SAVEDATA_PATH);
+//   system(cmdStr);
+//   sprintf(cmdStr, "del /s /f /q %s\\*", TOOLS_PATH);
+//   system(cmdStr);
+#endif
 
    //
    // Uncompress the update file
@@ -1426,10 +1436,13 @@ bool installer::extractUpdateFiles5 ()
       installLog << "Extraction of the Trima software failed.\n";
       return false;
    }
+
    if ( remove(UPDATE_PATH "/trima.taz") == ERROR )
    {
       installLog << "Removal of Trima archive image failed\n";
+#if CPU!=SIMNT // this doesn't work on the simulator
       return false;
+#endif
    }
 
    return true;
@@ -1438,7 +1451,7 @@ bool installer::extractUpdateFiles5 ()
 
 bool installer::extractUpdateFiles6 ()
 {
-//   installLog << installLogStream::DEVELOPMENT << "Extracting Trima 6.X+ files\n";
+   installLog << installLogStream::DEVELOPMENT << "Extracting Trima 6.X+ files\n";
 
    struct stat fileStat;
 
@@ -1500,12 +1513,12 @@ bool installer::extractUpdateFiles6 ()
       return false;
    }
 
-   if ( attrib(VXBOOT_PATH "/bootrom.sys", "-R") == ERROR )
+   if ( stat((char*)VXBOOT_PATH "/bootrom.sys", &fileStat) == ERROR )
    {
       perror(VXBOOT_PATH "/bootrom.sys");
    }
 
-   if ( attrib(VXBOOT_PATH "/vxWorks", "-R") == ERROR )
+   if ( stat((char*)VXBOOT_PATH "/vxWorks", &fileStat) == ERROR )
    {
       perror(VXBOOT_PATH "/vxWorks");
    }
@@ -1561,15 +1574,15 @@ bool installer::extractUpdateFiles6 ()
    remove(UPDATE_PATH "/vxWorks_fox");
    remove(UPDATE_PATH "/vxboot.taz");
 
-   if ( attrib(UPDATE_PATH "/bootrom_ampro.sys", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/vxWorks_ampro", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/bootrom.sys", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/vxWorks", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/bootrom_versalogic.sys", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/vxWorks_versalogic", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/bootrom_fox.sys", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/vxWorks_fox", "-R") != ERROR ||
-        attrib(UPDATE_PATH "/vxboot.taz", "-R") != ERROR )
+   if ( stat((char*)UPDATE_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/bootrom.sys", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/vxWorks", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/bootrom_versalogic.sys", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/bootrom_fox.sys", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/vxWorks_fox", &fileStat) != ERROR ||
+        stat((char*)UPDATE_PATH "/vxboot.taz", &fileStat) != ERROR )
    {
       installLog << "Removal of temporary OS image failed\n";
       return false;
@@ -1578,11 +1591,32 @@ bool installer::extractUpdateFiles6 ()
    //
    // Remove existing Trima files
    installLog << "Removing old Trima files...\n";
+#if CPU!=SIMNT
+   fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_file_set_rdwrite);
    fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(SAVEDATA_PATH,   FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(TOOLS_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(STRING_DIRECTORY, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(GRAPHICS_PATH,   FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+#else
+
+//   update_clean_file(TRIMA_PATH);
+/*
+   char cmdStr[256];
+//   sprintf(cmdStr, "del /s /f /q %s", TRIMA_PATH);
+   sprintf(cmdStr, "rmdir /S /Q %s", TRIMA_PATH);
+   installLog << "Delete command: " << cmdStr << "\n";
+   system(cmdStr);
+   sprintf(cmdStr, "del /s /f /q %s\\*", SAVEDATA_PATH);
+   system(cmdStr);
+   sprintf(cmdStr, "del /s /f /q %s\\*", TOOLS_PATH);
+   system(cmdStr);
+   sprintf(cmdStr, "del /s /f /q %s\\*", STRING_DIRECTORY);
+   system(cmdStr);
+   sprintf(cmdStr, "del /s /f /q %s\\*", GRAPHICS_PATH);
+   system(cmdStr);
+*/ 
+#endif
 
    //
    // Uncompress the update file
@@ -1699,9 +1733,9 @@ bool installer::extractUpdateFiles6 ()
    // Copy over the safety images depending on the board type.
    //
    // If there are files in SAFETY_BOOT_PATH install Safety from there
-   if ( attrib(SAFETY_BOOT_PATH "/vxWorks_bengal", "-R") != ERROR     ||
-        attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys", "-R") != ERROR  ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic", "-R") != ERROR )
+   if ( stat((char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR)
    {
       if ( isVersalogicFox() )
       {
@@ -1742,8 +1776,10 @@ bool installer::extractUpdateFiles6 ()
          }
       }
    }
-   else if ( attrib(SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", "-R") == ERROR )
+   else if ( stat((char*)SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", &fileStat) == ERROR )
+//   else if ( attrib(SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", "-R") == ERROR )
    {
+      installLog << "No file found in " << SAFETY_COMMON_KERNEL_INIT_PATH << "\n";
       // If there aren't files in SAFETY_BOOT_PATH or SAFETY_KERNEL_INIT_PATH abort the install
       return false;
    }
@@ -1762,14 +1798,14 @@ bool installer::extractUpdateFiles6 ()
    remove(SAFETY_BOOT_PATH "/bootrom_bengal.pxe");
    remove(SAFETY_BOOT_PATH "/vxWorks_bengal");
 
-   if ( attrib(SAFETY_BOOT_PATH "/bootrom_ampro.sys",       "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_ampro",           "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys",   "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic",      "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe",  "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/bootrom_bengal.pxe",      "-R") != ERROR ||
-        attrib(SAFETY_BOOT_PATH "/vxWorks_bengal",          "-R") != ERROR )
+   if ( stat((char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/bootrom_bengal.pxe", &fileStat) != ERROR ||
+        stat((char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR )
    {
       installLog << "removal of temporary OS image failed\n";
       return false;
@@ -1799,8 +1835,13 @@ bool installer::checkCRC5 ()
 {
 
    // Set permissions in config directory
+#if CPU!=SIMNT
    fileSort(CONFIG_PATH, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_file_set_rdwrite);
-
+#else
+   char cmdStrAttr[256];
+   sprintf(cmdStrAttr, "attrib -R /S /D %s\\*", CONFIG_PATH);
+   system(cmdStrAttr);
+#endif
 
    // Remove FEATURES files since it doesn't exist in 5.X
    struct stat featuresFileStat;
@@ -2127,9 +2168,10 @@ void installer::forceSetConfig ()
 
 bool installer::checkRange (const char* section, const char* key, const char* value, std::string& forceVal)
 {
-   const char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "V700", "END"};
-   const char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
-   const char* rangeValTypeStr[] = {"INT", "FLOAT"};
+   // These are used for logging
+//   const char* rangeTypeStr[]    = {"V510", "V520", "V600", "V630", "V640", "V700", "END"};
+//   const char* compareTypeStr[]  = {"MIN", "MAX", "NOT", "FORCE"};
+//   const char* rangeValTypeStr[] = {"INT", "FLOAT"};
 
 //   installLog << installLogStream::DEBUG << "Checking range of: " << section << " " << key << " " << value << "\n";
 
@@ -2369,7 +2411,6 @@ bool installer::bloodTypeConversionCheck(int bloodType, std::string& newVal)
 
    if ( retval )
    {
-//      snprintf(charVal, sizeof(charVal), "%d", newIntVal);  // Vx5.5 doesn't have snprintf
       sprintf(charVal, "%d", newIntVal);
       newVal = charVal;
    }
@@ -2625,6 +2666,16 @@ bool installer::updateConfigGeneric ()
          installLog << "config.dat.new write worked\n";
       }
 
+      // the dat file reader can read a file from a specific path but will only write it to /config
+      // so for the sim we have to move the file to where we want it
+#if CPU==SIMNT
+      installLog << " Moving config.dat.new for the simulator\n";
+      remove(PNAME_CONFIGDAT ".new");
+      cp("config/" FILE_CONFIG_DAT ".new", PNAME_CONFIGDAT ".new");
+      remove("config/" FILE_CONFIG_DAT ".new");
+      remove("config/" FILE_CONFIG_DAT ".new.bk");
+#endif
+
       ///////////////////////////////////
       // copy config.dat.new over config.dat
       attrib(PNAME_CONFIGDAT, "-R");
@@ -2811,11 +2862,31 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    }
    installLog << "Upgrade to this version is allowed on this hardware\n";
 
+   // simulated control board
+#if CPU==SIMNT
+   installLog << "Simulated Control board is: ";
+   if (isAmpro())
+      installLog << "Ampro\n";
+   else if (isVersalogicVSBC6())
+      installLog << "Versalogic\n";
+   else if (isVersalogicPython())
+      installLog << "Python\n";
+   else
+      installLog << "UNKNOWN\n";
+#endif
+
+   // set the files read-write
+#if CPU!=SIMNT
    updatetrimaUtils::update_file_set_rdwrite(CONFIG_PATH);
+#else
+   char cmdStrAttr[256];
+   sprintf(cmdStrAttr, "attrib -R /S /D %s\\*", CONFIG_PATH);
+   system(cmdStrAttr);
+#endif
 
    //
    // Make /vxboot and /trima partitions writable
-
+#if CPU!=SIMNT
    DOS_VOLUME_DESC_ID pVolDesc;
 
    const char* vxboot = VXBOOT_PATH;
@@ -2859,6 +2930,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #else
    pVolDesc->readOnly = 0;
 #endif
+#endif // SIMNT
 
    // Remove any old copy of features.bin in templates
    installLog << "Removing any old copy of features.bin in templates\n";
@@ -2986,6 +3058,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       checkPlasmaRB();
    }
 
+#if CPU!=SIMNT
    // update & check the CRCs
    if ( newBuildData.calFileType == 5 )
    {
@@ -3002,6 +3075,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    {
       return(-1);
    }
+#endif
 
 LEAVEROUTINE:
    ;

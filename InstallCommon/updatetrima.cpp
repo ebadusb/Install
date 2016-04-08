@@ -234,6 +234,7 @@ int updateTrima ()
 
    // open the install log file
    installLog.open(PNAME_INSTALL_LOG);
+   installLog.setMaxLogLevel(installLogStream::NORMAL);  // this is the default, but just to be sure...
 
    //
    // Make sure we don't interrupt anybody else who is running ...
@@ -243,11 +244,12 @@ int updateTrima ()
    // the is a development install if a keyboard is attached or the development_only file is present
    updatetrimaUtils::development_install = false;
 
-   development_only_file = fopen("/machine/update/development_only", "r");
+   development_only_file = fopen(UPDATE_PATH "/development_only", "r");
    if (development_only_file)
    {
-      installLog << "Found /machine/update/development_only\n";
+      installLog << "Found ./machine/update/development_only\n";
       updatetrimaUtils::development_install = true;
+      installLog.setMaxLogLevel(installLogStream::DEVELOPMENT);
    }
    else if (mySymFindByName(sysSymTbl, "bootKeyboardAttached", (char**)&keyboardattachedFunc) == OK)
    {
@@ -255,26 +257,34 @@ int updateTrima ()
       {
          updatetrimaUtils::development_install = true;
          installLog << "Found a keyboard attached\n";
+         installLog.setMaxLogLevel(installLogStream::DEVELOPMENT);
       }
    }
 
-   if ( updatetrimaUtils::development_install )
+   // set the installLogLevel based on a file
+   if (fopen(UPDATE_PATH "/installLogLevel_MAX", "r"))
    {
-      installLog << "----- PERFORMING A DEVELOPMENT INSTALL -----\n";
+      installLog.setMaxLogLevel(installLogStream::MAX);
    }
+   else if (fopen(UPDATE_PATH "/installLogLevel_DEBUG", "r"))
+   {
+      installLog.setMaxLogLevel(installLogStream::DEBUG);
+   }
+
+   // force the dev install flag on the simulator
+#if CPU==SIMNT
+   updatetrimaUtils::development_install = true;
+   installLog.setMaxLogLevel(installLogStream::DEVELOPMENT);
+#endif
+
+   installLog << installLogStream::DEVELOPMENT << "----- PERFORMING A DEVELOPMENT INSTALL -----\n";
 
    installLog << "Reading software revision string for the new version from updateTrima.taz file.\n";
 
    // Get the revision string from the taz file the easy way - works for new taz files
    if ( findTazRevision(UPDATE_PATH "/updateTrima.taz", revString) )
    {
-      if ( updatetrimaUtils::development_install )
-      {
-         updatetrimaUtils::logToScreen = false;
-      }
-      installLog << "Software revision string from updateTrima.taz is: " << revString << "\n";
-
-      updatetrimaUtils::logToScreen = true;
+      installLog << installLogStream::DEVELOPMENT << "Software revision string from updateTrima.taz is: " << revString << "\n";
    }
    else   // Try getting it the hard way
    {
@@ -287,13 +297,7 @@ int updateTrima ()
 
          if ( findTazRevision(UPDATE_PATH "/trima.taz", revString) )
          {
-            if ( updatetrimaUtils::development_install )
-            {
-               updatetrimaUtils::logToScreen = false;
-            }
-            installLog << "Software revision string from trima.taz is: " << revString << "\n";
-
-            updatetrimaUtils::logToScreen = true;
+            installLog << installLogStream::DEVELOPMENT << "Software revision string from trima.taz is: " << revString << "\n";
          }
          else
          {
@@ -317,30 +321,19 @@ int updateTrima ()
       installLog << "Can't determine software version from revision string, aborting update.\n";
       return(-1);
    }
-   if ( updatetrimaUtils::development_install )
-   {
-      updatetrimaUtils::logToScreen = false;
-   }
-   installLog << "Software version for the new version from updateTrima.taz is: "
+
+   installLog << installLogStream::DEVELOPMENT 
+              << "Software version for the new version from updateTrima.taz is: "
               << " " << toVer.majorRev
               << "." << toVer.minorRev
               << "." << toVer.buildNum
               << "\n";
 
-   updatetrimaUtils::logToScreen = true;
-
    // Read the "from" revision
    installLog << "Reading software revision string of software installed on the machine.\n";
    if ( readProjectRevisionFile(revString) )
    {
-      if ( updatetrimaUtils::development_install )
-      {
-         updatetrimaUtils::logToScreen = false;
-      }
-      installLog << "Software revision string of software installed on the machine is: " << revString << "\n";
-
-      updatetrimaUtils::logToScreen = true;
-
+      installLog << installLogStream::DEVELOPMENT << "Software revision string of software installed on the machine is: " << revString << "\n";
 
       // Parse it
       if ( !updatetrimaUtils::parseRevision(revString, fromVer.majorRev, fromVer.minorRev, fromVer.buildNum) )
@@ -376,10 +369,11 @@ int updateTrima ()
       }
    }
 
+
    // Delete the "special" files if it isn't a development install
    if ( !updatetrimaUtils::development_install )
    {
-      installLog << "Deleting special files.";
+      installLog << "Deleting special files.\n";
 
       for ( int i = 0; i < numInstallSpecialFiles; i++ )
       {
@@ -420,36 +414,62 @@ LEAVEROUTINE:
    remove(UPDATE_PATH "/bootrom_versalogic.sys");
    remove(UPDATE_PATH "/vxWorks_versalogic");
    remove(UPDATE_PATH "/vxboot.taz");
+   remove(UPDATE_PATH "/trima.taz");
 
    // Write an install summary
    installLog << "Install summary:\n";
    if ( retval == 0 )
    {
       installLog << "     Install successful\n";
-      if ( !updatetrimaUtils::development_install )
-      {
-         updatetrimaUtils::logToScreen = false;
-      }
 
-      installLog << "     Old software version:"
+//      if ( !updatetrimaUtils::development_install )
+//      {
+//         updatetrimaUtils::logToScreen = false;
+//      }
+//      updatetrimaUtils::logToScreen = updatetrimaUtils::development_install;
+
+      installLog << installLogStream::DEVELOPMENT 
+                 << "     Old software version:"
                  << " " << fromVer.majorRev
                  << "." << fromVer.minorRev
                  << "." << fromVer.buildNum
                  << "\n";
 
-      installLog << "     New software version:"
+      installLog << installLogStream::DEVELOPMENT
+                 << "     New software version:"
                  << " " << toVer.majorRev
                  << "." << toVer.minorRev
                  << "." << toVer.buildNum
                  << "\n";
 
-      updatetrimaUtils::logToScreen = true;
+//      updatetrimaUtils::logToScreen = true;
    }
    else
    {
       installLog << "     Install failed\n";
    }
    installLog << "\n";
+
+#if CPU==SIMNT
+   if (retval) // if it failed, set a flag file
+   {
+      FILE *errFile = fopen(INSTALL_LOG_PATH "/InstallFailed", "w");
+      if (errFile)
+      {
+         fclose(errFile);
+      }
+   }
+
+   FILE *lastFile = fopen("machine/snap/LastFile", "w");
+   if (lastFile)
+   {
+      fclose(lastFile);
+   }
+   else
+   {
+      printf("Could not modify LastFile\n");
+   }
+#endif
 
    installLog.close();
 

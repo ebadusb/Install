@@ -9,6 +9,14 @@
 // This is to tell filenames.h to declare the installSpecialFiles variables
 #define INSTALL_BUILD
 
+// define the root for the install simulator as a relative path from where the simulator is run
+#if (CPU==SIMNT)
+   #ifdef SIMROOT
+      #undef SIMROOT
+   #endif
+   #define SIMROOT Install
+#endif
+
 #ifdef __COMPILE_FOR_VX_54__
 
     #include "trima_opsys.h"

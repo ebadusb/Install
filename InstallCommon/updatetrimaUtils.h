@@ -13,8 +13,13 @@
 #define INSTALL_LOG_PATH  MACHINE_PATH "/install"
 
 enum RANGETYPE {V510, V520, V600, V630, V640, V700, END};
+static const char* rangeTypeStr[] = {"V510", "V520", "V600", "V630", "V640", "V700", "END"};
+
 enum RANGECOMPARETYPE {MIN, MAX, NOT, FORCE};
+static const char* compareTypeStr[] = {"MIN", "MAX", "NOT", "FORCE"};
+
 enum RANGEVARIABLETYPE {INT, FLOAT};
+static const char* rangeValTypeStr[] = {"INT", "FLOAT"};
 
 struct versionStruct
 {
@@ -144,10 +149,9 @@ public:
    static rangeStruct&     getNextRangeData (bool reset = false);
 
 //////////////////////////////////////////////////
-// The logger calls are all depricated - they are being replaced by the installLogStream
-// They will be removed if/when I get the time to go through the code and switch
-// all of the logging to use the stream class.
-// The logger calls now all use the stream class behind the scenes to do the logging
+// The logger calls are all no longer supported - they were replaced by the installLogStream
+// They have be removed and all of the logging was switched to use the stream class.
+/*
    static bool loggingEnabled;
    static bool logToScreen;
    static void logger (const char* stuff);
@@ -160,25 +164,64 @@ public:
    static void logger (const char* stuff1, const char* stuff2, const char* stuff3, const char* stuff4);
    static bool initLogging ();
    static void closelogger ();
-
+*/
 protected:
 
-   static FILE* logFile;
+//   static FILE* logFile;
 
 };
 
 
 ///////////////////////////////////////////////////////////////////
-// file log stream class
+// installLogStream class
+//
+// logs to a file using stream operator
+//
+// open a log file with open()
+// set the maximum level of logging information to be displayed by using setMaxLogLevel()
+//   default maximum is NORMAL
+//   All messages preceeded with a log level from the installLogLevel enum will be checked against
+//   the maximum and only messages with a level <= the maximum will be logged.
+//   Messages without a level are treated as NORMAL level.
+//   example:
+//    if a keyboard is connected set
+//     installLog.setMaxLogLevel(installLogStream::DEVELOPMENT);
+//    then 
+//     installLog << "Blah\n";
+//     installLog << installLogStream::NORMAL << "Blah\n";
+//     installLog << installLogStream::DEVELOPMENT << "Blah\n";
+//    will be logged, but
+//     installLog << installLogStream::DEBUG << "Blah\n";
+//    won't.
+// 
+// The end of a messages is defined by streaming installLogStream::endline
+// or by there being a \n in the message.
+// 
+///////////////////////////////////////////////////////////////////
 class installLogStream
 {
 public:
+
+   enum installLogLevel
+   {
+      NORMAL,
+      DEVELOPMENT,
+      DEBUG,
+      MAX               // this is always the last one
+   };
+
+   enum installLogDirective
+   {
+      endline
+   };
+
    installLogStream();
    installLogStream(bool logToScrn);
    virtual ~installLogStream();
    bool                       open (const char* filename);
    bool                       is_open ();
    void                       close ();
+   void                       setMaxLogLevel (installLogLevel logLevel);
    installLogStream& operator << (const char* stuff);
    installLogStream& operator << (const std::string& stuff);
    installLogStream& operator << (const long stuff);
@@ -186,7 +229,9 @@ public:
    installLogStream& operator << (const unsigned int stuff);
    installLogStream& operator << (const float stuff);
    installLogStream& operator << (const double stuff);
-//    installLogStream& operator << (ostream& stuff);
+
+   installLogStream& operator << (installLogLevel stuff);
+   installLogStream& operator << (installLogDirective stuff);
 
    void LogToScreen (bool onOff) {logToScreen = onOff; }
 
@@ -198,6 +243,8 @@ public:
 protected:
    bool                   logToScreen;
    std::vector<ofstream*> streamVect;
+   installLogLevel maxLogLevel;
+   installLogLevel currLogLevel;
 };
 
 #endif // UPDATETRIMAUTILS_H
