@@ -833,7 +833,7 @@ void installer::updateBarcodeCategories ()
 
       if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
       {
-         if( currVersion == NULL )
+         if ( currVersion == NULL )
          {
             currVersion = "(NON EXISTANT)";
          }
@@ -874,7 +874,7 @@ void installer::updateRTSConfig ()
 
       if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
       {
-         if( currVersion == NULL )
+         if ( currVersion == NULL )
          {
             currVersion = "(NON EXISTANT)";
          }
@@ -1615,7 +1615,7 @@ bool installer::extractUpdateFiles6 ()
    system(cmdStr);
    sprintf(cmdStr, "del /s /f /q %s\\*", GRAPHICS_PATH);
    system(cmdStr);
-*/ 
+*/
 #endif
 
    //
@@ -1927,14 +1927,14 @@ bool installer::checkCRC6 ()
       close(barcodeExists);
       softcrc("-filelist " FILELISTS_PATH "/barcode_categories.files -update " CONFIG_CRC_PATH  "/barcode_categories.crc");
    }
-   
+
    // Separate check for RTS config since the file may or may not exist
    const int rtsConfigExists = open(FILELISTS_PATH "/rts_config.files",  O_RDONLY, DEFAULT_FILE_PERM);
    if (rtsConfigExists > 0)
    {
       close(rtsConfigExists);
       softcrc("-filelist " FILELISTS_PATH "/rts_config.files -update " CONFIG_CRC_PATH  "/rts_config.crc");
-   }   
+   }
 
 
    // Set permissions in config directory
@@ -1971,11 +1971,11 @@ bool installer::checkCRC6 ()
    }
 
    // Separate check for Barcode Categories since the file may or may not exist
-   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH"/barcode_categories.crc") )
+   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH "/barcode_categories.crc") )
    {
       return false;
    }
-   
+
    // Separate check for RTS Config since the file may or may not exist
    if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files	-verify "CONFIG_CRC_PATH"/rts_config.crc") )
    {
@@ -2175,7 +2175,7 @@ bool installer::checkRange (const char* section, const char* key, const char* va
 
 //   installLog << installLogStream::DEBUG << "Checking range of: " << section << " " << key << " " << value << "\n";
 
-   const char* bloodTypeKey = "key_blood_type_";
+   const char* bloodTypeKey         = "key_blood_type_";
    bool        retval               = true;
    bool        foundInRangeData     = false;
    bool        everFoundInRangeData = false;
@@ -2319,8 +2319,8 @@ bool installer::checkRange (const char* section, const char* key, const char* va
             installLog << " - forcing value\n";
             forceVal = rangeData.value;
          }
-         else if ( strcmp(rangeData.dataKey, bloodTypeKey) == 0 
-              && rangeData.compareType == MAX )
+         else if ( strcmp(rangeData.dataKey, bloodTypeKey) == 0
+                   && rangeData.compareType == MAX )
          {
             // if the failure was a blood type max range, try to convert it, otherwise let it use the default
             std::string newVal;
@@ -2354,59 +2354,59 @@ bool installer::checkRange (const char* section, const char* key, const char* va
 
 // Check if the blood type value in the new format corresponds to one of the old ones
 // if so, return true and the old value that corresponds to it
-bool installer::bloodTypeConversionCheck(int bloodType, std::string& newVal)
+bool installer::bloodTypeConversionCheck (int bloodType, std::string& newVal)
 {
-   bool retval = true;
-   int newIntVal = 0;
+   bool retval    = true;
+   int  newIntVal = 0;
    char charVal[4];
 
    // the offset of the new blood types from the old ones
    // can't use the value from bloodtypes.h because it doesn't exist in all versions of the file
-   static const int Offset = 13;  
+   static const int Offset = 13;
 
    switch (bloodType)
    {
-   case BT_ALL + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_ALL;
-      break;
-   case BT_OP_ON + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON;
-      break;
-   case BT_ON + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_ON;
-      break;
-   case BT_OP_ON_AP_AN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN;
-      break;
-   case BT_OP_ON_AN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AN;
-      break;
-   case BT_ON_AN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_ON_AN;
-      break;
-   case BT_OP_ON_BP_BN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_BP_BN;
-      break;
-   case BT_OP_ON_AP_AN_BP_BN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN_BP_BN;
-      break;
-   case BT_OP_ON_AP_AN_BN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN_BN;
-      break;
-   case BT_AP_AN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_AP_AN;
-      break;
-   case BT_AP_AN_BP_BN_ABP_ABN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_AP_AN_BP_BN_ABP_ABN;
-      break;
-   case BT_BP_BN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_BP_BN;
-      break;
-   case BT_ABP_ABN + Offset:
-      newIntVal = CONFIG_INDEX_BLOOD_TYPE_ABP_ABN;
-      break;
-   default:
-      retval = false;
+      case BT_ALL + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_ALL;
+         break;
+      case BT_OP_ON + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON;
+         break;
+      case BT_ON + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_ON;
+         break;
+      case BT_OP_ON_AP_AN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN;
+         break;
+      case BT_OP_ON_AN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AN;
+         break;
+      case BT_ON_AN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_ON_AN;
+         break;
+      case BT_OP_ON_BP_BN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_BP_BN;
+         break;
+      case BT_OP_ON_AP_AN_BP_BN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN_BP_BN;
+         break;
+      case BT_OP_ON_AP_AN_BN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_OP_ON_AP_AN_BN;
+         break;
+      case BT_AP_AN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_AP_AN;
+         break;
+      case BT_AP_AN_BP_BN_ABP_ABN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_AP_AN_BP_BN_ABP_ABN;
+         break;
+      case BT_BP_BN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_BP_BN;
+         break;
+      case BT_ABP_ABN + Offset :
+         newIntVal = CONFIG_INDEX_BLOOD_TYPE_ABP_ABN;
+         break;
+      default :
+         retval = false;
    }
 
    if ( retval )
@@ -2499,15 +2499,15 @@ bool installer::allowedUpgrade (bool ampro, bool versalogic, bool python, bool o
       retval = false;
       }
    }
-*/      
+*/
    if ( isVersalogicPython() && !python )
    {
-   installLog << "This update path is not allowed on a VersaLogic Python Trima.\n";
-   retval = false;
+      installLog << "This update path is not allowed on a VersaLogic Python Trima.\n";
+      retval = false;
    }
    else
    {
-   installLog << "This update path is allowed.\n";
+      installLog << "This update path is allowed.\n";
    }
 
    return retval;
@@ -2962,19 +2962,11 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    // Update the configuration files
    // do this before all other config.dat changes
-   // Don't do this if it's the same version
-   if ( (newBuildRef != prevBuildRef) || (fromVer.buildNum == 999) || (toVer.buildNum == 999) )
+   installLog << "Update the configuration files\n";
+   if (!updateConfigGeneric())
    {
-      installLog << "Update the configuration files\n";
-      if ( !updateConfigGeneric() )
-      {
-         installLog << "Configuration update failed\n";
-         return(-1);
-      }
-   }
-   else
-   {
-      installLog << "No config.dat key difference between the previous software version and the new one, using the existing config.dat unchanged.\n";
+      installLog << "Configuration update failed\n";
+      return (-1);
    }
 
    // update cal files
@@ -3010,7 +3002,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    installLog << "Updating Barcode Categories\n";
    updateBarcodeCategories();
    installLog << "Updating RTS Config\n";
-   updateRTSConfig();   
+   updateRTSConfig();
    installLog << "Updating machine.id\n";
    installMachineId();
 
@@ -3101,4 +3093,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH b66e15fc66f8f3adadf5cf7e53983780 */
+/* FORMAT HASH 7feb98bb1a5514cf0f129576d3329600 */
