@@ -641,8 +641,8 @@ installLogStream::installLogStream()
 installLogStream::installLogStream(bool logToScrn)
    : logToScreen(logToScrn),
      streamVect(),
-     currLogLevel(),
-     maxLogLevel()
+     currLogLevel(NORMAL),
+     maxLogLevel(NORMAL)
 {}
 
 installLogStream::~installLogStream()
