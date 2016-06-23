@@ -1462,11 +1462,10 @@ bool installer::extractUpdateFiles6 ()
    BOOT_PARAMS* params = new BOOT_PARAMS;
 
    bootStringToStruct(sysBootLine, params);
-   bool defaultBootImage = ( strcmp(params->bootFile, "/ata0/vxWorks") == 0 );
-   bool isCommonKernel   = ( strcmp(params->bootFile, "/ata0a/vxWorks") == 0 );
+   bool defaultBootImage = ( strstr(params->bootFile, "/vxWorks") != NULL );
    delete params;
 
-   if ( defaultBootImage || isCommonKernel || isVersalogicFox() )
+   if ( defaultBootImage )
    {
       //
       // Save off the old vxWorks image in case of failure ...
@@ -1526,12 +1525,13 @@ bool installer::extractUpdateFiles6 ()
    //
    // Copy over the control images depending on the board type.
    //
-   if ( isVersalogicFox() )
+   // Use Fox-specific images if present
+   if ( isVersalogicFox() && stat((char*)UPDATE_PATH "/vxWorks_fox", &fileStat) == OK )
    {
-      installLog << "Copying Control Fox bootrom.sys and vxWorks to " << VXBOOT_PATH << "\n";
+      installLog << "Copying Control Versalogic Fox bootrom.sys and vxWorks to " << VXBOOT_PATH << "\n";
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_fox.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
-           updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_fox",     VXBOOT_PATH "/vxWorks") == ERROR  )
+         updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_fox",     VXBOOT_PATH "/vxWorks") == ERROR  )
       {
          installLog << "Install of OS image failed\n";
          return false;
@@ -1553,7 +1553,7 @@ bool installer::extractUpdateFiles6 ()
       installLog << "Copying Control Versalogic bootrom.sys and vxworks to " << VXBOOT_PATH << "\n";
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_versalogic.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
-           updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_versalogic", VXBOOT_PATH "/vxWorks") == ERROR  )
+         updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_versalogic", VXBOOT_PATH "/vxWorks") == ERROR  )
       {
          installLog << "Install of OS image failed\n";
          return false;
@@ -1732,7 +1732,7 @@ bool installer::extractUpdateFiles6 ()
    //
    // Copy over the safety images depending on the board type.
    //
-   // If there are files in SAFETY_BOOT_PATH install Safety from there
+   // If there are files in SAFETY_BOOT_PATH install Safety from there (pre-CommonKernel case)
    if ( stat((char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR ||
         stat((char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
         stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR)
