@@ -1414,6 +1414,12 @@ bool installer::extractUpdateFiles5 ()
    //
    // Remove existing Trima files
    installLog << "Removing old Trima files...\n";
+
+   // Remove any old fonts and strings
+   installLog << "Removing any old fonts and string files\n";
+   fileSort(STRING_DIRECTORY,  FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+   fileSort(DROP_IN_FONTS_DIR, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+
 #if CPU!=SIMNT
    fileSort(TRIMA_PATH,    FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
    fileSort(SAVEDATA_PATH, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
@@ -1531,7 +1537,7 @@ bool installer::extractUpdateFiles6 ()
       installLog << "Copying Control Versalogic Fox bootrom.sys and vxWorks to " << VXBOOT_PATH << "\n";
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_fox.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
-         updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_fox",     VXBOOT_PATH "/vxWorks") == ERROR  )
+           updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_fox",     VXBOOT_PATH "/vxWorks") == ERROR  )
       {
          installLog << "Install of OS image failed\n";
          return false;
@@ -1553,7 +1559,7 @@ bool installer::extractUpdateFiles6 ()
       installLog << "Copying Control Versalogic bootrom.sys and vxworks to " << VXBOOT_PATH << "\n";
 
       if ( updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/bootrom_versalogic.sys", VXBOOT_PATH "/bootrom.sys") == ERROR ||
-         updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_versalogic", VXBOOT_PATH "/vxWorks") == ERROR  )
+           updatetrimaUtils::copyFileContiguous(UPDATE_PATH "/vxWorks_versalogic", VXBOOT_PATH "/vxWorks") == ERROR  )
       {
          installLog << "Install of OS image failed\n";
          return false;
@@ -1591,6 +1597,12 @@ bool installer::extractUpdateFiles6 ()
    //
    // Remove existing Trima files
    installLog << "Removing old Trima files...\n";
+
+   // Remove any old fonts and strings
+   installLog << "Removing any old fonts and string files\n";
+   fileSort(STRING_DIRECTORY,  FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+   fileSort(DROP_IN_FONTS_DIR, FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
+
 #if CPU!=SIMNT
    fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_file_set_rdwrite);
    fileSort(TRIMA_PATH,      FILE_SORT_BY_DATE_ASCENDING, updatetrimaUtils::update_clean_file);
@@ -2934,6 +2946,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    // Remove any old copy of features.bin in templates
    installLog << "Removing any old copy of features.bin in templates\n";
+
    struct stat featuresFileStat;
 
    if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
@@ -3093,4 +3106,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 7feb98bb1a5514cf0f129576d3329600 */
+/* FORMAT HASH 4cbcf7b5d98c59df00b45438b31b6bc9 */
