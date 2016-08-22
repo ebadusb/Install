@@ -156,6 +156,7 @@ rangeStruct rangeData[] =
    {V630, "PRODUCT_DEFINITIONS", "key_blood_type_", MAX, INT, "12", false},
 
    {V640, "LANGUAGE_UNIT_CONFIG", "key_lang", FORCE, INT, "0", false},
+   {V640, "PROCEDURE_CONFIG", "key_autoflow", FORCE, INT, "0", false},        // force autoflow off when installing 6.4
    {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
    {V640, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
    {V640, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
@@ -193,4 +194,4 @@ rangeStruct rangeData[] =
 
 #endif // UPDATETRIMADATA_H
 
-/* FORMAT HASH 8970359ba07d5c7ffe6a1eddc8a8776b */
+/* FORMAT HASH b35278fd729f2b634a478c182e55438b */
