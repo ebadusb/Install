@@ -246,7 +246,11 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
 
 // common kernel defines
 #ifndef SAFETY_COMMON_KERNEL_INIT_PATH
-   #define SAFETY_COMMON_KERNEL_INIT_PATH  CONFIG_PATH "/kernel_init/safety"
+   #define SAFETY_COMMON_KERNEL_INIT_PATH  MACHINE_PATH "/kernel_init/safety"
+#endif
+
+#ifndef SAFETY_COMMON_KERNEL_INIT_OLD
+   #define SAFETY_COMMON_KERNEL_INIT_OLD   CONFIG_PATH "/kernel_init/safety"
 #endif
 
 #ifndef SAFETY_KERNEL_INIT_SRC

@@ -1714,6 +1714,9 @@ bool installer::extractUpdateFiles6 ()
    // Remove the files that will be installed by the extraction
    xdelete(SAFETY_COMMON_KERNEL_INIT_PATH);
 
+   // Remove the old/obsolete path for kernel if it exists
+   xdelete(SAFETY_COMMON_KERNEL_INIT_OLD);
+
    // Look for Safety's Common Kernel boot files (vxboot_safety.taz)
    if ( stat((char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
    {
