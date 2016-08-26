@@ -1711,11 +1711,10 @@ bool installer::extractUpdateFiles6 ()
       return false;
    }
 
-   // Remove the files that will be installed by the extraction
-   xdelete(SAFETY_COMMON_KERNEL_INIT_PATH);
-
-   // Remove the old/obsolete path for kernel if it exists
-   xdelete(SAFETY_COMMON_KERNEL_INIT_OLD);
+   // Remove CommonKernel directories that will be installed by the extraction below
+   // (otherwise, they are N/A for pre-ComonKernel configurations)
+   xdelete(COMMON_KERNEL_INIT_DIR); // root of SAFETY_COMMON_KERNEL_INIT_PATH
+   xdelete(COMMON_KERNEL_INIT_OLD); // this is obsolete
 
    // Look for Safety's Common Kernel boot files (vxboot_safety.taz)
    if ( stat((char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
