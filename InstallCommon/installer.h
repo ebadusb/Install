@@ -182,7 +182,7 @@ protected:
 // Installs a default machine.id file if one is present in the taz file but there
 // isn't already one on the machine
 //
-   virtual void installMachineId ();
+   virtual bool installMachineId ();
 
 //
 // Appends a CRC'd serial number line to a given zipped file

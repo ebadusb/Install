@@ -2780,12 +2780,14 @@ LEAVEROUTINE:
    return retval;
 }
 
-void installer::installMachineId ()
+bool installer::installMachineId ()
 {
    struct stat tempFileStat;
    struct stat configFileStat;
    int         tempFileStatStatus   = OK;
    int         configFileStatStatus = OK;
+
+   bool result = true;
 
    tempFileStatStatus   = stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat);
    configFileStatStatus = stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat);
@@ -2822,17 +2824,21 @@ void installer::installMachineId ()
          if ( cp(TEMPLATES_PATH "/" FILE_MACHINE_ID, PNAME_MACHINE_ID) == ERROR )
          {
             installLog << "Copy of default machine.id failed\n";
+            result = false;
          }
       }
       else
       {
          installLog << "Appending serial number failed so copy of default machine.id failed\n";
+         result = false;
       }
    }
    else
    {
       installLog << "Install of machine.id not needed\n";
    }
+
+   return result;
 }
 
 
@@ -2973,6 +2979,13 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       return(-1);
    }
 
+   installLog << "Updating machine.id\n";
+   if (!installMachineId())
+   {
+      installLog << "Machine.id install failed\n";
+      return(-1);
+   }
+
    attrib(TEMP_PATH, "-R");
 
    // Update the configuration files
@@ -3018,8 +3031,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateBarcodeCategories();
    installLog << "Updating RTS Config\n";
    updateRTSConfig();
-   installLog << "Updating machine.id\n";
-   installMachineId();
+  // installLog << "Updating machine.id\n";
+  // installMachineId();
 
    // do different stuff for 6.3
    if ( newBuildData.setConfigCopy )
