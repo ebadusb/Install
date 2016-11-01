@@ -18,6 +18,7 @@
 
 #include "bloodtype.h"
 #include "cfg_ids.h"
+#include "configdef.h"
 
 using namespace std;
 
@@ -3031,8 +3032,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateBarcodeCategories();
    installLog << "Updating RTS Config\n";
    updateRTSConfig();
-  // installLog << "Updating machine.id\n";
-  // installMachineId();
+   // installLog << "Updating machine.id\n";
+   // installMachineId();
 
    // do different stuff for 6.3
    if ( newBuildData.setConfigCopy )
@@ -3121,4 +3122,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 4cbcf7b5d98c59df00b45438b31b6bc9 */
+/* FORMAT HASH 83a1114c9d35648b3719ba95fc6d3b77 */

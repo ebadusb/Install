@@ -9,16 +9,10 @@
 #include "updateTrimaDefines.h"
 #include "updatetrimaUtils.h"
 
-// #include "zlib.h"
 #include "filenames.h"
-#include "filesort.h"
-
 #include "datfile.h"
-#include "configdef.h"
 
 #include "os/discover_hw.h"
-
-// #include "updateTrimaData.h"
 
 
 class installer
@@ -91,11 +85,11 @@ protected:
 // barcode_categories.dat update function
 //
    virtual void updateBarcodeCategories ();
-   
+
 //
 // rts_config.dat update function
 //
-   virtual void updateRTSConfig();   
+   virtual void updateRTSConfig ();
 
 //
 // setconfig.dat update function
@@ -130,7 +124,7 @@ protected:
 
    virtual bool checkRange (const char* section, const char* key, const char* value, std::string& forceVal);
 
-   virtual bool bloodTypeConversionCheck(int bloodType, std::string& newVal);
+   virtual bool bloodTypeConversionCheck (int bloodType, std::string& newVal);
 
 //
 // Main config file update function, calls the others
@@ -208,4 +202,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 56575ef5f8cfa284a58249e095abab37 */
+/* FORMAT HASH 83579a5d6ea23a362db1382aa0f65f47 */
