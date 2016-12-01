@@ -1501,7 +1501,7 @@ bool installer::extractUpdateFiles6 ()
       {
          const char* backupDir = TEMP_PATH "/kernel_init.bak";
          attrib(TEMP_PATH, "-R");
-         if ( mkdir(backupDir) == OK )
+         if ( mkdir((char *)backupDir) == OK )
          {
             installLog << "Backing up kernel_init ...\n";
             cp(TRIMA_PATH "/kernel_init/*.out", backupDir);
