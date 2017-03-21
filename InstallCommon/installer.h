@@ -62,6 +62,11 @@ protected:
    virtual void updateHW ();
 
 //
+// app_server.dat function
+//
+   virtual void updateAppServer ();
+
+//
 // sw.dat update function
 //
    virtual void updateSW ();

@@ -549,6 +549,39 @@ void installer::updateHW ()
 
 }
 
+
+void installer::updateAppServer ()
+{
+   // these are the customer selected sets.... dont overwrite if it exists!
+   currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_APPSERVER_DAT);
+   newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_APPSERVER_DAT);
+
+   if ( newVersion == NULL )
+   {
+      installLog << "Ignoring app_server.dat\n";
+   }
+   else if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+   {
+      installLog << "Updating app_server.dat to new version " << newVersion;
+      if (currVersion)
+      {
+         installLog << " from existing version " << currVersion << "\n";
+      }
+      installLog << "\n";
+
+      attrib(CONFIG_PATH "/" FILE_APPSERVER_DAT, "-R");
+
+      if ( cp(TEMPLATES_PATH "/" FILE_APPSERVER_DAT, CONFIG_PATH "/" FILE_APPSERVER_DAT) == ERROR )
+      {
+         installLog << "copy of " << FILE_APPSERVER_DAT << " failed\n";
+         return;
+      }
+
+      attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
+      fflush(stdout);
+   }
+}
+
 bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 {
    bool retval = false;  // assume it didn't work
@@ -1951,6 +1984,12 @@ bool installer::checkCRC6 ()
       softcrc("-filelist " FILELISTS_PATH "/rts_config.files -update " CONFIG_CRC_PATH  "/rts_config.crc");
    }
 
+   const int appServerExists = open(FILELISTS_PATH "/app_server.files",  O_RDONLY, DEFAULT_FILE_PERM);
+   if (appServerExists > 0)
+   {
+      close(appServerExists);
+      softcrc("-filelist " FILELISTS_PATH "/app_server.files -update " CONFIG_CRC_PATH  "/app_server.crc");
+   }
 
    // Set permissions in config directory
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
@@ -1997,6 +2036,12 @@ bool installer::checkCRC6 ()
       return false;
    }
 
+   // Separate check for app server
+   if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files	-verify "CONFIG_CRC_PATH"/app_server.crc") )
+   {
+      return false;
+   }
+   
    return true;
 }
 
@@ -3018,6 +3063,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateRBC();
    installLog << "Updating Hardware\n";
    updateHW();
+   installLog << "Updating App Server\n";
+   updateAppServer();
    installLog << "Updating Software\n";
    updateSW();
    installLog << "Updating Terror\n";
