@@ -577,7 +577,7 @@ void installer::updateAppServer ()
          return;
       }
 
-      attrib(CONFIG_PATH "/" FILE_SW_DAT, "+R");
+      attrib(CONFIG_PATH "/" FILE_APPSERVER_DAT, "+R");
       fflush(stdout);
    }
 }
