@@ -262,6 +262,10 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define SAFETY_KERNEL_INIT_TMP          TEMP_PATH   "/safety_init.out"
 #endif
 
+#ifndef FILE_APPSERVER_DAT
+   #define FILE_APPSERVER_DAT          "app_server.dat"
+#endif
+
 #endif // UPDATETRIMADEFINES_H
 
 /* FORMAT HASH f17f6b050d151b51abd3475c85bd595e */
