@@ -274,6 +274,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
    bool retval      = true;
    bool madeChanges = false;
    bool deleteItem  = false;
+   bool replaceItem = false;
    char loggingBuff[256];
 
    // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
@@ -305,14 +306,18 @@ bool installer::validateSetConfig (versionStruct& toVer)
       {
          UPDATE_CASSETTE_MAP_ITERATOR foundCassette = MasterUpdateCassetteDat::find((*iter)->RefNum());
 
-         if (foundCassette == MasterUpdateCassetteDat::end()
-             && (!UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
-                 || toVer.majorRev < 20 ) )
+         if (foundCassette == MasterUpdateCassetteDat::end()) // not in cassette.dat
          {
             // didn't find the cassette from set_config.dat in cassette.dat so delete it
             installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat\n";
-            installLog << " not twoP Connector Cassette - removed\n";
             deleteItem = true;
+
+            if ((UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
+                 && toVer.majorRev >= 20 ))
+            {
+               installLog << "majorRev " << toVer.majorRev << " twoP Connector Cassette\n";
+               replaceItem = true;
+            }
          }
          else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
                    strcmp(foundCassette->second->BarcodeNum(), (*iter)->BarcodeNum()) != 0 )
@@ -330,7 +335,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
 //            updatetrimaUtils::logger(loggingBuff);
          }
 
-         if (deleteItem)
+         if (deleteItem && !replaceItem)
          {
             AdminUpdateCassetteDat::erase(iter);
             madeChanges = true;
@@ -339,11 +344,11 @@ bool installer::validateSetConfig (versionStruct& toVer)
 //            updatetrimaUtils::logger("Removed line, restarting scan from the begining\n" );
 
             AdminUpdateCassetteDat::updateCassetteFile();
-            iter       = AdminUpdateCassetteDat::begin();
-            deleteItem = false;
+            iter = AdminUpdateCassetteDat::begin();
             continue;
          }
-
+         deleteItem  = false;
+         replaceItem = false;
          iter++;
       }
    }
@@ -3174,4 +3179,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH aefa5370f6883a3cc9fa0737f135d781 */
+/* FORMAT HASH 0a02ede90843603585eef05f08a7b48c */
