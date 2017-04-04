@@ -29,6 +29,8 @@ public:
    UpdateCassetteDat();
    virtual ~UpdateCassetteDat();
 
+   static bool isTwoPConnectorCassette (unsigned int catNum);
+
 protected:
    static bool checkFile (const char* datFilePath, const char* crcFilePath, const char* datFileBkPath, const char* crcFileBkPath);
    static bool fixFile (CFileHelper& goodFile, const char* fname, const char* crcfname);
@@ -107,4 +109,4 @@ protected:
 
 #endif
 
-/* FORMAT HASH 356d8ca7d15b0d1a15729794fa40b560 */
+/* FORMAT HASH f674db81fffac9333b4afdff00ff2685 */

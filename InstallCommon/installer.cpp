@@ -20,6 +20,8 @@
 #include "cfg_ids.h"
 #include "configdef.h"
 
+#include <stdlib.h>
+
 using namespace std;
 
 #ifdef __cplusplus
@@ -267,7 +269,7 @@ bool installer::replaceCassette (const char* refStr, unsigned int tubingSetCode,
 }
 
 // This compares the set_config.dat vs the non-template cassette.dat so do it AFTER updateCassette() and updateSetConfig()
-bool installer::validateSetConfig ()
+bool installer::validateSetConfig (versionStruct& toVer)
 {
    bool retval      = true;
    bool madeChanges = false;
@@ -303,10 +305,13 @@ bool installer::validateSetConfig ()
       {
          UPDATE_CASSETTE_MAP_ITERATOR foundCassette = MasterUpdateCassetteDat::find((*iter)->RefNum());
 
-         if (foundCassette == MasterUpdateCassetteDat::end())
+         if (foundCassette == MasterUpdateCassetteDat::end()
+             && (!UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
+                 || toVer.majorRev < 20 ) )
          {
             // didn't find the cassette from set_config.dat in cassette.dat so delete it
-            installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat - removed\n";
+            installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat\n";
+            installLog << " not twoP Connector Cassette - removed\n";
             deleteItem = true;
          }
          else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
@@ -1534,7 +1539,7 @@ bool installer::extractUpdateFiles6 ()
       {
          const char* backupDir = TEMP_PATH "/kernel_init.bak";
          attrib(TEMP_PATH, "-R");
-         if ( mkdir((char *)backupDir) == OK )
+         if ( mkdir((char*)backupDir) == OK )
          {
             installLog << "Backing up kernel_init ...\n";
             cp(TRIMA_PATH "/kernel_init/*.out", backupDir);
@@ -2041,7 +2046,7 @@ bool installer::checkCRC6 ()
    {
       return false;
    }
-   
+
    return true;
 }
 
@@ -3096,7 +3101,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    // validate the cassettes in setconfig.dat vs cassette.dat
    installLog << "validating the setconfig file\n";
-   validateSetConfig();
+   validateSetConfig(toVer);
 
    // if coming from 5.1.0-3 update trap files if called for
    if ( newBuildData.updateTrapFiles && fromVer.majorRev == 6 )
@@ -3169,4 +3174,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 83a1114c9d35648b3719ba95fc6d3b77 */
+/* FORMAT HASH aefa5370f6883a3cc9fa0737f135d781 */

@@ -58,6 +58,20 @@ static UPDATE_CASSETTE_VECTOR_TYPE _adminCassettes;
 
 static bool _initialized = false;
 
+static const unsigned int twoPConnectorCassetteCatalogNumbers[] =
+{
+   82408
+   , 80350
+   , 82650
+   , 80360
+   , 82660
+   , 82668
+   , 80400
+   , 82400
+   , 80440
+   , 82440
+   , 80340
+};
 
 //
 // Base class definitions
@@ -167,7 +181,21 @@ bool UpdateCassetteDat::fixFile (CFileHelper& goodFile, const char* fname, const
 }
 
 
+bool UpdateCassetteDat::isTwoPConnectorCassette (unsigned int catNum)
+{
+   bool ret      = false;
+   int  nEntries = sizeof(twoPConnectorCassetteCatalogNumbers) / sizeof(unsigned int);
 
+   for (int i = 0; i < nEntries; i++)
+   {
+      if (catNum == twoPConnectorCassetteCatalogNumbers[i])
+      {
+         ret = true;
+         break;
+      }
+   }
+   return ret;
+}
 
 //
 // Master Cassette.dat methods
@@ -220,16 +248,16 @@ UPDATE_CASSETTE_MAP_ITERATOR MasterUpdateCassetteDat::find (const char* cassette
 //
 void MasterUpdateCassetteDat::read ()
 {
-   char         loggingBuff[256];
+   char loggingBuff[256];
 
    int          numberOfEntries = 0, lineNumber = 0;
    unsigned int catNum          = 0, adminCode = 0;
 
-   char*        token           = 0;
-   char*        barcodeString   = 0;
-   char*        catNumString    = 0;
-   char         buffer[256];
-   char         line[256];
+   char* token         = 0;
+   char* barcodeString = 0;
+   char* catNumString  = 0;
+   char  buffer[256];
+   char  line[256];
 
    installLog << "Reading cassette.dat\n";
 
@@ -357,7 +385,7 @@ void MasterUpdateCassetteDat::clear ()
 
    _cassetteMap.clear();
 
-   _fileOK         = false;
+   _fileOK = false;
 
    _fileVersion[0] = 0;
 }
@@ -367,7 +395,7 @@ void MasterUpdateCassetteDat::clear ()
 //
 // Admin Cassette.dat methods
 //
-bool AdminUpdateCassetteDat::_fileOK         = false;
+bool AdminUpdateCassetteDat::_fileOK = false;
 char AdminUpdateCassetteDat::_fileVersion[80];
 bool AdminUpdateCassetteDat::_fileHasChanged = false;
 
@@ -456,7 +484,7 @@ unsigned int AdminUpdateCassetteDat::size (void)
 //
 void AdminUpdateCassetteDat::read ()
 {
-   char         loggingBuff[256];
+   char loggingBuff[256];
 
    ifstream     inFile;
    char         catNumString[100]  = "";
@@ -686,9 +714,9 @@ void AdminUpdateCassetteDat::decorateFile (ostream& o)
 int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* pcrc)
 {
    enum { MAXBUFFERLENGTH = 256 };
-   char     buffer[MAXBUFFERLENGTH];
-   int      count;
-   int      totalBytesRead = 0;
+   char buffer[MAXBUFFERLENGTH];
+   int  count;
+   int  totalBytesRead = 0;
 
    ifstream inStream (filename, ios::in | ios::binary | ios::nocreate);
 
@@ -724,4 +752,4 @@ int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* 
    return 0;
 }
 
-/* FORMAT HASH 079979149177012ce4353c0557f3ecb1 */
+/* FORMAT HASH c6b1c4b3d63fe0ac42cb4cef499e8f9a */

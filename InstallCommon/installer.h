@@ -44,7 +44,7 @@ protected:
 
    bool replaceDatfileLine (const char* datFileName, const char* optionName, const char* newVal, bool addCRC = true);
 
-   bool validateSetConfig ();
+   bool validateSetConfig (versionStruct& toVer);
 
    // line by line dat file reader
    int readDatFileVals (CFileLine& cfLine, FILE* fp);
@@ -207,4 +207,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 83579a5d6ea23a362db1382aa0f65f47 */
+/* FORMAT HASH 1d3de6b1322e07f5471dd221c4dc509a */
