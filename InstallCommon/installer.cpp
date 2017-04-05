@@ -286,6 +286,8 @@ bool installer::validateSetConfig (versionStruct& toVer)
       goto LEAVEROUTINE;
    }
 
+   installLog << "majorRev " << toVer.majorRev << "\n";
+
    // Admin is /config/setconfig.dat
    if (!AdminUpdateCassetteDat::fileOK())
    {
@@ -315,7 +317,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
             if ((UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
                  && toVer.majorRev >= 20 ))
             {
-               installLog << "majorRev " << toVer.majorRev << " twoP Connector Cassette\n";
+               installLog << " twoP Connector Cassette\n";
                replaceItem = true;
             }
          }
@@ -3179,4 +3181,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 0a02ede90843603585eef05f08a7b48c */
+/* FORMAT HASH 6e8524860d928a4b59b9075284b55bbf */
