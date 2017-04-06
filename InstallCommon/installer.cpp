@@ -305,6 +305,9 @@ bool installer::validateSetConfig (versionStruct& toVer)
       UPDATE_CASSETTE_VECTOR_ITERATOR iter = AdminUpdateCassetteDat::begin();
       while (iter != AdminUpdateCassetteDat::end())
       {
+         deleteItem  = false;
+         replaceItem = false;
+
          UPDATE_CASSETTE_MAP_ITERATOR foundCassette = MasterUpdateCassetteDat::find((*iter)->RefNum());
 
          if (foundCassette == MasterUpdateCassetteDat::end()) // not in cassette.dat
@@ -333,7 +336,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
 
          if (deleteItem && !replaceItem)
          {
-            installLog << " Cassette ref #: " << (*iter)->RefNum() << " is deleted\n";
+            installLog << "Cassette ref #: " << (*iter)->RefNum() << " entry is removed\n";
             AdminUpdateCassetteDat::erase(iter);
             madeChanges = true;
 
@@ -341,8 +344,6 @@ bool installer::validateSetConfig (versionStruct& toVer)
             iter = AdminUpdateCassetteDat::begin();
             continue;
          }
-         deleteItem  = false;
-         replaceItem = false;
          iter++;
       }
    }
@@ -3173,4 +3174,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH abf3f5d734bb24124477ad26d4ca5925 */
+/* FORMAT HASH 3219d1720d0641becd3934e192911447 */
