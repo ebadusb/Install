@@ -275,7 +275,6 @@ bool installer::validateSetConfig (versionStruct& toVer)
    bool madeChanges = false;
    bool deleteItem  = false;
    bool replaceItem = false;
-   char loggingBuff[256];
 
    // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
    struct stat fileStat;
@@ -317,7 +316,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
             if ((UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
                  && toVer.majorRev >= 20 ))
             {
-               installLog << " twoP Connector Cassette\n";
+               installLog << " twoP Connector Cassette in version 7 or up, will be replaced\n";
                replaceItem = true;
             }
          }
@@ -331,19 +330,12 @@ bool installer::validateSetConfig (versionStruct& toVer)
                        << " barcode: " << (*iter)->BarcodeNum() << "\n";
             deleteItem = true;
          }
-         else
-         {
-//            sprintf(loggingBuff, "Found cassette ref #: %d admin code: %d barcode: %s\n", (int)((*iter)->RefNum()), (int)((*iter)->AdminCode()), (*iter)->BarcodeNum() );
-//            updatetrimaUtils::logger(loggingBuff);
-         }
 
          if (deleteItem && !replaceItem)
          {
+            installLog << " Cassette ref #: " << (*iter)->RefNum() << " is deleted\n";
             AdminUpdateCassetteDat::erase(iter);
             madeChanges = true;
-
-            // write the file and start over
-//            updatetrimaUtils::logger("Removed line, restarting scan from the begining\n" );
 
             AdminUpdateCassetteDat::updateCassetteFile();
             iter = AdminUpdateCassetteDat::begin();
@@ -3181,4 +3173,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 6e8524860d928a4b59b9075284b55bbf */
+/* FORMAT HASH abf3f5d734bb24124477ad26d4ca5925 */
