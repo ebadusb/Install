@@ -432,10 +432,10 @@ UPDATE_CASSETTE_VECTOR_ITERATOR AdminUpdateCassetteDat::end ()
 //
 // erase
 //
-void AdminUpdateCassetteDat::erase (UPDATE_CASSETTE_VECTOR_ITERATOR it)
+UPDATE_CASSETTE_VECTOR_ITERATOR AdminUpdateCassetteDat::erase (UPDATE_CASSETTE_VECTOR_ITERATOR it)
 {
    AdminUpdateCassetteDat::_fileHasChanged = true;
-   _adminCassettes.erase(it);
+   return _adminCassettes.erase(it);
 }
 
 
@@ -572,13 +572,6 @@ void AdminUpdateCassetteDat::read ()
    installLog << installLogStream::DEBUG << "Read " << index << " rows from setconfig.dat\n";
 
    _fileOK = true;
-}
-
-
-void AdminUpdateCassetteDat::updateIfChanged ()
-{
-   if (_fileHasChanged)
-      updateCassetteFile();
 }
 
 
@@ -752,4 +745,4 @@ int AdminUpdateCassetteDat::file_crcgen32 (const char* filename, unsigned long* 
    return 0;
 }
 
-/* FORMAT HASH c6b1c4b3d63fe0ac42cb4cef499e8f9a */
+/* FORMAT HASH 5a5e2466fe577610432e3c60d935e320 */

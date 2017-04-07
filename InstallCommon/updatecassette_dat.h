@@ -81,7 +81,7 @@ public:
    static UPDATE_CASSETTE_VECTOR_ITERATOR begin ();
    static UPDATE_CASSETTE_VECTOR_ITERATOR end ();
 
-   static void erase (UPDATE_CASSETTE_VECTOR_ITERATOR it);
+   static UPDATE_CASSETTE_VECTOR_ITERATOR erase (UPDATE_CASSETTE_VECTOR_ITERATOR it);
 
    static unsigned int size (void);
    static void         clear (void);
@@ -90,7 +90,6 @@ public:
 
    // UPDATE THE CASSETTE FILE
    static bool updateCassetteFile ();
-   static void updateIfChanged ();
 
    static int file_crcgen32 (const char* filename, unsigned long* pcrc);
 
@@ -109,4 +108,4 @@ protected:
 
 #endif
 
-/* FORMAT HASH f674db81fffac9333b4afdff00ff2685 */
+/* FORMAT HASH ae8e8e543907e8c3695143720bfabdda */
