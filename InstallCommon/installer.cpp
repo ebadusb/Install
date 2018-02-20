@@ -3006,6 +3006,12 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #endif
 #endif // SIMNT
 
+   // if the version is 7.0 or greater, we need the machine/tools directory
+   if (newBuildData.rangeType >= V700)
+   {
+      mkdir(TOOLS_PATH);
+   }
+
    // Remove any old copy of features.bin in templates
    installLog << "Removing any old copy of features.bin in templates\n";
 
