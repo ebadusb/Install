@@ -263,6 +263,7 @@ int updatetrimaUtils::copyFileContiguous (const char* from, const char* to)
 
 int updatetrimaUtils::unzipFile (const char* from, const char* to)
 {
+   installLog << "unzipping " << from << " to " << to << "\n";
    gzFile fromFD = gzopen(from, "r");
    int    toFD   = open(to, O_CREAT | O_RDWR, 0644);
 
@@ -280,6 +281,7 @@ int updatetrimaUtils::unzipFile (const char* from, const char* to)
       }
 
       printf("\tUncompression complete\n");
+      installLog << "Uncompression complete\n";
       gzclose(fromFD);
       close(toFD);
 
@@ -290,11 +292,21 @@ int updatetrimaUtils::unzipFile (const char* from, const char* to)
       if ( fromFD < 0 )
       {
          perror(from);
+         installLog << "file " << from << " reports " << strerror(errno) << "\n";
+      }
+      else
+      {
+         gzclose(fromFD);
       }
 
       if ( toFD < 0 )
       {
          perror(to);
+         installLog << "file " << to << " reports " << strerror(errno) << "\n";
+      }
+      else
+      {
+         close(toFD);
       }
    }
 
@@ -304,6 +316,7 @@ int updatetrimaUtils::unzipFile (const char* from, const char* to)
 
 int updatetrimaUtils::zipFile (const char* from, const char* to)
 {
+   installLog << "Zipping " << from << " to " << to << "\n";
    int    fromFD = open(from, O_RDONLY, 0644);
    gzFile toFD   = gzopen(to, "w");
 
@@ -319,6 +332,7 @@ int updatetrimaUtils::zipFile (const char* from, const char* to)
       }
 
       printf("\tCompression complete\n");
+      installLog << "Compression complete\n";
       gzclose(toFD);
       close(fromFD);
 
@@ -329,11 +343,21 @@ int updatetrimaUtils::zipFile (const char* from, const char* to)
       if ( fromFD < 0 )
       {
          perror(from);
+         installLog << "file " << from << " reports " << strerror(errno) << "\n";
+      }
+      else
+      {
+         close(fromFD);
       }
 
       if ( toFD < 0 )
       {
          perror(to);
+         installLog << "file " << to << " reports " << strerror(errno) << "\n";
+      }
+      else
+      {
+         gzclose(toFD);
       }
    }
 

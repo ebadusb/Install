@@ -80,7 +80,7 @@ bool installer::replaceDatfileLine (const char* datFileName, const char* optionN
    if ( !fpSource || !fpDest )
    {
       if (!fpSource) installLog << "fpSource " << datFileName << " failed to open\n";
-      if (!fpSource) installLog << "fpDest " << destDatFileName << " failed to open\n";
+      if (!fpDest) installLog << "fpDest " << destDatFileName << " failed to open\n";
 
       retval = false;
       fclose(fpSource);
@@ -279,7 +279,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
    // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
    struct stat fileStat;
 
-   if ( stat((char*)TEMPLATES_PATH "/" FILE_CASSETTE_DAT, &fileStat) != OK )
+   if ( stat((const char*)TEMPLATES_PATH "/" FILE_CASSETTE_DAT, &fileStat) != OK )
    {
       installLog << "Installing 5.1, ignoring cassette file validation\n";
       goto LEAVEROUTINE;
@@ -606,9 +606,12 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 
    if ( stat((char*)filename, &fileStat) == OK )
    {
+      installLog << filename << " exists.\n ";
+      cp(filename,"/machine/install/f0.txt"); // IT17453 debug - TODO remove
       // delete any existing temp file
       if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
       {
+         installLog << "temp file " << tempFile << " exists.\n ";
          remove(tempFile.c_str());
          if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
          {
@@ -619,16 +622,19 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
       // unzip the file to a temp file
       if ( updatetrimaUtils::unzipFile(filename, tempFile.c_str()) )
       {
+         cp(tempFile.c_str(),"/machine/install/f1.txt"); // IT17453 debug - TODO remove
          // open the temp file for appending
          FILE* tempfp = fopen(tempFile.c_str(), "a");
          if ( tempfp )
          {
+            installLog << "temp file " << tempFile << " opened.\n ";
             // get the machine name from globvars
             const char* machineName = NULL;
             machineName = findSetting("MACHINE=", CONFIG_PATH "/globvars");
 
             if ( machineName )
             {
+               installLog << "machine name is " << machineName << "\n";
                unsigned long crcval = 0;
                long          buflen = 0;
                char          serialnumBuf[256];
@@ -646,21 +652,27 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                // write the section header to the file, if requested
                if (sectionHdr)
                {
+                  installLog << "adding section header\n";
                   fprintf(tempfp, "\n[MACHINE_ID]");
                }
 
                // write the machine ID to the file
+               installLog << "adding serial number: " << serialnumBufLine << "\n";
                fprintf(tempfp, "\n%s\n", serialnumBufLine);
 
                fflush(tempfp);
 
                // close the temp file
                fclose(tempfp);
+               cp(tempFile.c_str(),"/machine/install/f2.txt"); // IT17453 debug - TODO remove
 
                if ( cp(filename, bakFile.c_str()) == ERROR )
                {
                   installLog << "Creation of backup file failed\n";
                }
+               cp(bakFile.c_str(),"/machine/install/f3.txt"); // IT17453 debug - TODO remove
+               cp(filename,"/machine/install/f4.txt"); // IT17453 debug - TODO remove
+               cp(tempFile.c_str(),"/machine/install/f5.txt"); // IT17453 debug - TODO remove
 
                // delete the original file
                attrib(filename, "-R");
@@ -680,6 +692,8 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                else
                {
                   retval = true;
+                  cp(tempFile.c_str(),"/machine/install/f6.txt"); // IT17453 debug - TODO remove
+                  cp(filename,"/machine/install/f7.txt"); // IT17453 debug - TODO remove
                }
 
                // clean up files (I created them, so they must be writable)
@@ -738,7 +752,7 @@ void installer::updateSW ()
    // Look if there is a features.bin and use it instead of sw.dat
    struct stat featuresFileStat;
 
-   if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+   if ( stat((const char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
    {
       installLog << TEMPLATES_PATH << "/" << FILE_FEATURES << " does exist.\n";
 
@@ -763,14 +777,14 @@ void installer::updateSW ()
       // remove the old sw.dat files
       attrib(PNAME_SWDAT, "-R");
       remove(PNAME_SWDAT);
-      if ( stat((char*)PNAME_SWDAT, &featuresFileStat) == OK )
+      if ( stat((const char*)PNAME_SWDAT, &featuresFileStat) == OK )
       {
          installLog << "Delete of " << PNAME_SWDAT << " failed\n";
       }
 
       attrib(TEMPLATES_PATH, "-R");
       remove(TEMPLATES_PATH "/" FILE_SW_DAT);
-      if ( stat((char*)TEMPLATES_PATH "/" FILE_SW_DAT, &featuresFileStat) == OK )
+      if ( stat((const char*)TEMPLATES_PATH "/" FILE_SW_DAT, &featuresFileStat) == OK )
       {
          installLog << "Delete of " << TEMPLATES_PATH << "/" << FILE_SW_DAT << " failed\n";
       }
@@ -781,13 +795,13 @@ void installer::updateSW ()
       installLog << TEMPLATES_PATH << "/" << FILE_FEATURES << " does not exist.\n";
 
       // Not installing features.bin so delete any that exist in config directory
-      if ( stat((char*)PNAME_FEATURES, &featuresFileStat) == OK )
+      if ( stat((const char*)PNAME_FEATURES, &featuresFileStat) == OK )
       {
          installLog << "removing " << PNAME_FEATURES << "\n";
 
          attrib(PNAME_FEATURES, "-R");
          remove(PNAME_FEATURES);
-         if ( stat((char*)PNAME_FEATURES, &featuresFileStat) == OK )
+         if ( stat((const char*)PNAME_FEATURES, &featuresFileStat) == OK )
          {
             installLog << "remove of " << PNAME_FEATURES << " failed\n";
          }
@@ -867,7 +881,7 @@ void installer::updateBarcodeCategories ()
    struct stat fileStat;
 
    // if there's a barcode file in templates install it, otherwise delete any in config
-   if ( stat( (char*)TEMPLATES_PATH "/" FILE_BARCODECATEGORY_DAT, &fileStat) == OK )
+   if ( stat( (const char*)TEMPLATES_PATH "/" FILE_BARCODECATEGORY_DAT, &fileStat) == OK )
    {
       // Replace existing one if the version number has changed
       currVersion = findSetting("file_version=", PNAME_BARCODECATEGORYDAT);
@@ -908,7 +922,7 @@ void installer::updateRTSConfig ()
    struct stat fileStat;
 
    // if there's a config file in templates install it, otherwise delete any in config
-   if ( stat( (char*)TEMPLATES_PATH "/" FILE_RTSCONFIG_DAT, &fileStat) == OK )
+   if ( stat( (const char*)TEMPLATES_PATH "/" FILE_RTSCONFIG_DAT, &fileStat) == OK )
    {
       // Replace existing one if the version number has changed
       currVersion = findSetting("file_version=", PNAME_RTSCONFIGDAT);
@@ -1026,7 +1040,7 @@ void installer::updateVista ()
    {
       // For first time installs, copy the template file over to config
       struct stat vistaipFileStat;
-      if ( stat ((char*)PNAME_VISTAIPDAT, &vistaipFileStat) == ERROR)
+      if ( stat ((const char*)PNAME_VISTAIPDAT, &vistaipFileStat) == ERROR)
       {
          if ( cp(vistaipTmpl.c_str(), PNAME_VISTAIPDAT) == ERROR )
          {
@@ -1129,7 +1143,7 @@ void installer::updateCal5 ()
 
    const char* tsHeader = "TOUCHSCREEN";
    struct stat fileStat;
-   if ( stat((char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
+   if ( stat((const char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
    {   // 6.0 spiral 4 file
       CDatFileReader tscrnFile(PNAME_TCHSCRNDAT);
       datfile.AddSection("[TOUCHSCREEN]");
@@ -1245,7 +1259,7 @@ void installer::updateCal6 ()
 
    // For first time installs, copy the touchscreen template file over
    struct stat tsFileStat;
-   if ( stat ((char*)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR)
+   if ( stat ((const char*)PNAME_TCHSCRNDAT, &tsFileStat) == ERROR)
    {
       std::string tsTmpl(TEMPLATES_PATH "/" FILE_TCHSCRN_DAT);
       if ( stat(const_cast<char*>(tsTmpl.c_str()), &tsFileStat) == OK )
@@ -1339,7 +1353,7 @@ void installer::updateCal6 ()
    else
    {
       struct stat fileStat;
-      if ( stat((char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
+      if ( stat((const char*)PNAME_TCHSCRNDAT, &fileStat) == OK )
       {
          installLog << "File " << FILE_TCHSCRN_DAT << " present with and up to date " << FILE_CAL_DAT << ". No conversion needed\n";
       }
@@ -1399,8 +1413,8 @@ bool installer::extractUpdateFiles5 ()
 
    // check if we're installing a python-capable 5.X version
    struct stat fileStat;
-   if ( stat((char*)UPDATE_PATH "/vxWorks_python", &fileStat) == OK ||
-        stat((char*)UPDATE_PATH "/vxWorks_orig", &fileStat) == OK)
+   if ( stat((const char*)UPDATE_PATH "/vxWorks_python", &fileStat) == OK ||
+        stat((const char*)UPDATE_PATH "/vxWorks_orig", &fileStat) == OK)
    {
       if (isVersalogicPython())
       {
@@ -1531,14 +1545,14 @@ bool installer::extractUpdateFiles6 ()
 
       struct stat bakfileStat;
 
-      if ( stat((char*)VXBOOT_PATH "/vxWorks.bak", &bakfileStat) == OK )
+      if ( stat((const char*)VXBOOT_PATH "/vxWorks.bak", &bakfileStat) == OK )
       {
          remove(VXBOOT_PATH "/vxWorks.bak");
       }
 
       // For development: if it exists, backup the kernel_init directory too
       if ( updatetrimaUtils::development_install &&
-           stat((char*)TRIMA_PATH "/kernel_init", &bakfileStat) == OK )
+           stat((const char*)TRIMA_PATH "/kernel_init", &bakfileStat) == OK )
       {
          const char* backupDir = TEMP_PATH "/kernel_init.bak";
          attrib(TEMP_PATH, "-R");
@@ -1560,12 +1574,12 @@ bool installer::extractUpdateFiles6 ()
       return false;
    }
 
-   if ( stat((char*)VXBOOT_PATH "/bootrom.sys", &fileStat) == ERROR )
+   if ( stat((const char*)VXBOOT_PATH "/bootrom.sys", &fileStat) == ERROR )
    {
       perror(VXBOOT_PATH "/bootrom.sys");
    }
 
-   if ( stat((char*)VXBOOT_PATH "/vxWorks", &fileStat) == ERROR )
+   if ( stat((const char*)VXBOOT_PATH "/vxWorks", &fileStat) == ERROR )
    {
       perror(VXBOOT_PATH "/vxWorks");
    }
@@ -1574,7 +1588,7 @@ bool installer::extractUpdateFiles6 ()
    // Copy over the control images depending on the board type.
    //
    // Use Fox-specific images if present
-   if ( isVersalogicFox() && stat((char*)UPDATE_PATH "/vxWorks_fox", &fileStat) == OK )
+   if ( isVersalogicFox() && stat((const char*)UPDATE_PATH "/vxWorks_fox", &fileStat) == OK )
    {
       installLog << "Copying Control Versalogic Fox bootrom.sys and vxWorks to " << VXBOOT_PATH << "\n";
 
@@ -1622,15 +1636,15 @@ bool installer::extractUpdateFiles6 ()
    remove(UPDATE_PATH "/vxWorks_fox");
    remove(UPDATE_PATH "/vxboot.taz");
 
-   if ( stat((char*)UPDATE_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/bootrom.sys", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/vxWorks", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/bootrom_versalogic.sys", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/bootrom_fox.sys", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/vxWorks_fox", &fileStat) != ERROR ||
-        stat((char*)UPDATE_PATH "/vxboot.taz", &fileStat) != ERROR )
+   if ( stat((const char*)UPDATE_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/bootrom.sys", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/vxWorks", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/bootrom_versalogic.sys", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/bootrom_fox.sys", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/vxWorks_fox", &fileStat) != ERROR ||
+        stat((const char*)UPDATE_PATH "/vxboot.taz", &fileStat) != ERROR )
    {
       installLog << "Removal of temporary OS image failed\n";
       return false;
@@ -1759,7 +1773,7 @@ bool installer::extractUpdateFiles6 ()
    xdelete(COMMON_KERNEL_INIT_OLD); // this is obsolete
 
    // Look for Safety's Common Kernel boot files (vxboot_safety.taz)
-   if ( stat((char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
+   if ( stat((const char*)UPDATE_PATH "/vxboot_safety.taz", &fileStat) == OK )
    {
       installLog << "Extracting the safety vxboot files...\n";
 
@@ -1789,9 +1803,9 @@ bool installer::extractUpdateFiles6 ()
    // Copy over the safety images depending on the board type.
    //
    // If there are files in SAFETY_BOOT_PATH install Safety from there (pre-CommonKernel case)
-   if ( stat((char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR)
+   if ( stat((const char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR)
    {
       if ( isVersalogicFox() )
       {
@@ -1832,7 +1846,7 @@ bool installer::extractUpdateFiles6 ()
          }
       }
    }
-   else if ( stat((char*)SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", &fileStat) == ERROR )
+   else if ( stat((const char*)SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", &fileStat) == ERROR )
 //   else if ( attrib(SAFETY_COMMON_KERNEL_INIT_PATH "/vxWorks", "-R") == ERROR )
    {
       installLog << "No file found in " << SAFETY_COMMON_KERNEL_INIT_PATH << "\n";
@@ -1854,14 +1868,14 @@ bool installer::extractUpdateFiles6 ()
    remove(SAFETY_BOOT_PATH "/bootrom_bengal.pxe");
    remove(SAFETY_BOOT_PATH "/vxWorks_bengal");
 
-   if ( stat((char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/bootrom_bengal.pxe", &fileStat) != ERROR ||
-        stat((char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR )
+   if ( stat((const char*)SAFETY_BOOT_PATH "/bootrom_ampro.sys", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/vxWorks_ampro", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/bootrom_versa_bootp.sys", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/bootrom_versa_pxe.sys", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/vxWorks_versalogic", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/vxWorks_versalogic_pxe", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/bootrom_bengal.pxe", &fileStat) != ERROR ||
+        stat((const char*)SAFETY_BOOT_PATH "/vxWorks_bengal", &fileStat) != ERROR )
    {
       installLog << "removal of temporary OS image failed\n";
       return false;
@@ -1869,7 +1883,7 @@ bool installer::extractUpdateFiles6 ()
 
 
    // Uncompress the optional tools archive if it exists
-   if ( stat((char*)UPDATE_PATH "/engr_tools.taz", &fileStat) == OK )
+   if ( stat((const char*)UPDATE_PATH "/engr_tools.taz", &fileStat) == OK )
    {
       installLog << "Extracting the engr tools files...\n";
 
@@ -1901,13 +1915,13 @@ bool installer::checkCRC5 ()
 
    // Remove FEATURES files since it doesn't exist in 5.X
    struct stat featuresFileStat;
-   if ( stat((char*)FILELISTS_PATH "/features.files", &featuresFileStat) == OK )
+   if ( stat((const char*)FILELISTS_PATH "/features.files", &featuresFileStat) == OK )
    {
       remove(FILELISTS_PATH "/features.files");
    }
 
    struct stat featurescrcFileStat;
-   if ( stat((char*)CONFIG_CRC_PATH "/features.crc", &featurescrcFileStat) == OK )
+   if ( stat((const char*)CONFIG_CRC_PATH "/features.crc", &featurescrcFileStat) == OK )
    {
       remove(CONFIG_CRC_PATH  "/features.crc");
    }
@@ -2843,8 +2857,8 @@ bool installer::installMachineId ()
 
    bool result = true;
 
-   tempFileStatStatus   = stat(const_cast<char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat);
-   configFileStatStatus = stat(const_cast<char*>(PNAME_MACHINE_ID), &configFileStat);
+   tempFileStatStatus   = stat(const_cast<const char*>(TEMPLATES_PATH "/" FILE_MACHINE_ID), &tempFileStat);
+   configFileStatStatus = stat(const_cast<const char*>(PNAME_MACHINE_ID), &configFileStat);
 
    // just for logging
    if ( tempFileStatStatus == OK )
@@ -3017,7 +3031,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 
    struct stat featuresFileStat;
 
-   if ( stat((char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
+   if ( stat((const char*)TEMPLATES_PATH "/" FILE_FEATURES, &featuresFileStat) == OK )
    {
       remove(TEMPLATES_PATH "/" FILE_FEATURES);
    }
