@@ -274,7 +274,6 @@ bool installer::validateSetConfig (versionStruct& toVer)
    bool retval      = true;
    bool madeChanges = false;
    bool deleteItem  = false;
-   bool replaceItem = false;
 
    // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
    struct stat fileStat;
@@ -311,13 +310,6 @@ bool installer::validateSetConfig (versionStruct& toVer)
             // didn't find the cassette from set_config.dat in cassette.dat so delete it
             installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat\n";
             deleteItem = true;
-
-            if ((UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()))
-                 && toVer.majorRev >= 20 ))
-            {
-               installLog << " twoP Connector Cassette in version 7 or up, will be replaced\n";
-               replaceItem = true;
-            }
          }
          else if ( foundCassette->second->AdminCode() != (*iter)->AdminCode() ||
                    strcmp(foundCassette->second->BarcodeNum(), (*iter)->BarcodeNum()) != 0 )
@@ -330,7 +322,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
             deleteItem = true;
          }
 
-         if (deleteItem && !replaceItem)
+         if (deleteItem)
          {
             installLog << "Cassette ref #: " << (*iter)->RefNum() << " entry is removed\n";
             iter        = AdminUpdateCassetteDat::erase(iter);
@@ -342,7 +334,6 @@ bool installer::validateSetConfig (versionStruct& toVer)
          }
 
          deleteItem  = false;
-         replaceItem = false;
       }
 
       if (madeChanges)
