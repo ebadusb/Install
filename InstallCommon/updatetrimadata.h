@@ -127,6 +127,7 @@ rangeStruct rangeData[] =
    {V600, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "15", false},
    {V600, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
    {V600, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V600, "PROCEDURE_CONFIG", "key_audit_tracking", FORCE, INT, "0", false},   
    {V600, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
    {V600, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
    {V600, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
@@ -160,6 +161,7 @@ rangeStruct rangeData[] =
    {V640, "PROCEDURE_CONFIG", "key_tbv_vol_setting", MAX, INT, "63", false},
    {V640, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "100", false},
    {V640, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
+   {V640, "PROCEDURE_CONFIG", "key_audit_tracking", FORCE, INT, "0", false},   
    {V640, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
    {V640, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
    {V640, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
@@ -177,6 +179,7 @@ rangeStruct rangeData[] =
    {V700, "PROCEDURE_CONFIG", "key_return_press", MIN, INT, "230", true},
    {V700, "PROCEDURE_CONFIG", "key_return_press", MAX, INT, "310", false},
    {V700, "PROCEDURE_CONFIG", "key_return_press", NOT, INT, "310", false},     // use the default if the value = 310
+   {V700, "PROCEDURE_CONFIG", "key_audit_tracking", FORCE, INT, "0", false},   
    {V700, "PREDICTION_CONFIG", "key_rsf", MIN, FLOAT, "0.9", false},
    {V700, "PREDICTION_CONFIG", "key_rsf", MAX, FLOAT, "1.1", false},
    {V700, "PRODUCT_TEMPLATES", "key_rbc_mss_volume_1", MIN, INT, "80", false},
