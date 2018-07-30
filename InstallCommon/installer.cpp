@@ -275,6 +275,8 @@ bool installer::validateSetConfig (versionStruct& toVer)
    bool madeChanges = false;
    bool deleteItem  = false;
 
+   installLog << "validateSetConfig\n";
+
    // look to see if we're installing 5.1 and quit if we are because 5.1 doesn't use the cassette files
    struct stat fileStat;
 
@@ -305,7 +307,13 @@ bool installer::validateSetConfig (versionStruct& toVer)
       {
          UPDATE_CASSETTE_MAP_ITERATOR foundCassette = MasterUpdateCassetteDat::find((*iter)->RefNum());
 
-         if (foundCassette == MasterUpdateCassetteDat::end()) // not in cassette.dat
+
+         if ( UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()) ) )
+         {
+             installLog << "Removing 2p connector ref  -- Cassette ref #: " << (*iter)->RefNum() << " removed from seconfig.dat\n";
+             deleteItem = true;
+         }
+         else if (foundCassette == MasterUpdateCassetteDat::end()) // not in cassette.dat
          {
             // didn't find the cassette from set_config.dat in cassette.dat so delete it
             installLog << "Cassette ref #: " << (*iter)->RefNum() << " not found in cassette.dat\n";
@@ -321,6 +329,8 @@ bool installer::validateSetConfig (versionStruct& toVer)
                        << " barcode: " << (*iter)->BarcodeNum() << "\n";
             deleteItem = true;
          }
+
+         
 
          if (deleteItem)
          {
@@ -950,6 +960,7 @@ void installer::updateRTSConfig ()
 
 void installer::updateCassette ()
 {
+    installLog << "updateCassette\n";
    // Replace cassette.dat if the version number has changed
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_CASSETTE_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_CASSETTE_DAT);
@@ -981,6 +992,7 @@ void installer::updateCassette ()
 
 void installer::updateSetConfig ()
 {
+    installLog << "updateSetConfig\n";
    // these are the customer selected sets.... dont overwrite if it exists!
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
