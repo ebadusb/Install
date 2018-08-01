@@ -3098,6 +3098,12 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateAppServer();
    installLog << "Updating Software\n";
    updateSW();
+   if (newBuildData.rangeType < V520)
+   {
+      // Force ARM = ON
+      installLog << "Updating Software - Ver 5.19 Specific\n";
+      bool result = replaceDatfileLine (PNAME_SWDAT, "airout_mitigation", "1", true);
+   }
    installLog << "Updating Terror\n";
    updateTerror();
    installLog << "Updating Sounds\n";
