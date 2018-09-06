@@ -46,7 +46,8 @@ installer::installer()
    : currVersion(NULL),
      newVersion(NULL),
      newBuildRef(0),
-     prevBuildRef(0)
+     prevBuildRef(0),
+     is64To7Upgrade(false)
 {}
 
 // Copy constructor
@@ -310,8 +311,8 @@ bool installer::validateSetConfig (versionStruct& toVer)
 
          if ( UpdateCassetteDat::isTwoPConnectorCassette(atoi((*iter)->RefNum()) ) )
          {
-             installLog << "Removing 2p connector ref  -- Cassette ref #: " << (*iter)->RefNum() << " removed from seconfig.dat\n";
-             deleteItem = true;
+            installLog << "Removing 2p connector ref  -- Cassette ref #: " << (*iter)->RefNum() << " removed from seconfig.dat\n";
+            deleteItem = true;
          }
          else if (foundCassette == MasterUpdateCassetteDat::end()) // not in cassette.dat
          {
@@ -330,7 +331,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
             deleteItem = true;
          }
 
-         
+
 
          if (deleteItem)
          {
@@ -343,7 +344,7 @@ bool installer::validateSetConfig (versionStruct& toVer)
             iter++;
          }
 
-         deleteItem  = false;
+         deleteItem = false;
       }
 
       if (madeChanges)
@@ -608,7 +609,7 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
    if ( stat((char*)filename, &fileStat) == OK )
    {
       installLog << filename << " exists.\n ";
-      cp(filename,"/machine/install/f0.txt"); // IT17453 debug - TODO remove
+      cp(filename, "/machine/install/f0.txt"); // IT17453 debug - TODO remove
       // delete any existing temp file
       if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
       {
@@ -623,7 +624,7 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
       // unzip the file to a temp file
       if ( updatetrimaUtils::unzipFile(filename, tempFile.c_str()) )
       {
-         cp(tempFile.c_str(),"/machine/install/f1.txt"); // IT17453 debug - TODO remove
+         cp(tempFile.c_str(), "/machine/install/f1.txt"); // IT17453 debug - TODO remove
          // open the temp file for appending
          FILE* tempfp = fopen(tempFile.c_str(), "a");
          if ( tempfp )
@@ -665,15 +666,15 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 
                // close the temp file
                fclose(tempfp);
-               cp(tempFile.c_str(),"/machine/install/f2.txt"); // IT17453 debug - TODO remove
+               cp(tempFile.c_str(), "/machine/install/f2.txt"); // IT17453 debug - TODO remove
 
                if ( cp(filename, bakFile.c_str()) == ERROR )
                {
                   installLog << "Creation of backup file failed\n";
                }
-               cp(bakFile.c_str(),"/machine/install/f3.txt"); // IT17453 debug - TODO remove
-               cp(filename,"/machine/install/f4.txt"); // IT17453 debug - TODO remove
-               cp(tempFile.c_str(),"/machine/install/f5.txt"); // IT17453 debug - TODO remove
+               cp(bakFile.c_str(), "/machine/install/f3.txt");  // IT17453 debug - TODO remove
+               cp(filename, "/machine/install/f4.txt");         // IT17453 debug - TODO remove
+               cp(tempFile.c_str(), "/machine/install/f5.txt"); // IT17453 debug - TODO remove
 
                // delete the original file
                attrib(filename, "-R");
@@ -693,8 +694,8 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                else
                {
                   retval = true;
-                  cp(tempFile.c_str(),"/machine/install/f6.txt"); // IT17453 debug - TODO remove
-                  cp(filename,"/machine/install/f7.txt"); // IT17453 debug - TODO remove
+                  cp(tempFile.c_str(), "/machine/install/f6.txt"); // IT17453 debug - TODO remove
+                  cp(filename, "/machine/install/f7.txt");         // IT17453 debug - TODO remove
                }
 
                // clean up files (I created them, so they must be writable)
@@ -960,7 +961,7 @@ void installer::updateRTSConfig ()
 
 void installer::updateCassette ()
 {
-    installLog << "updateCassette\n";
+   installLog << "updateCassette\n";
    // Replace cassette.dat if the version number has changed
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_CASSETTE_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_CASSETTE_DAT);
@@ -992,7 +993,7 @@ void installer::updateCassette ()
 
 void installer::updateSetConfig ()
 {
-    installLog << "updateSetConfig\n";
+   installLog << "updateSetConfig\n";
    // these are the customer selected sets.... dont overwrite if it exists!
    currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_SETCONFIG_DAT);
    newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_SETCONFIG_DAT);
@@ -2706,8 +2707,22 @@ bool installer::updateConfigGeneric ()
             }
 #else       // not JUST_LOOKING
             {
-               newdatfile.SetValue(section, cfLine.cpName(), newVal);
-               installLog << " Transferring setting for: " << section << " " << cfLine.cpName() << ", setting to: " << newVal << "\n";
+               // When upgrading from Trima 6.4 to Trima 7 the Max duration allowed
+               // should be set to default value of 150 and not to be transferred
+               // from previous Trima 6.4 build
+               std::string parameter("key_proc_time");
+               int         result = strncmp(parameter.c_str(), cfLine.cpName(), parameter.size());
+
+               if (!is64To7Upgrade || (0 != result))
+               {
+                  newdatfile.SetValue(section, cfLine.cpName(), newVal);
+                  installLog << " Transferring setting for: " << section << " " << cfLine.cpName() << ", setting to: " << newVal << "\n";
+               }
+               else
+               {
+                  newdatfile.SetValue(section, cfLine.cpName(), strVal.c_str());
+                  installLog << " Setting default value for: " << section << " " << cfLine.cpName() << " to: " << strVal << "\n";
+               }
             }
             else
             {
@@ -3023,6 +3038,13 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 #endif
 #endif // SIMNT
 
+   // If this is an upgrade from v6.4 to v7, set the flag
+   if (newBuildData.rangeType >= V700 &&
+       (fromVer.majorRev == 12 && fromVer.minorRev == 4))
+   {
+      is64To7Upgrade = true;
+   }
+
    // if the version is 7.0 or greater, we need the machine/tools directory
    if (newBuildData.rangeType >= V700)
    {
@@ -3206,4 +3228,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 5ce37948f465faf56ad623c718b8e6ec */
+/* FORMAT HASH bb8f796240f6f4bd5183e1fede4f1b61 */

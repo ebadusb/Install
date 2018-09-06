@@ -202,9 +202,10 @@ protected:
    int             newBuildRef;
    buildDataStruct newBuildData;
    int             prevBuildRef;
+   bool            is64To7Upgrade;
 //   buildDataStruct prevBuildData;
 
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 1d3de6b1322e07f5471dd221c4dc509a */
+/* FORMAT HASH f7090a1e97ff53372e3ad5f156890983 */
