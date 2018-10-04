@@ -64,7 +64,7 @@ protected:
 //
 // app_server.dat function
 //
-   virtual void updateAppServer ();
+   virtual void updateAppServer (std::string& filename);
 
 //
 // sw.dat update function
@@ -208,4 +208,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH f7090a1e97ff53372e3ad5f156890983 */
+/* FORMAT HASH cf60d9ba0179434a267d643a810803ee */

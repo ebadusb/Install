@@ -560,34 +560,40 @@ void installer::updateHW ()
 }
 
 
-void installer::updateAppServer ()
+void installer::updateAppServer (std::string& filename)
 {
    // these are the customer selected sets.... dont overwrite if it exists!
-   currVersion = findSetting("file_version=", CONFIG_PATH "/" FILE_APPSERVER_DAT);
-   newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_APPSERVER_DAT);
+   std::string configpath(CONFIG_PATH);
+   configpath += "/";
+   configpath += filename;
+   std::string templatespath(TEMPLATES_PATH);
+   templatespath += "/";
+   templatespath += filename;
+   currVersion    = findSetting("file_version=", configpath.c_str());
+   newVersion     = findSetting("file_version=", templatespath.c_str());
 
    if ( newVersion == NULL )
    {
-      installLog << "Ignoring app_server.dat\n";
+      installLog << "Ignoring " << filename << "\n";
    }
    else if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
    {
-      installLog << "Updating app_server.dat to new version " << newVersion;
+      installLog << "Updating " << filename << " to new version " << newVersion;
       if (currVersion)
       {
          installLog << " from existing version " << currVersion << "\n";
       }
       installLog << "\n";
 
-      attrib(CONFIG_PATH "/" FILE_APPSERVER_DAT, "-R");
+      attrib(configpath.c_str(), "-R");
 
-      if ( cp(TEMPLATES_PATH "/" FILE_APPSERVER_DAT, CONFIG_PATH "/" FILE_APPSERVER_DAT) == ERROR )
+      if ( cp(templatespath.c_str(), configpath.c_str()) == ERROR )
       {
-         installLog << "copy of " << FILE_APPSERVER_DAT << " failed\n";
+         installLog << "copy of " << filename << " failed\n";
          return;
       }
 
-      attrib(CONFIG_PATH "/" FILE_APPSERVER_DAT, "+R");
+      attrib(configpath.c_str(), "+R");
       fflush(stdout);
    }
 }
@@ -3117,7 +3123,10 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    installLog << "Updating Hardware\n";
    updateHW();
    installLog << "Updating App Server\n";
-   updateAppServer();
+   std::string appserver(FILE_APPSERVER_DAT);
+   std::string connection(FILE_CONNECTION_DAT);
+   updateAppServer(appserver);
+   updateAppServer(connection);
    installLog << "Updating Software\n";
    updateSW();
    if (newBuildData.rangeType < V520)
@@ -3228,4 +3237,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH bb8f796240f6f4bd5183e1fede4f1b61 */
+/* FORMAT HASH 85c1864ee4b5d7e878ff1eb54469f1d5 */

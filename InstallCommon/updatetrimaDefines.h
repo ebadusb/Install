@@ -266,6 +266,10 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define FILE_APPSERVER_DAT          "app_server.dat"
 #endif
 
+#ifndef FILE_CONNECTION_DAT
+   #define FILE_CONNECTION_DAT          "TrimaConnectionProperties.dat"
+#endif
+
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH f17f6b050d151b51abd3475c85bd595e */
+/* FORMAT HASH 0b8cff6dab9ebd256f93cd0425c6fcd8 */
