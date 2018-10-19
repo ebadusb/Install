@@ -3125,7 +3125,9 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    installLog << "Updating App Server\n";
    std::string appserver(FILE_APPSERVER_DAT);
    std::string connection(FILE_CONNECTION_DAT);
+   installLog << "Updating app_server\n";
    updateAppServer(appserver);
+   installLog << "Updating TrimaConnectionProperties\n";
    updateAppServer(connection);
    installLog << "Updating Software\n";
    updateSW();
@@ -3237,4 +3239,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 85c1864ee4b5d7e878ff1eb54469f1d5 */
+/* FORMAT HASH c844b5086cc1faf68f8630f843acf5f7 */
