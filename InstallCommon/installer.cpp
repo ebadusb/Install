@@ -924,6 +924,46 @@ void installer::updateBarcodeCategories ()
       remove(PNAME_BARCODECATEGORYDAT);
    }
 }
+void installer::updateBarcodeSymbologies ()
+{
+   struct stat fileStat;
+
+   // if there's a barcode file in templates install it, otherwise delete any in config
+   if ( stat( (const char*)TEMPLATES_PATH "/" FILE_BARCODE_SYM_DAT, &fileStat) == OK )
+   {
+      // Replace existing one if the version number has changed
+      currVersion = findSetting("file_version=", PNAME_BARCODESYMDAT);
+      newVersion  = findSetting("file_version=", TEMPLATES_PATH "/" FILE_BARCODE_SYM_DAT);
+
+      if ( !currVersion || strcmp(newVersion, currVersion) != 0 )
+      {
+         if ( currVersion == NULL )
+         {
+            currVersion = "(NON EXISTANT)";
+         }
+         installLog << "Updating " << FILE_BARCODE_SYM_DAT << " to new version " << newVersion << " from existing version " << currVersion << "\n";
+
+         attrib(PNAME_BARCODESYMDAT, "-R");
+
+         if ( cp(TEMPLATES_PATH "/" FILE_BARCODE_SYM_DAT, PNAME_BARCODESYMDAT) == ERROR )
+         {
+            installLog << "copy of " << FILE_BARCODE_SYM_DAT << " failed\n";
+         }
+         else
+         {
+            installLog << "copy of " << FILE_BARCODE_SYM_DAT << " succeeded\n";
+         }
+
+         attrib(PNAME_BARCODESYMDAT, "+R");
+         fflush(stdout);
+      }
+   }
+   else
+   {
+      attrib(PNAME_BARCODESYMDAT, "-R");
+      remove(PNAME_BARCODESYMDAT);
+   }
+}
 
 void installer::updateRTSConfig ()
 {
@@ -2023,6 +2063,13 @@ bool installer::checkCRC6 ()
       softcrc("-filelist " FILELISTS_PATH "/app_server.files -update " CONFIG_CRC_PATH  "/app_server.crc");
    }
 
+   const int barcodeSymExists = open(FILELISTS_PATH "/BarcodeSymbologies.files",  O_RDONLY, DEFAULT_FILE_PERM);
+   if (barcodeSymExists > 0)
+   {
+      close(barcodeSymExists);
+      softcrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files -update " CONFIG_CRC_PATH  "/BarcodeSymbologies.crc");
+   }
+
    // Set permissions in config directory
    updatetrimaUtils::update_file_set_rdonly(CONFIG_PATH);
 
@@ -2070,6 +2117,12 @@ bool installer::checkCRC6 ()
 
    // Separate check for app server
    if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files	-verify "CONFIG_CRC_PATH"/app_server.crc") )
+   {
+      return false;
+   }
+
+   // Separate check for barcode symbologies
+   if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files	-verify "CONFIG_CRC_PATH"/BarcodeSymbologies.crc") )
    {
       return false;
    }
@@ -3147,6 +3200,8 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    updateVista();
    installLog << "Updating Barcode Categories\n";
    updateBarcodeCategories();
+   installLog << "Updating Barcode Symbologies\n";
+   updateBarcodeSymbologies();
    installLog << "Updating RTS Config\n";
    updateRTSConfig();
    // installLog << "Updating machine.id\n";
@@ -3239,4 +3294,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH c844b5086cc1faf68f8630f843acf5f7 */
+/* FORMAT HASH c09ba9fda2daca27a69bdc550e8013bc */

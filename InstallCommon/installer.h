@@ -92,6 +92,11 @@ protected:
    virtual void updateBarcodeCategories ();
 
 //
+// BarcodeSymbologies.dat update function
+//
+   virtual void updateBarcodeSymbologies ();
+
+//
 // rts_config.dat update function
 //
    virtual void updateRTSConfig ();
@@ -208,4 +213,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH cf60d9ba0179434a267d643a810803ee */
+/* FORMAT HASH c44d46740dfb5dc742f65c957d809d8d */

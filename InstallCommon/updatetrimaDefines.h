@@ -270,6 +270,10 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define FILE_CONNECTION_DAT          "TrimaConnectionProperties.dat"
 #endif
 
+#ifndef FILE_BARCODE_SYM_DAT
+   #define FILE_BARCODE_SYM_DAT          "BarcodeSymbologies.dat"
+#endif
+
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH 0b8cff6dab9ebd256f93cd0425c6fcd8 */
+/* FORMAT HASH 7804fb935f59ff59e759dd3fca97e79c */
