@@ -264,6 +264,7 @@ int updatetrimaUtils::copyFileContiguous (const char* from, const char* to)
 int updatetrimaUtils::unzipFile (const char* from, const char* to)
 {
    installLog << "unzipping " << from << " to " << to << "\n";
+
    gzFile fromFD = gzopen(from, "r");
    int    toFD   = open(to, O_CREAT | O_RDWR, 0644);
 
@@ -271,16 +272,17 @@ int updatetrimaUtils::unzipFile (const char* from, const char* to)
    {
       int  bytesRead;
       int  bytesWritten  = 0;
-      int  kBytesWritten = 0;
-      char buffer[10 * 1024];
 
-      while ( (bytesRead = gzread(fromFD, buffer, 10 * 1024)) > 0 )
+      const int bufferSize = 1024;
+      char * buffer = new char[bufferSize];
+
+      while ( (bytesRead = gzread(fromFD, buffer, bufferSize)) > 0 )
       {
          bytesWritten += write(toFD, buffer, bytesRead);
-         kBytesWritten = bytesWritten / 1024;
       }
 
-      printf("\tUncompression complete\n");
+      delete[] buffer;
+
       installLog << "Uncompression complete\n";
       gzclose(fromFD);
       close(toFD);
@@ -324,12 +326,16 @@ int updatetrimaUtils::zipFile (const char* from, const char* to)
    {
       int  bytesRead;
       int  bytesWritten = 0;
-      char buffer[10 * 1024];
 
-      while ( (bytesRead = read(fromFD, buffer, 10 * 1024)) > 0 )
+      const int bufferSize = 1024;
+      char * buffer = new char[bufferSize];
+
+      while ( (bytesRead = read(fromFD, buffer, bufferSize)) > 0 )
       {
          bytesWritten += gzwrite(toFD, buffer, bytesRead);
       }
+
+      delete[] buffer;
 
       printf("\tCompression complete\n");
       installLog << "Compression complete\n";

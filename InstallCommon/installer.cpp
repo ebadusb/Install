@@ -22,6 +22,10 @@
 
 #include <stdlib.h>
 
+#ifdef VXWORKS
+#include <taskLib.h>
+#endif /* ifdef VXWORKS */
+
 using namespace std;
 
 #ifdef __cplusplus
@@ -614,12 +618,9 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 
    if ( stat((char*)filename, &fileStat) == OK )
    {
-      installLog << filename << " exists.\n ";
-      cp(filename, "/machine/install/f0.txt"); // IT17453 debug - TODO remove
       // delete any existing temp file
       if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
       {
-         installLog << "temp file " << tempFile << " exists.\n ";
          remove(tempFile.c_str());
          if ( stat((char*)(tempFile.c_str()), &fileStat) == OK )
          {
@@ -630,19 +631,16 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
       // unzip the file to a temp file
       if ( updatetrimaUtils::unzipFile(filename, tempFile.c_str()) )
       {
-         cp(tempFile.c_str(), "/machine/install/f1.txt"); // IT17453 debug - TODO remove
          // open the temp file for appending
          FILE* tempfp = fopen(tempFile.c_str(), "a");
          if ( tempfp )
          {
-            installLog << "temp file " << tempFile << " opened.\n ";
             // get the machine name from globvars
             const char* machineName = NULL;
             machineName = findSetting("MACHINE=", CONFIG_PATH "/globvars");
 
             if ( machineName )
             {
-               installLog << "machine name is " << machineName << "\n";
                unsigned long crcval = 0;
                long          buflen = 0;
                char          serialnumBuf[256];
@@ -660,27 +658,21 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                // write the section header to the file, if requested
                if (sectionHdr)
                {
-                  installLog << "adding section header\n";
                   fprintf(tempfp, "\n[MACHINE_ID]");
                }
 
                // write the machine ID to the file
-               installLog << "adding serial number: " << serialnumBufLine << "\n";
                fprintf(tempfp, "\n%s\n", serialnumBufLine);
 
                fflush(tempfp);
 
                // close the temp file
                fclose(tempfp);
-               cp(tempFile.c_str(), "/machine/install/f2.txt"); // IT17453 debug - TODO remove
 
                if ( cp(filename, bakFile.c_str()) == ERROR )
                {
                   installLog << "Creation of backup file failed\n";
                }
-               cp(bakFile.c_str(), "/machine/install/f3.txt");  // IT17453 debug - TODO remove
-               cp(filename, "/machine/install/f4.txt");         // IT17453 debug - TODO remove
-               cp(tempFile.c_str(), "/machine/install/f5.txt"); // IT17453 debug - TODO remove
 
                // delete the original file
                attrib(filename, "-R");
@@ -700,8 +692,6 @@ bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
                else
                {
                   retval = true;
-                  cp(tempFile.c_str(), "/machine/install/f6.txt"); // IT17453 debug - TODO remove
-                  cp(filename, "/machine/install/f7.txt");         // IT17453 debug - TODO remove
                }
 
                // clean up files (I created them, so they must be writable)
@@ -2986,13 +2976,20 @@ bool installer::installMachineId ()
    return result;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 //  The main line of update
 //////////////////////////////////////////////////////////////////////////////////////
 int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 {
    bool retval = 0;
+
+#ifdef VXWORKS
+   WIND_TCB * tcb = (WIND_TCB *)taskIdSelf();
+   unsigned int stackSize = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
+   unsigned char * stackImage = new unsigned char[stackSize];
+
+   memcpy(stackImage, (unsigned char *)tcb->pStackEnd, stackSize);
+#endif /* ifdef VXWORKS */
 
    // get the info for the previous build
 //   updatetrimaUtils::getBuildInfo(fromVer, prevBuildRef);
@@ -3273,6 +3270,27 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
 LEAVEROUTINE:
    ;
 //    attrib( TEMP_PATH,"R" );
+
+#ifdef VXWORKS
+   unsigned char * actualStack = (unsigned char *)tcb->pStackEnd;
+   unsigned int stackMarginInBytes = stackSize;
+
+   for (int idx=0; idx<stackSize; idx++)
+   {
+      if (actualStack[idx] != stackImage[idx])
+      {
+         stackMarginInBytes = idx;
+         break;
+      }
+   }
+
+   if (stackMarginInBytes < 1024)
+   {
+      installLog << "*** WARNING - Installer stack margin = " << stackMarginInBytes << " bytes\n";
+   }
+
+   delete[] stackImage;
+#endif /* ifdef VXWORKS */
 
    installLog << "Trima software update complete\n";
 
