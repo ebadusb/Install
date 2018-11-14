@@ -2984,11 +2984,11 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    bool retval = 0;
 
 #ifdef VXWORKS
-   WIND_TCB * tcb = (WIND_TCB *)taskIdSelf();
-   unsigned int stackSize = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
-   unsigned char * stackImage = new unsigned char[stackSize];
+   WIND_TCB*      tcb        = (WIND_TCB*)taskIdSelf();
+   unsigned int   stackSize  = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
+   unsigned char* stackImage = new unsigned char[stackSize];
 
-   memcpy(stackImage, (unsigned char *)tcb->pStackEnd, stackSize);
+   memcpy(stackImage, (unsigned char*)tcb->pStackEnd, stackSize);
 #endif /* ifdef VXWORKS */
 
    // get the info for the previous build
@@ -3221,7 +3221,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    validateSetConfig(toVer);
 
    // if coming from 5.1.0-3 update trap files if called for
-   if ( newBuildData.updateTrapFiles && fromVer.majorRev == 6 )
+   if ( newBuildData.updateTrapFiles && fromVer.majorRev >= 6 )
    {
       installLog << "update trap file\n";
       copyTrapFiles();
@@ -3272,10 +3272,10 @@ LEAVEROUTINE:
 //    attrib( TEMP_PATH,"R" );
 
 #ifdef VXWORKS
-   unsigned char * actualStack = (unsigned char *)tcb->pStackEnd;
-   unsigned int stackMarginInBytes = stackSize;
+   unsigned char* actualStack        = (unsigned char*)tcb->pStackEnd;
+   unsigned int   stackMarginInBytes = stackSize;
 
-   for (int idx=0; idx<stackSize; idx++)
+   for (int idx = 0; idx<stackSize; idx++)
    {
       if (actualStack[idx] != stackImage[idx])
       {
@@ -3312,4 +3312,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH c09ba9fda2daca27a69bdc550e8013bc */
+/* FORMAT HASH 32a527731639a6f02d63c23cf6fd193f */
