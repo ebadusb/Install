@@ -1285,109 +1285,6 @@ void installer::updateCal5 ()
 
 }
 
-bool installer::updateTRAPfeature (bool value)
-{
-   char          buffer[TRAP_BUFFER_SIZE];
-   char          destDatFileName[256];
-   char*         line            = &buffer[0];
-   int           result          = 0;
-   unsigned long runningCrcValue = INITCRC_DEFAULT;
-
-   sprintf(destDatFileName, "%s.new", TRAP_OVERRIDE_FILE);
-
-   FILE* fpSource = fopen(TRAP_OVERRIDE_FILE, "r");
-   FILE* fpDest   = fopen(destDatFileName, "w");
-
-   if (fpSource == NULL)
-   {
-      // Make file read only
-      attrib(TRAP_OVERRIDE_FILE, "+R");
-
-      installLog << "File " << TRAP_OVERRIDE_FILE << "could not be opened \n";
-
-      return false;
-   }
-
-   while (fgets(line, TRAP_BUFFER_SIZE, fpSource) != NULL)
-   {
-      if ( (line != NULL) && (strstr(line, COMMENT_LINE) != NULL) )
-      {
-         result = fputs (line, fpDest);
-      }
-      else if ( (line != NULL) &&
-                ( (strstr(line, DAYS_OF_WEEK)       != NULL) ||
-                  (strstr(line, BEGIN_WINDOW)       != NULL) ||
-                  (strstr(line, END_WINDOW)         != NULL) ||
-                  (strstr(line, NUMBER_OF_ATTEMPTS) != NULL) ||
-                  (strstr(line, NUMBER_OF_TIMEOUTS) != NULL)
-                )
-                )
-      {
-         crcgen32 (&runningCrcValue, (unsigned char*)line, strlen(line));
-         result = fputs (line, fpDest);
-      }
-      else if ((strstr(line, FEATURE) != NULL))
-      {
-         // Update feature based on input value
-         if (value == true)
-         {
-            strcpy(line, "FEATURE 1\n");
-         }
-         else
-         {
-            strcpy(line, "FEATURE 0\n");
-         }
-         crcgen32 (&runningCrcValue, (unsigned char*)line, strlen(line));
-         result = fputs (line, fpDest);
-      }
-      else if ((strstr(line, CONTROL_IP)         != NULL) ||
-               (strstr(line, CONTROL_PORT)       != NULL) ||
-               (strstr(line, REQUEST_DELAY)      != NULL) )
-      {
-         crcgen32 (&runningCrcValue, (unsigned char*)line, strlen(line));
-         result = fputs (line, fpDest);
-      }
-      else if (strstr(line, CRC_VALUE) != NULL)
-      {
-         // Update the CRC value
-         snprintf (line, TRAP_BUFFER_SIZE, "%s %lu\n", CRC_VALUE, runningCrcValue);
-
-         result = fputs (line, fpDest);
-
-         installLog << "Update CRC to " << line << "\n";
-      }
-      else
-      {
-         // If there is any white space then write it
-         result = fputs (line, fpDest);
-      }
-      // reset buffer before processing next line
-      memset(line, 0, TRAP_BUFFER_SIZE);
-   }
-
-   fclose(fpDest);
-   fclose(fpSource);
-
-   // Make file writable
-   attrib(TRAP_OVERRIDE_FILE, "-R");
-
-   if (cp(destDatFileName, TRAP_OVERRIDE_FILE) != ERROR)
-   {
-      rm(destDatFileName);
-   }
-   else
-   {
-      installLog << "copy of " << destDatFileName << " to " << TRAP_OVERRIDE_FILE << " failed\n";
-      return false;
-   }
-
-   // Make file readable
-   attrib(TRAP_OVERRIDE_FILE, "+R");
-
-   return true;
-}
-
-
 void installer::updateCal6 ()
 {
    //
@@ -2170,7 +2067,7 @@ bool installer::checkCRC6 ()
    if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files              -verify " CONFIG_CRC_PATH "/caldat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/config.files              -verify " CONFIG_CRC_PATH "/config.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files               -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files              -verify "CONFIG_CRC_PATH "/rbcdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	             -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/cassette.files            -verify " CONFIG_CRC_PATH "/cassette.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files           -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/graphics.files            -verify " PNAME_GUI_GRAPHICS_CRC) ||
@@ -2185,37 +2082,37 @@ bool installer::checkCRC6 ()
    }
 
    // Separate check for TERROR since the file may or may not exist
-   if ( (terrorExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files  -verify "CONFIG_CRC_PATH "/terrordat.crc") )
+   if ( (terrorExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") )
    {
       return false;
    }
 
    // Separate check for FEATURES since the file may or may not exist
-   if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files -verify "CONFIG_CRC_PATH "/features.crc") )
+   if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc") )
    {
       return false;
    }
 
    // Separate check for Barcode Categories since the file may or may not exist
-   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files -verify "CONFIG_CRC_PATH "/barcode_categories.crc") )
+   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH "/barcode_categories.crc") )
    {
       return false;
    }
 
    // Separate check for RTS Config since the file may or may not exist
-   if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files -verify "CONFIG_CRC_PATH "/rts_config.crc") )
+   if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files	-verify "CONFIG_CRC_PATH"/rts_config.crc") )
    {
       return false;
    }
 
    // Separate check for app server
-   if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files -verify "CONFIG_CRC_PATH "/app_server.crc") )
+   if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files	-verify "CONFIG_CRC_PATH"/app_server.crc") )
    {
       return false;
    }
 
    // Separate check for barcode symbologies
-   if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files -verify "CONFIG_CRC_PATH "/BarcodeSymbologies.crc") )
+   if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files	-verify "CONFIG_CRC_PATH"/BarcodeSymbologies.crc") )
    {
       return false;
    }
@@ -3087,11 +2984,11 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    bool retval = 0;
 
 #ifdef VXWORKS
-   WIND_TCB*      tcb        = (WIND_TCB*)taskIdSelf();
-   unsigned int   stackSize  = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
-   unsigned char* stackImage = new unsigned char[stackSize];
+   WIND_TCB * tcb = (WIND_TCB *)taskIdSelf();
+   unsigned int stackSize = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
+   unsigned char * stackImage = new unsigned char[stackSize];
 
-   memcpy(stackImage, (unsigned char*)tcb->pStackEnd, stackSize);
+   memcpy(stackImage, (unsigned char *)tcb->pStackEnd, stackSize);
 #endif /* ifdef VXWORKS */
 
    // get the info for the previous build
@@ -3330,19 +3227,6 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       copyTrapFiles();
    }
 
-   // Update TRAP feature to 1 if upgrading to v7
-   if (toVer.majorRev >= 20 && newBuildData.rangeType >= V700)
-   {
-      if (updateTRAPfeature(true))
-      {
-         installLog << "TRAP feature update done while upgrading to v7\n";
-      }
-      else
-      {
-         installLog << "TRAP feature update failed while upgrading to v7\n";
-      }
-   }
-
    if ( newBuildData.adjPostcount )
    {
       installLog << "update post count\n";
@@ -3388,10 +3272,10 @@ LEAVEROUTINE:
 //    attrib( TEMP_PATH,"R" );
 
 #ifdef VXWORKS
-   unsigned char* actualStack        = (unsigned char*)tcb->pStackEnd;
-   unsigned int   stackMarginInBytes = stackSize;
+   unsigned char * actualStack = (unsigned char *)tcb->pStackEnd;
+   unsigned int stackMarginInBytes = stackSize;
 
-   for (int idx = 0; idx<stackSize; idx++)
+   for (int idx=0; idx<stackSize; idx++)
    {
       if (actualStack[idx] != stackImage[idx])
       {
@@ -3428,4 +3312,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 28616fa3b084fda7df6a111303d6a063 */
+/* FORMAT HASH c09ba9fda2daca27a69bdc550e8013bc */

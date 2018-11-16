@@ -14,21 +14,6 @@
 
 #include "os/discover_hw.h"
 
-#define INITCRC_DEFAULT (0xFFFFFFFFL)
-
-#define TRAP_BUFFER_SIZE 80
-
-const char COMMENT_LINE[]       = "#";
-const char DAYS_OF_WEEK[]       = "DAYS_OF_WEEK";
-const char BEGIN_WINDOW[]       = "BEGIN_WINDOW";
-const char END_WINDOW[]         = "END_WINDOW";
-const char NUMBER_OF_ATTEMPTS[] = "NUMBER_OF_ATTEMPTS";
-const char NUMBER_OF_TIMEOUTS[] = "NUMBER_OF_TIMEOUTS";
-const char FEATURE[]            = "FEATURE";
-const char CONTROL_IP[]         = "CONTROL_IP";
-const char CONTROL_PORT[]       = "CONTROL_PORT";
-const char REQUEST_DELAY[]      = "REQUEST_DELAY";
-const char CRC_VALUE[]          = "CRC_VALUE";
 
 class installer
 {
@@ -204,10 +189,6 @@ protected:
    virtual bool installMachineId ();
 
 //
-// Update trap feature if upgrade to version 7
-   virtual bool updateTRAPfeature (bool value);
-
-//
 // Appends a CRC'd serial number line to a given zipped file
 // It doesn't check if the file already has a serial number in it
 // It unzips, appends, and rezips the given filename (must include path)
@@ -232,4 +213,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 009c7a790de3a7d76a12feb24ec0db50 */
+/* FORMAT HASH c44d46740dfb5dc742f65c957d809d8d */
