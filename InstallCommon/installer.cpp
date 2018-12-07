@@ -22,6 +22,22 @@
 
 #include <stdlib.h>
 
+#define INITCRC_DEFAULT (0xFFFFFFFFL)
+
+#define TRAP_BUFFER_SIZE 80
+
+const char COMMENT_LINE[]       = "#";
+const char DAYS_OF_WEEK[]       = "DAYS_OF_WEEK";
+const char BEGIN_WINDOW[]       = "BEGIN_WINDOW";
+const char END_WINDOW[]         = "END_WINDOW";
+const char NUMBER_OF_ATTEMPTS[] = "NUMBER_OF_ATTEMPTS";
+const char NUMBER_OF_TIMEOUTS[] = "NUMBER_OF_TIMEOUTS";
+const char FEATURE[]            = "FEATURE";
+const char CONTROL_IP[]         = "CONTROL_IP";
+const char CONTROL_PORT[]       = "CONTROL_PORT";
+const char REQUEST_DELAY[]      = "REQUEST_DELAY";
+const char CRC_VALUE[]          = "CRC_VALUE";
+
 #ifdef VXWORKS
 #include <taskLib.h>
 #endif /* ifdef VXWORKS */
@@ -1285,6 +1301,151 @@ void installer::updateCal5 ()
 
 }
 
+bool installer::SetTRAPfeature ()
+{
+   char          buffer[TRAP_BUFFER_SIZE];
+   std::string   destDatFileName(TRAP_OVERRIDE_FILE ".new");
+   char*         line            = &buffer[0];
+   unsigned long runningCrcValue = INITCRC_DEFAULT;
+   bool          filechanged     = false;
+
+   FILE* fpSource = fopen(TRAP_OVERRIDE_FILE, "r");
+   FILE* fpDest   = fopen(destDatFileName.c_str(), "w");
+
+   if (fpSource == NULL)
+   {
+      // Make file read only
+      attrib(TRAP_OVERRIDE_FILE, "+R");
+
+      installLog << "File " << TRAP_OVERRIDE_FILE << "could not be opened \n";
+
+      return false;
+   }
+
+   while (fgets(line, TRAP_BUFFER_SIZE, fpSource) != NULL)
+   {
+      if ( (line != NULL) && (strstr(line, FEATURE) != NULL) )
+      {
+         strcpy(line, "FEATURE 1\n");
+         fputs (line, fpDest);
+         filechanged = true;
+      }
+      else
+      {
+         fputs (line, fpDest);
+      }
+      // reset buffer before processing next line
+      memset(line, 0, TRAP_BUFFER_SIZE);
+   }
+
+   fclose(fpDest);
+   fclose(fpSource);
+
+   if (filechanged)
+   {
+      attrib(TRAP_OVERRIDE_FILE, "-R");
+
+      if (cp(destDatFileName.c_str(), TRAP_OVERRIDE_FILE) != ERROR)
+      {
+         rm(destDatFileName.c_str());
+      }
+      else
+      {
+         installLog << "copy of " << destDatFileName << " to " << TRAP_OVERRIDE_FILE << " failed\n";
+         return false;
+      }
+
+      // Make file readable
+      attrib(TRAP_OVERRIDE_FILE, "+R");
+   }
+   else
+   {
+      rm(destDatFileName.c_str());
+   }
+
+   return true;
+}
+
+bool installer::updateTRAPfileCRC ()
+{
+   char          buffer[TRAP_BUFFER_SIZE];
+   std::string   destDatFileName(TRAP_OVERRIDE_FILE ".new");
+   char*         line            = &buffer[0];
+   unsigned long runningCrcValue = INITCRC_DEFAULT;
+
+   FILE* fpSource = fopen(TRAP_OVERRIDE_FILE, "r");
+   FILE* fpDest   = fopen(destDatFileName.c_str(), "w");
+
+   if (fpSource == NULL)
+   {
+      // Make file read only
+      attrib(TRAP_OVERRIDE_FILE, "+R");
+
+      installLog << "File " << TRAP_OVERRIDE_FILE << "could not be opened \n";
+
+      return false;
+   }
+
+   while (fgets(line, TRAP_BUFFER_SIZE, fpSource) != NULL)
+   {
+      if ( (line != NULL) && (strstr(line, COMMENT_LINE) != NULL) )
+      {
+         fputs (line, fpDest);
+      }
+      else if ( (line != NULL) &&
+                ( (strstr(line, DAYS_OF_WEEK)       != NULL) ||
+                  (strstr(line, BEGIN_WINDOW)       != NULL) ||
+                  (strstr(line, END_WINDOW)         != NULL) ||
+                  (strstr(line, NUMBER_OF_ATTEMPTS) != NULL) ||
+                  (strstr(line, NUMBER_OF_TIMEOUTS) != NULL) ||
+                  (strstr(line, FEATURE)            != NULL) ||
+                  (strstr(line, CONTROL_IP)         != NULL) ||
+                  (strstr(line, CONTROL_PORT)       != NULL) ||
+                  (strstr(line, REQUEST_DELAY)      != NULL) )
+                )
+      {
+         crcgen32 (&runningCrcValue, (unsigned char*)line, strlen(line));
+         fputs (line, fpDest);
+      }
+      else if (strstr(line, CRC_VALUE) != NULL)
+      {
+         // Update the CRC value
+         sprintf (line, "%s %lu\n", CRC_VALUE, runningCrcValue);
+         fputs (line, fpDest);
+         installLog << "Update CRC to " << line << "\n";
+      }
+      else
+      {
+         // If there is any white space then write it
+         fputs (line, fpDest);
+      }
+      // reset buffer before processing next line
+      memset(line, 0, TRAP_BUFFER_SIZE);
+   }
+
+   fclose(fpDest);
+   fclose(fpSource);
+
+   // Make file writable
+   attrib(TRAP_OVERRIDE_FILE, "-R");
+
+   if (cp(destDatFileName.c_str(), TRAP_OVERRIDE_FILE) != ERROR)
+   {
+      rm(destDatFileName.c_str());
+   }
+   else
+   {
+      installLog << "copy of " << destDatFileName << " to " << TRAP_OVERRIDE_FILE << " failed\n";
+      return false;
+   }
+
+   // Make file readable
+   attrib(TRAP_OVERRIDE_FILE, "+R");
+
+   return true;
+}
+
+
 void installer::updateCal6 ()
 {
    //
@@ -2067,7 +2228,7 @@ bool installer::checkCRC6 ()
    if (verifyCrc("-filelist " FILELISTS_PATH "/caldat.files              -verify " CONFIG_CRC_PATH "/caldat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/config.files              -verify " CONFIG_CRC_PATH "/config.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/hwdat.files               -verify " CONFIG_CRC_PATH "/hwdat.crc") ||
-       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files	             -verify "CONFIG_CRC_PATH"/rbcdat.crc") ||
+       verifyCrc("-filelist " FILELISTS_PATH "/rbcdat.files              -verify "CONFIG_CRC_PATH "/rbcdat.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/cassette.files            -verify " CONFIG_CRC_PATH "/cassette.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/setconfig.files           -verify " CONFIG_CRC_PATH "/setconfig.crc") ||
        verifyCrc("-filelist " FILELISTS_PATH "/graphics.files            -verify " PNAME_GUI_GRAPHICS_CRC) ||
@@ -2082,37 +2243,37 @@ bool installer::checkCRC6 ()
    }
 
    // Separate check for TERROR since the file may or may not exist
-   if ( (terrorExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files	-verify "CONFIG_CRC_PATH"/terrordat.crc") )
+   if ( (terrorExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/terrordat.files  -verify "CONFIG_CRC_PATH "/terrordat.crc") )
    {
       return false;
    }
 
    // Separate check for FEATURES since the file may or may not exist
-   if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files	-verify "CONFIG_CRC_PATH"/features.crc") )
+   if ( (featuresExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/features.files -verify "CONFIG_CRC_PATH "/features.crc") )
    {
       return false;
    }
 
    // Separate check for Barcode Categories since the file may or may not exist
-   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files	-verify "CONFIG_CRC_PATH "/barcode_categories.crc") )
+   if ( (barcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/barcode_categories.files -verify "CONFIG_CRC_PATH "/barcode_categories.crc") )
    {
       return false;
    }
 
    // Separate check for RTS Config since the file may or may not exist
-   if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files	-verify "CONFIG_CRC_PATH"/rts_config.crc") )
+   if ( (rtsConfigExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/rts_config.files -verify "CONFIG_CRC_PATH "/rts_config.crc") )
    {
       return false;
    }
 
    // Separate check for app server
-   if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files	-verify "CONFIG_CRC_PATH"/app_server.crc") )
+   if ( (appServerExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/app_server.files -verify "CONFIG_CRC_PATH "/app_server.crc") )
    {
       return false;
    }
 
    // Separate check for barcode symbologies
-   if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files	-verify "CONFIG_CRC_PATH"/BarcodeSymbologies.crc") )
+   if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files -verify "CONFIG_CRC_PATH "/BarcodeSymbologies.crc") )
    {
       return false;
    }
@@ -2984,11 +3145,11 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    bool retval = 0;
 
 #ifdef VXWORKS
-   WIND_TCB * tcb = (WIND_TCB *)taskIdSelf();
-   unsigned int stackSize = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
-   unsigned char * stackImage = new unsigned char[stackSize];
+   WIND_TCB*      tcb        = (WIND_TCB*)taskIdSelf();
+   unsigned int   stackSize  = (unsigned int)tcb->pStackBase - (unsigned int)tcb->pStackEnd;
+   unsigned char* stackImage = new unsigned char[stackSize];
 
-   memcpy(stackImage, (unsigned char *)tcb->pStackEnd, stackSize);
+   memcpy(stackImage, (unsigned char*)tcb->pStackEnd, stackSize);
 #endif /* ifdef VXWORKS */
 
    // get the info for the previous build
@@ -3227,6 +3388,26 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
       copyTrapFiles();
    }
 
+   // Update TRAP feature to 1 if upgrading to v7
+   if (toVer.majorRev >= 20 && newBuildData.rangeType >= V700)
+   {
+      if (SetTRAPfeature())
+      {
+         if (updateTRAPfileCRC())
+         {
+            installLog << "TRAP feature update done while upgrading to v7\n";
+         }
+         else
+         {
+            installLog << "CRC update in trap_override.dat file failed\n";
+         }
+      }
+      else
+      {
+         installLog << "TRAP feature update failed while upgrading to v7\n";
+      }
+   }
+
    if ( newBuildData.adjPostcount )
    {
       installLog << "update post count\n";
@@ -3272,10 +3453,10 @@ LEAVEROUTINE:
 //    attrib( TEMP_PATH,"R" );
 
 #ifdef VXWORKS
-   unsigned char * actualStack = (unsigned char *)tcb->pStackEnd;
-   unsigned int stackMarginInBytes = stackSize;
+   unsigned char* actualStack        = (unsigned char*)tcb->pStackEnd;
+   unsigned int   stackMarginInBytes = stackSize;
 
-   for (int idx=0; idx<stackSize; idx++)
+   for (int idx = 0; idx<stackSize; idx++)
    {
       if (actualStack[idx] != stackImage[idx])
       {
@@ -3312,4 +3493,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH c09ba9fda2daca27a69bdc550e8013bc */
+/* FORMAT HASH 939a8991e53315f9042082899c5f5beb */

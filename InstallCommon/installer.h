@@ -122,6 +122,16 @@ protected:
    virtual void copyTrapFiles ();
 
 //
+// set trap feature while upgrading to v7
+//
+   virtual bool SetTRAPfeature ();
+
+//
+// update crc value in trap_override.dat file
+//
+   virtual bool updateTRAPfileCRC ();
+
+//
 // check for inconsistent plasma rinseback settings
 //
    virtual bool checkPlasmaRB ();
@@ -213,4 +223,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH c44d46740dfb5dc742f65c957d809d8d */
+/* FORMAT HASH 920ae433dfd2cc016d34dc846df26e21 */
