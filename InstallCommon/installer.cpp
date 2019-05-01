@@ -618,6 +618,43 @@ void installer::updateAppServer (std::string& filename)
    }
 }
 
+void installer::updateNdcBarcode ()
+{
+   // these are the customer selected sets.... dont overwrite if it exists!
+   std::string configpath(PNAME_NDCBARCODEDAT);
+   std::string templatespath(TEMPLATES_PATH);
+   templatespath += "/";
+   templatespath += FILE_NDCBARCODE_DAT;
+   currVersion    = findSetting("file_version=", configpath.c_str());
+   newVersion     = findSetting("file_version=", templatespath.c_str());
+
+   if ( newVersion == NULL )
+   {
+      installLog << "Ignoring " << FILE_NDCBARCODE_DAT << "\n";
+   }
+   else if ( newVersion && ( !currVersion || strcmp(newVersion, currVersion) != 0 ))
+   {
+      installLog << "Updating " << FILE_NDCBARCODE_DAT << " to new version " << newVersion;
+      if (currVersion)
+      {
+         installLog << " from existing version " << currVersion << "\n";
+      }
+      installLog << "\n";
+
+      attrib(configpath.c_str(), "-R");
+
+      if ( cp(templatespath.c_str(), configpath.c_str()) == ERROR )
+      {
+         installLog << "copy of " << FILE_NDCBARCODE_DAT << " failed\n";
+         return;
+      }
+
+      attrib(configpath.c_str(), "+R");
+      fflush(stdout);
+   }
+}
+
+
 bool installer::appendSerialNumToZipFile (const char* filename, bool sectionHdr)
 {
    bool retval = false;  // assume it didn't work
@@ -2214,6 +2251,13 @@ bool installer::checkCRC6 ()
       softcrc("-filelist " FILELISTS_PATH "/app_server.files -update " CONFIG_CRC_PATH  "/app_server.crc");
    }
 
+   const int ndcBarcodeExists = open(FILELISTS_PATH "/NdcBarcode.files",  O_RDONLY, DEFAULT_FILE_PERM);
+   if (ndcBarcodeExists > 0)
+   {
+      close(ndcBarcodeExists);
+      softcrc("-filelist " FILELISTS_PATH "/NdcBarcode.files -update " CONFIG_CRC_PATH  "/NdcBarcode.crc");
+   }
+
    const int barcodeSymExists = open(FILELISTS_PATH "/BarcodeSymbologies.files",  O_RDONLY, DEFAULT_FILE_PERM);
    if (barcodeSymExists > 0)
    {
@@ -3341,6 +3385,7 @@ int installer::upgrade (versionStruct& fromVer, versionStruct& toVer)
    installLog << "Updating TrimaConnectionProperties\n";
    updateAppServer(connection);
    installLog << "Updating Software\n";
+   updateNdcBarcode();
    updateSW();
    if (newBuildData.rangeType < V520)
    {
@@ -3493,4 +3538,4 @@ LEAVEROUTINE:
    return(0);
 }
 
-/* FORMAT HASH 939a8991e53315f9042082899c5f5beb */
+/* FORMAT HASH ac771aaaf84f73061c140f1a397feea9 */

@@ -67,6 +67,11 @@ protected:
    virtual void updateAppServer (std::string& filename);
 
 //
+// NdcBarcode.dat function
+//
+   virtual void updateNdcBarcode ();
+
+//
 // sw.dat update function
 //
    virtual void updateSW ();
@@ -223,4 +228,4 @@ protected:
 };
 #endif // INSTALLER_H
 
-/* FORMAT HASH 920ae433dfd2cc016d34dc846df26e21 */
+/* FORMAT HASH 7f7a7229558d52f1e4397ef33ac938a3 */

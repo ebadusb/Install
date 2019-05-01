@@ -266,6 +266,10 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
    #define FILE_APPSERVER_DAT          "app_server.dat"
 #endif
 
+#ifndef FILE_NDCBARCODE_DAT
+   #define FILE_NDCBARCODE_DAT          "NdcBarcode.dat"
+#endif
+
 #ifndef FILE_CONNECTION_DAT
    #define FILE_CONNECTION_DAT          "TrimaConnectionProperties.dat"
 #endif
@@ -276,4 +280,4 @@ const static int   numInstallSpecialFiles = (int)(sizeof(installSpecialFiles) / 
 
 #endif // UPDATETRIMADEFINES_H
 
-/* FORMAT HASH 7804fb935f59ff59e759dd3fca97e79c */
+/* FORMAT HASH 6fac74d4363017e70db944535d2ef356 */
