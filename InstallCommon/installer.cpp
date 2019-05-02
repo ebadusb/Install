@@ -621,7 +621,9 @@ void installer::updateAppServer (std::string& filename)
 void installer::updateNdcBarcode ()
 {
    // these are the customer selected sets.... dont overwrite if it exists!
-   std::string configpath(PNAME_NDCBARCODEDAT);
+   std::string configpath(CONFIG_PATH);
+   configpath +=  "/";
+   configpath += FILE_NDCBARCODE_DAT;
    std::string templatespath(TEMPLATES_PATH);
    templatespath += "/";
    templatespath += FILE_NDCBARCODE_DAT;
@@ -2316,6 +2318,12 @@ bool installer::checkCRC6 ()
       return false;
    }
 
+   // Separate check for NdcBarcode
+   if ( (ndcBarcodeExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/NdcBarcode.files -verify "CONFIG_CRC_PATH "/NdcBarcode.crc") )
+   {
+      return false;
+   }
+   
    // Separate check for barcode symbologies
    if ( (barcodeSymExists > 0) && verifyCrc("-filelist " FILELISTS_PATH "/BarcodeSymbologies.files -verify "CONFIG_CRC_PATH "/BarcodeSymbologies.crc") )
    {
